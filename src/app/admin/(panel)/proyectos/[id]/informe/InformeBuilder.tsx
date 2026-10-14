@@ -443,7 +443,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
         Arquitectura de URLs <span className="text-gray-400 font-normal text-sm">(última estructura generada)</span>
       </SectionTitle>
       {!data.arquitectura || data.arquitectura.pageCount === 0 ? (
-        <p className="text-sm text-gray-500">Sin arquitectura de URLs generada. Créala desde el módulo Arquitectura.</p>
+        <p className="text-sm text-gray-500">Sin arquitectura de URLs generada. Créala desde Keywords → Arquitectura.</p>
       ) : (
         <div className="text-sm">
           <ul className="space-y-0.5">

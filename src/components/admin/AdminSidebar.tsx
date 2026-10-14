@@ -7,15 +7,12 @@ import {
   Anchor,
   Braces,
   ChevronDown,
-  Copy,
   FileBarChart2,
   FileText,
   FolderKanban,
-  FolderTree,
   Key,
   LayoutDashboard,
   LineChart,
-  Link2,
   ListChecks,
   Map,
   NotebookPen,
@@ -23,7 +20,6 @@ import {
   Search,
   Settings,
   ShieldCheck,
-  Sigma,
   TrendingUp,
   Type,
   User,
@@ -67,7 +63,6 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
       icon: Search,
       modules: [
         { href: `${base}/keywords`, label: "Keywords", icon: Key },
-        { href: `${base}/arquitectura`, label: "Arquitectura", icon: FolderTree },
       ],
     },
     {
@@ -78,7 +73,6 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
         { href: `${base}/titulos-meta`, label: "Título y Meta", icon: Type },
         { href: `${base}/schema`, label: "Schema", icon: Braces },
         { href: `${base}/contenido`, label: "Contenido", icon: PenLine },
-        { href: `${base}/tfidf`, label: "TF-IDF", icon: Sigma },
       ],
     },
     {
@@ -87,8 +81,6 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
       icon: Wrench,
       modules: [
         { href: `${base}/auditoria`, label: "Auditoría", icon: ShieldCheck },
-        { href: `${base}/enlaces`, label: "Enlaces", icon: Link2 },
-        { href: `${base}/canibalizaciones`, label: "Canibalizaciones", icon: Copy },
       ],
     },
     {
@@ -127,6 +119,19 @@ function isModuleActive(href: string, base: string, pathname: string): boolean {
   if (href === base) return pathname === href;
   return pathname === href || pathname.startsWith(href + "/");
 }
+
+// Segmentos de URL de módulos que se fusionaron como pestañas (Arquitectura→
+// Keywords, TF-IDF→Contenido, Enlaces/Canibalizaciones→Auditoría). Si el
+// usuario cambia de proyecto desde una URL vieja (pestaña abierta de antes
+// de la fusión), se traduce el segmento a la ruta nueva en vez de caer en
+// el 404 de una ruta que ya no existe. next.config.ts también redirige esas
+// rutas legacy por si algo se nos escapa.
+const LEGACY_MODULE_SEGMENTS: Record<string, string> = {
+  arquitectura: "keywords/arquitectura",
+  tfidf: "contenido/tfidf",
+  enlaces: "auditoria/enlaces",
+  canibalizaciones: "auditoria/canibalizaciones",
+};
 
 export default function AdminSidebar({
   navOpen,
@@ -193,7 +198,8 @@ export default function AdminSidebar({
   function switchProject(newId: string) {
     if (!newId || newId === projectId) return;
     const rest = projectId ? pathname.replace(`/admin/proyectos/${projectId}`, "") : "";
-    const seg = rest.replace(/^\//, "").split("/")[0] ?? "";
+    const rawSeg = rest.replace(/^\//, "").split("/")[0] ?? "";
+    const seg = LEGACY_MODULE_SEGMENTS[rawSeg] ?? rawSeg;
     let target = `/admin/proyectos/${newId}`;
     if (seg && seg !== "geogrid") {
       target += `/${seg}`;

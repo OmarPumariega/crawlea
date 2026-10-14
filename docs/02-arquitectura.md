@@ -55,11 +55,15 @@ src/
 │   │       ├── configuracion/      # conexión OAuth2 de agencia con Google (Módulo 6)
 │   │       └── proyectos/          # Módulo 2 + resto de módulos anidados por [id]
 │   │           └── [id]/
-│   │               ├── perfil, tareas, keywords, titulos-meta, schema,
-│   │               │   rank, google, contenido, tfidf, auditoria, enlaces,
-│   │               │   canibalizaciones, competidores, geogrid, informe, copilot/
-│   │               └── (cada carpeta = un módulo; el nav vive en el sidebar
-│   │                   global, no en tabs locales — ver "Navegación" abajo)
+│   │               ├── perfil, tareas, notas, titulos-meta, schema, rank,
+│   │               │   google, competidores, backlinks, geogrid, informe
+│   │               ├── keywords/     # + keywords/arquitectura (pestaña por ruta)
+│   │               ├── contenido/    # + contenido/tfidf (pestaña por ruta)
+│   │               └── auditoria/    # + auditoria/enlaces y
+│   │                               #   auditoria/canibalizaciones (pestañas)
+│   │               (el nav de módulos vive en el sidebar global; las
+│   │                sub-herramientas fusionadas son pestañas por ruta —
+│   │                ver "Navegación" abajo)
 │   └── api/
 │       ├── auth/[...nextauth]/
 │       ├── proyectos/
@@ -99,10 +103,18 @@ El panel abandonó las pestañas horizontales por proyecto (el antiguo
 - **Nivel de proyecto**: cuando la ruta cae bajo `/admin/proyectos/[id]/...`, aparece
   un segundo bloque bajo un divisor: `ProjectSwitcher.tsx` (combobox con buscador +
   sección "Recientes", últimos 5 vía `localStorage["seoCiro:recentProjects"]`) seguido
-  de la lista vertical fija de módulos que devuelve `projectModules()` — Perfil, Tareas,
-  Keywords, Título y Meta, Schema, Rank Tracking, Google, Contenido, TF-IDF, Auditoría,
-  Enlaces, Canibalizaciones, Competidores, Geogrid (solo si `isLocalBusiness`), Informe,
-  Copilot. Cambiar de proyecto desde el switcher preserva el módulo activo cuando existe
+  de la lista vertical fija de módulos que devuelve `projectNav()` — Perfil, Tareas,
+  Notas; grupos Investigación (Keywords), On-Page (Título y Meta, Schema, Contenido),
+  Técnico (Auditoría), Seguimiento (Rank Tracking, Google, Competidores, Backlinks,
+  Geogrid solo si `isLocalBusiness`); e Informe. Las sub-herramientas se fusionaron
+  como **pestañas por ruta** (`ModuleTabs.tsx` montado en el `layout.tsx` de cada
+  módulo contenedor): Arquitectura dentro de Keywords, TF-IDF dentro de Contenido,
+  Enlaces y Canibalizaciones dentro de Auditoría — URL real en cada pestaña para que
+  los deep-links (`?estudio=`, `?keyword=`) y los bookmarks sigan funcionando. Las
+  rutas antiguas (`/arquitectura`, `/tfidf`, `/enlaces`, `/canibalizaciones`)
+  redirigen desde `next.config.ts` (`redirects()`), y `switchProject` del sidebar
+  traduce los segmentos legacy (`LEGACY_MODULE_SEGMENTS`) al cambiar de proyecto.
+  Cambiar de proyecto desde el switcher preserva el módulo activo cuando existe
   en el proyecto destino (y descarta "geogrid" si el destino no es negocio local).
 - El listado de proyectos se pide client-side desde `/api/proyectos` (el sidebar vive en
   el shell de toda la app, no en un layout anidado bajo `[id]`).

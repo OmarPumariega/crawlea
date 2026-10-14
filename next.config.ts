@@ -25,6 +25,34 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Rutas legacy de la fusión de módulos (Arquitectura→Keywords, TF-IDF→
+  // Contenido, Enlaces/Canibalizaciones→Auditoría): bookmarks e historial
+  // siguen funcionando. Los query params (?estudio=, ?keyword=) se
+  // preservan automáticamente al no aparecer en el destination.
+  async redirects() {
+    return [
+      {
+        source: "/admin/proyectos/:id/arquitectura",
+        destination: "/admin/proyectos/:id/keywords/arquitectura",
+        permanent: false,
+      },
+      {
+        source: "/admin/proyectos/:id/tfidf",
+        destination: "/admin/proyectos/:id/contenido/tfidf",
+        permanent: false,
+      },
+      {
+        source: "/admin/proyectos/:id/enlaces",
+        destination: "/admin/proyectos/:id/auditoria/enlaces",
+        permanent: false,
+      },
+      {
+        source: "/admin/proyectos/:id/canibalizaciones",
+        destination: "/admin/proyectos/:id/auditoria/canibalizaciones",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

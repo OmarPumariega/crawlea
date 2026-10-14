@@ -35,18 +35,19 @@ alcance original):
 
 | # | Módulo | Qué hace |
 |---|---|---|
-| 1 | Keywords | Estudios de keywords vía DataForSEO Labs (volumen, intención, estacionalidad), generación de estructura de URLs vía LLM |
+| 1 | Keywords | Estudios de keywords vía DataForSEO Labs (volumen, intención, estacionalidad), generación de estructura de URLs vía LLM (visualizada en la pestaña Arquitectura del mismo módulo) |
 | 2 | Proyectos | CRUD de clientes/dominios, NAP, tareas manuales + auto-generadas desde auditoría, notas internas |
 | 3 | Título y Meta | Scraping real de una URL + 3 variantes de título/meta vía LLM |
 | 4 | Schema | Catálogo de ~20 tipos schema.org, generación de JSON-LD (deterministas + LLM genérico) |
 | 5 | Rank Tracking | Posiciones orgánicas reales (DataForSEO SERP), manual o programado, guard de un chequeo/día |
 | 6 | Google | OAuth2 de agencia, paneles de Search Console y GA4 con snapshots persistidos |
-| 7 | Contenido | Generación de contenido vía LLM + "Optimizar URL existente" con cambios concretos accionables |
-| 8 | Auditoría | Crawler propio (rastrea el sitio entero, no una muestra) + PageSpeed + cruce con GSC, puntuación explicable |
+| 7 | Contenido | Generación de contenido vía LLM + "Optimizar URL existente" con cambios concretos accionables; el análisis TF-IDF es una pestaña de este módulo |
+| 8 | Auditoría | Crawler propio (rastrea el sitio entero, no una muestra) + PageSpeed + cruce con GSC, puntuación explicable; enlazado interno (PageRank/huérfanas) y canibalizaciones son pestañas de este módulo |
 | 9 | Geogrid | Mapa de calor de posicionamiento local vía DataForSEO Maps SERP |
 
-Extra (fuera del spec de 9 módulos, mismo principio de datos reales): TF-IDF,
-PageRank interno + huérfanas, detección de contenido fino, canibalizaciones,
+Extra (fuera del spec de 9 módulos, mismo principio de datos reales): análisis TF-IDF
+(pestaña de Contenido), PageRank interno + huérfanas y canibalizaciones (pestañas de
+Auditoría), detección de contenido fino,
 Copilot de IA de solo lectura, Competidores (visibilidad + content gap), Backlinks,
 control de gasto con tope por proyecto, avisos por email, generación automática de
 tareas desde hallazgos de auditoría, Notas internas de proyecto, Informe imprimible.

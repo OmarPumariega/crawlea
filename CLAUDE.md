@@ -201,9 +201,13 @@ Proyectos. Tres bloques:
 
 ### Ficha de proyecto (`/admin/proyectos/[id]/...`)
 Módulos anidados por ruta, con el nav en el sidebar global (no pestañas locales), en
-este orden: Perfil, Tareas, Notas, Keywords, Arquitectura, Título y Meta, Schema, Rank Tracking,
-Google, Contenido, TF-IDF, Auditoría, Enlaces, Canibalizaciones, Competidores, Backlinks,
-Geogrid (solo si el proyecto es negocio local con coordenadas), Informe. El Copilot **no** es una
+este orden: Perfil, Tareas, Notas, Keywords (con la pestaña Arquitectura), Título y Meta,
+Schema, Contenido (con la pestaña TF-IDF), Auditoría (con las pestañas Enlaces y
+Canibalizaciones), Rank Tracking, Google, Competidores, Backlinks, Geogrid (solo si el
+proyecto es negocio local con coordenadas), Informe. Las sub-herramientas fusionadas son
+pestañas por ruta (`ModuleTabs.tsx` en el `layout.tsx` de cada módulo contenedor); las
+rutas antiguas (`/arquitectura`, `/tfidf`, `/enlaces`, `/canibalizaciones`) redirigen
+desde `next.config.ts`. El Copilot **no** es una
 ruta/módulo del nav — es un widget flotante global (`CopilotWidget.tsx`, montado en
 `AdminShell.tsx`), disponible en cualquier página de un proyecto sin navegar a ningún
 sitio; ver el apartado "Copilot" más abajo.
@@ -257,7 +261,8 @@ sitio; ver el apartado "Copilot" más abajo.
   distinguirlas dentro del estudio. Tras importar, un aviso con enlaces
   directos a "Ver en Keywords"/"Ver en Arquitectura" (`?estudio=<id>`) evita
   tener que buscar el estudio a mano.
-- **Arquitectura**: visualiza `KeywordStudy.structure` (la misma "Generar estructura de
+- **Arquitectura** (pestaña dentro de Keywords, ruta `/keywords/arquitectura`):
+  visualiza `KeywordStudy.structure` (la misma "Generar estructura de
   URLs" del Módulo 1) como árbol vertical colapsable (`StructureTreeView.tsx`) — clic en
   una rama la expande con la URL completa propuesta. La AGRUPACIÓN es determinista, no
   la decide el LLM: `src/lib/keywords/keyword-hierarchy.ts` construye la jerarquía real a
@@ -338,7 +343,7 @@ sitio; ver el apartado "Copilot" más abajo.
   devuelve una **lista de cambios concretos** (JSON estricto del LLM: qué título/
   meta/H1/encabezado/contenido tocar y por qué), persistidos en `UrlOptimization`
   con historial por URL.
-- **TF-IDF**: siembra una keyword + ubicación opcional (mismo `LocationPicker` que Rank
+- **TF-IDF** (pestaña dentro de Contenido, ruta `/contenido/tfidf`): siembra una keyword + ubicación opcional (mismo `LocationPicker` que Rank
   Tracking) → top-10 orgánico real (vía `SerpCache` si ya existe, si no una llamada SERP
   nueva) → scraping de cada resultado → términos más relevantes por TF-IDF para orientar
   el contenido. Sin coste si el rank tracking ya consultó esa keyword/ubicación
@@ -364,10 +369,12 @@ sitio; ver el apartado "Copilot" más abajo.
   de auditorías (incluidas las mensuales programadas) va fire-and-forget desde
   `instrumentation-node.ts`, fuera de la cadena secuencial del cron — un crawl largo
   no bloquea rank tracking ni geogrid de otros proyectos.
-- **Enlaces**: PageRank interno calculado sobre el grafo de enlaces de la última
+- **Enlaces** (pestaña dentro de Auditoría, ruta `/auditoria/enlaces`): PageRank interno
+  calculado sobre el grafo de enlaces de la última
   auditoría completada (`AuditRun.linkGraph`), sin coste de API — páginas huérfanas,
   hubs principales, puntuación por página.
-- **Canibalizaciones**: consulta directa a Search Console (mismo query posicionando
+- **Canibalizaciones** (pestaña dentro de Auditoría, ruta `/auditoria/canibalizaciones`):
+  consulta directa a Search Console (mismo query posicionando
   varias URLs en 90 días) — requiere GSC conectado para el proyecto, sin coste de
   DataForSEO/OpenRouter.
 - **Competidores** (Tier 2): tabla comparativa de un vistazo arriba del todo
