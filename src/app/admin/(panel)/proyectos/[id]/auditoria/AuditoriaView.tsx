@@ -687,7 +687,7 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
                 <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
                   {orphanCount} página{orphanCount === 1 ? "" : "s"} huérfana{orphanCount === 1 ? "" : "s"} (sin
                   enlaces internos entrantes) detectada{orphanCount === 1 ? "" : "s"} en el último rastreo —{" "}
-                  <Link href={`/admin/proyectos/${projectId}/enlaces`} className="underline font-medium">
+                  <Link href={`/admin/proyectos/${projectId}/auditoria/enlaces`} className="underline font-medium">
                     ver detalle en Enlaces
                   </Link>
                   .

@@ -56,15 +56,15 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
           Aún no hay grafo de enlaces
         </div>
         <p className="text-sm text-gray-500">
-          Ejecuta una auditoría (Módulo 8) para analizar el enlazado interno. El
-          rastreo construye el grafo de enlaces sobre el que se calcula el
-          PageRank y se detectan las páginas huérfanas.
+          Ejecuta una auditoría para analizar el enlazado interno. El rastreo
+          construye el grafo de enlaces sobre el que se calcula el PageRank y
+          se detectan las páginas huérfanas.
         </p>
         <Link
           href={`/admin/proyectos/${projectId}/auditoria`}
           className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800"
         >
-          Ir a Auditoría
+          Ir a la pestaña Auditoría
         </Link>
       </div>
     );
