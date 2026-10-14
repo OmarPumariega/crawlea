@@ -27,7 +27,7 @@ export default function ImportSuccessNotice({
           <Link href={`/admin/proyectos/${projectId}/keywords?estudio=${studyId}`} className="text-emerald-700 hover:text-emerald-900 underline">
             Ver en Keywords →
           </Link>
-          <Link href={`/admin/proyectos/${projectId}/arquitectura?estudio=${studyId}`} className="text-emerald-700 hover:text-emerald-900 underline">
+          <Link href={`/admin/proyectos/${projectId}/keywords/arquitectura?estudio=${studyId}`} className="text-emerald-700 hover:text-emerald-900 underline">
             Ver en Arquitectura →
           </Link>
         </div>

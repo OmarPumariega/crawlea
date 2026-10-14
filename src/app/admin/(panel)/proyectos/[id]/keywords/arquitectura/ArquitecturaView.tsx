@@ -133,7 +133,7 @@ export default function ArquitecturaView({
       <div>
         <h2 className="text-lg font-semibold text-gray-900">Arquitectura de la web</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Jerarquía de páginas recomendada a partir de un estudio de keywords (Módulo 1) — agrupa las
+          Jerarquía de páginas recomendada a partir de un estudio de keywords (pestaña Estudios) — agrupa las
           keywords reales del estudio por volumen de búsqueda y propone la URL optimizada de cada
           página.
         </p>
