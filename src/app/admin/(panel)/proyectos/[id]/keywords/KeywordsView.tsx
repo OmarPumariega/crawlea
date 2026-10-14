@@ -788,7 +788,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                       <td className="py-2 px-2">
                         {kw.tfidfAvailable ? (
                           <Link
-                            href={`/admin/proyectos/${projectId}/tfidf?keyword=${encodeURIComponent(kw.keyword)}`}
+                            href={`/admin/proyectos/${projectId}/contenido/tfidf?keyword=${encodeURIComponent(kw.keyword)}`}
                             className="text-[11px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100 font-medium"
                           >
                             Ver →

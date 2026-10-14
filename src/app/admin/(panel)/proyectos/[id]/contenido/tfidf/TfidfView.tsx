@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Loader2, Search, ChevronDown, ChevronUp, FileSearch,
   ClipboardCopy, Check, Clock, List, ExternalLink, Send,
@@ -62,6 +62,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
   // directamente, en vez de obligar a buscarlo en "Resultados disponibles".
   const searchParams = useSearchParams();
   const deepLinkKeyword = searchParams.get("keyword");
+  const router = useRouter();
 
   const [keyword, setKeyword] = useState("");
   const [languageCode, setLanguageCode] = useState("es");
@@ -148,7 +149,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
     setTimeout(() => setCopied(false), 1500);
   }
 
-  // Lleva los temas/términos al módulo de Contenido sin copiar a mano: los
+  // Lleva los temas/términos a la pestaña de Contenido sin copiar a mano: los
   // guarda en sessionStorage (clave fija) y navega. ContentView los lee al
   // montar y los inyecta en el prompt de generación como guía de cobertura.
   // Reutiliza datos del SERP ya pagado → cero coste extra.
@@ -166,7 +167,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
     } catch {
       /* sessionStorage puede fallar en modo privado; nada crítico */
     }
-    window.location.href = `/admin/proyectos/${projectId}/contenido`;
+    router.push(`/admin/proyectos/${projectId}/contenido`);
   }
 
   // Lleva los mismos temas/términos que ya se ofrecen a Contenido al estudio

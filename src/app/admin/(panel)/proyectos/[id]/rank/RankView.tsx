@@ -1125,7 +1125,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                             )}
                             {kw.tfidfAvailable && (
                               <Link
-                                href={`/admin/proyectos/${projectId}/tfidf?keyword=${encodeURIComponent(kw.keyword)}`}
+                                href={`/admin/proyectos/${projectId}/contenido/tfidf?keyword=${encodeURIComponent(kw.keyword)}`}
                                 onClick={(e) => e.stopPropagation()}
                                 className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100 font-medium"
                               >
