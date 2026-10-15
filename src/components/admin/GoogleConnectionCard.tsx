@@ -34,7 +34,7 @@ export default function GoogleConnectionCard({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
       {justConnected && (
         <div className="flex items-center gap-2 text-sm bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg">
           <CheckCircle2 className="h-4 w-4" />
@@ -86,7 +86,7 @@ export default function GoogleConnectionCard({
               </button>
               <button
                 onClick={() => setConfirmingDisconnect(false)}
-                className="px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
+                className="px-3 py-1.5 text-sm text-gray-600 border border-line rounded-xl hover:bg-background"
               >
                 Cancelar
               </button>

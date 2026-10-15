@@ -101,16 +101,18 @@ export default function RankVisibilityChart({ projectId, group }: { projectId: s
   const labelStep = Math.max(1, Math.ceil(n / 7));
 
   return (
-    <div ref={wrapRef} className="bg-white rounded-xl border border-gray-100 p-5">
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2">
-          <Eye className="h-4 w-4 text-gray-400" />
-          <h3 className="text-sm font-semibold text-gray-900">Evolución del posicionamiento{group ? ` — ${group}` : ""}</h3>
+    <div ref={wrapRef} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-background text-gray-400">
+            <Eye className="h-4 w-4" />
+          </span>
+          <h3 className="text-lg font-bold tracking-tight text-gray-900">Evolución del posicionamiento{group ? ` — ${group}` : ""}</h3>
         </div>
         {current && (
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-semibold text-gray-900 tabular-nums">{current.index}</span>
-            <span className="text-xs text-gray-400">índice</span>
+            <span className="text-3xl font-semibold tracking-tight text-gray-900 tabular-nums">{current.index}</span>
+            <span className="text-sm text-gray-500">índice</span>
             {delta !== null && delta !== 0 && (
               <span className={`flex items-center gap-0.5 text-xs font-medium ${delta > 0 ? "text-emerald-600" : "text-red-600"}`}>
                 {delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -128,9 +130,14 @@ export default function RankVisibilityChart({ projectId, group }: { projectId: s
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
       ) : n === 0 ? (
-        <p className="py-10 text-center text-sm text-gray-400">
-          Sin datos suficientes todavía — comprueba alguna keyword para empezar el histórico.
-        </p>
+        <div className="py-12 text-center">
+          <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+            <Eye className="h-5 w-5" />
+          </span>
+          <p className="text-sm text-gray-500">
+            Sin datos suficientes todavía — comprueba alguna keyword para empezar el histórico.
+          </p>
+        </div>
       ) : (
         <>
           <svg width={w} height={H} viewBox={`0 0 ${w} ${H}`} role="img" aria-label="Evolución del posicionamiento">
@@ -209,7 +216,7 @@ export default function RankVisibilityChart({ projectId, group }: { projectId: s
           </svg>
 
           {/* Leyenda */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-[11px] text-gray-500">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[11px] text-gray-500">
             {SERIES.map((s) => (
               <span key={s.key} className="inline-flex items-center gap-1">
                 <span className="inline-block h-0.5 w-4 rounded-full" style={{ background: s.color }} />
@@ -220,7 +227,7 @@ export default function RankVisibilityChart({ projectId, group }: { projectId: s
               <span className="inline-block h-0.5 w-4 border-t border-dashed" style={{ borderColor: POS_COLOR }} />
               Posición media
             </span>
-            <span className="text-gray-400">· eje izq: nº keywords · eje der: posición</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">· eje izq: nº keywords · eje der: posición</span>
           </div>
         </>
       )}

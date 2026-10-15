@@ -106,13 +106,13 @@ export default function GbpPicker({
             }
           }}
           placeholder="Nombre del negocio + ciudad (ej. «Pumariega Estudios Gijón»)"
-          className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+          className="flex-1 px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
         />
         <button
           type="button"
           onClick={() => handleSearch()}
           disabled={loading || !query.trim()}
-          className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50 shrink-0"
+          className="flex items-center gap-1.5 px-3 py-2 border border-line text-gray-700 text-sm font-medium rounded-lg hover:bg-background disabled:opacity-50 shrink-0"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           Buscar
@@ -135,9 +135,9 @@ export default function GbpPicker({
       {error && <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
 
       {candidates && candidates.length > 0 && (
-        <ul className="border border-gray-200 rounded-lg divide-y divide-gray-100 overflow-hidden">
+        <ul className="border border-line rounded-xl divide-y divide-gray-100 overflow-hidden">
           {candidates.map((c) => (
-            <li key={c.placeId} className="p-3 flex items-start gap-3 hover:bg-gray-50">
+            <li key={c.placeId} className="p-3 flex items-start gap-3 hover:bg-background">
               <MapPin className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-900 truncate">{c.title}</p>
@@ -162,7 +162,7 @@ export default function GbpPicker({
                   "px-3 py-1.5 text-xs font-medium rounded-lg shrink-0 disabled:opacity-50",
                   c.placeId === currentPlaceId
                     ? "bg-emerald-100 text-emerald-700"
-                    : "bg-gray-900 text-white hover:bg-gray-800"
+                    : "bg-brand text-white hover:bg-brand-strong"
                 )}
               >
                 {applyingId === c.placeId ? (

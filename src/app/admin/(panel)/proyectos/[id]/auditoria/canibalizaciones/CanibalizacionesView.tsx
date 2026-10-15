@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Loader2, GitBranch, AlertTriangle, Crown, ArrowDownUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import UrlLink from "@/components/admin/UrlLink";
+import PageHeader from "@/components/admin/PageHeader";
 
 type CannibalizedPage = {
   url: string;
@@ -72,7 +73,7 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
 
   if (data?.needsGsc) {
     return (
-      <div className="bg-white rounded-xl border border-gray-100 p-5 flex items-start gap-3">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 flex items-start gap-3">
         <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
         <p className="text-sm text-gray-600">
           Conecta Search Console (módulo{" "}
@@ -94,19 +95,14 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <GitBranch className="h-5 w-5 text-gray-400" />
-          Canibalizaciones
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Keywords para las que el sitio posiciona 2 o más URLs distintas (últimos 90 días,
-          datos de Search Console).
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Auditoría · Canibalizaciones"
+        title="Canibalizaciones"
+        description="Keywords para las que el sitio posiciona 2 o más URLs distintas (últimos 90 días, datos de Search Console)."
+      />
 
       {items.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
           <p className="text-sm text-gray-600">
             No se detectan canibalizaciones en los últimos 90 días.
           </p>
@@ -114,7 +110,7 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
       ) : (
         <>
           {/* Filtros de urgencia / importancia */}
-          <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-wrap items-center gap-3 text-sm">
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 flex flex-wrap items-center gap-3 text-sm">
             <div className="flex items-center gap-1.5 text-gray-500">
               <ArrowDownUp className="h-4 w-4" />
               <span className="text-xs">Ordenar por</span>
@@ -122,7 +118,7 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="px-2 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white"
+              className="px-2 py-1.5 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white"
             >
               {sortOptions.map((o) => (
                 <option key={o.key} value={o.key}>{o.label}</option>
@@ -144,14 +140,14 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
                 min={0}
                 value={minClicks}
                 onChange={(e) => setMinClicks(Math.max(0, Number(e.target.value) || 0))}
-                className="w-20 px-2 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                className="w-20 px-2 py-1.5 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
             </label>
             <span className="text-xs text-gray-400">{filtered.length} de {items.length}</span>
           </div>
 
           {filtered.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
               <p className="text-sm text-gray-600">Ninguna canibalización cumple el filtro actual.</p>
             </div>
           ) : (
@@ -159,7 +155,7 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
               {filtered.map(({ item, clicks, winnerPos }) => {
                 const [winner, ...rest] = item.pages;
                 return (
-                  <div key={item.query} className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+                  <div key={item.query} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h3 className="text-sm font-semibold text-gray-900">“{item.query}”</h3>
                       <div className="flex items-center gap-2">
@@ -191,7 +187,7 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
                         // se mostraban.
                         const ctr = page.impressions > 0 ? ((page.clicks / page.impressions) * 100).toFixed(1) : null;
                         return (
-                          <li key={page.url} className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-100 px-3 py-2">
+                          <li key={page.url} className="flex flex-wrap items-center gap-2 rounded-lg border border-line px-3 py-2">
                             <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
                             <UrlLink url={page.url} className="text-sm flex-1" />
                             <span className="text-xs text-gray-500">

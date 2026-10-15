@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import * as Select from "@radix-ui/react-select";
 import { Loader2, ChevronDown, Sparkles, GitFork, RefreshCw } from "lucide-react";
+import PageHeader from "@/components/admin/PageHeader";
 import { normalizeKeyword } from "@/lib/keywords/normalize";
 import { buildStructureTree, type StructureTreeNode } from "@/lib/keywords/structure-tree";
 import type { StructureProposal } from "@/lib/keywords/structure";
@@ -140,7 +141,7 @@ export default function ArquitecturaView({
       </div>
 
       {/* Selector de estudio */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex-1 min-w-[220px] space-y-1">
             <label className="block text-xs font-medium text-gray-500">Estudio de keywords (Módulo 1)</label>
@@ -152,12 +153,12 @@ export default function ArquitecturaView({
               </p>
             ) : (
               <Select.Root value={studyId} onValueChange={setStudyId}>
-                <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white">
+                <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white">
                   <Select.Value placeholder="Selecciona un estudio" />
                   <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 max-h-60">
+                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50 max-h-60">
                     <Select.Viewport>
                       {studies.map((s) => (
                         <Select.Item key={s.id} value={s.id} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100">
@@ -208,7 +209,7 @@ export default function ArquitecturaView({
       {loadingStudy ? (
         <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
       ) : tree ? (
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <GitFork className="h-4 w-4 text-gray-500" />
@@ -230,7 +231,7 @@ export default function ArquitecturaView({
           <StructureTreeView root={tree} domain={domain} />
         </div>
       ) : study && !study.structure ? (
-        <div className="bg-white rounded-xl border border-gray-100 p-6 text-center space-y-2">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-6 text-center space-y-2">
           <GitFork className="h-6 w-6 text-gray-300 mx-auto" />
           <p className="text-sm text-gray-500">
             Este estudio todavía no tiene una arquitectura generada.

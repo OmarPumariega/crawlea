@@ -2,10 +2,11 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { getMonthSpendUsd, getMonthlyLimitUsd } from "@/lib/dataforseo/spend";
+import PageHeader from "@/components/admin/PageHeader";
+import StatHero from "@/components/admin/StatHero";
 import {
   FolderKanban,
   Wallet,
-  Gauge,
   Target,
   ListChecks,
   TrendingUp,
@@ -13,6 +14,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   ArrowRight,
+  Gauge,
 } from "lucide-react";
 
 const ENDPOINT_LABELS: Record<string, string> = {
@@ -144,6 +146,14 @@ export default async function DashboardPage() {
     trendByProject.set(k.projectId, tally);
   }
 
+  // Agregado global de movimiento para el StatHero de keywords.
+  let trendUpTotal = 0;
+  let trendDownTotal = 0;
+  for (const t of trendByProject.values()) {
+    trendUpTotal += t.up;
+    trendDownTotal += t.down;
+  }
+
   const projectName = new Map(projects.map((p) => [p.id, p.name]));
 
   const latestAuditByProject = new Map<string, number | null>();
@@ -231,94 +241,145 @@ export default async function DashboardPage() {
     }))
     .sort((a, b) => b.cost - a.cost)
     .slice(0, 5);
+  const topEndpointsMax = topEndpoints[0]?.cost ?? 1;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Panel general</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Resumen de la actividad de la agencia: proyectos, costes, posicionamiento y avisos.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Sala de control"
+        title="Panel general"
+        description="Resumen de la actividad de la agencia: proyectos, costes, posicionamiento y avisos."
+      />
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-        <KpiCard
-          icon={<FolderKanban className="h-5 w-5 text-gray-500" />}
-          label="Proyectos"
+      {/* Bento superior: presupuesto (héroe de tinta) + stats clave */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Presupuesto DataForSEO — tarjeta protagonista */}
+        <div className="md:col-span-2 bg-brand text-white rounded-2xl p-6 relative overflow-hidden shadow-[0_10px_30px_-10px_rgba(14,107,79,0.55)]">
+          {/* Barras de ranking como textura de fondo */}
+          <div
+            className="absolute inset-y-0 right-5 flex items-end gap-2 opacity-[0.10] pointer-events-none"
+            aria-hidden="true"
+          >
+            {[36, 56, 48, 76, 62, 96].map((h, i) => (
+              <div key={i} className="w-5 rounded-t-md bg-white" style={{ height: h }} />
+            ))}
+          </div>
+          <div className="relative flex flex-col gap-5 h-full">
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-[13px] font-medium text-white/60">
+                Presupuesto DataForSEO · <span className="capitalize">{monthLabel}</span>
+              </p>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-signal">
+                <Gauge className="h-4 w-4" />
+              </span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-bold tracking-tight tabular-nums leading-none">
+                {dfsSpent.toFixed(2)}$
+              </span>
+              <span className="text-sm text-white/50">
+                {dfsLimit !== null ? `de ${dfsLimit.toFixed(2)}$` : "sin tope configurado"}
+              </span>
+            </div>
+            {dfsLimit !== null && (
+              <div className="mt-auto">
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className="text-xs text-white/50">Consumo del mes</span>
+                  <span className={`text-lg font-bold tabular-nums ${dfsPct! >= 100 ? "text-red-300" : dfsPct! >= 80 ? "text-amber-200" : "text-signal"}`}>
+                    {dfsPct!.toFixed(0)}%
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-white/15 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${dfsPct! >= 100 ? "bg-red-400" : dfsPct! >= 80 ? "bg-amber-300" : "bg-signal"}`}
+                    style={{ width: `${Math.min(100, Math.max(0, dfsPct!))}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <StatHero
+          label="Proyectos activos"
           value={String(projects.length)}
+          sub={projectsWithoutDomain.length > 0 ? `${projectsWithoutDomain.length} sin dominio` : "todos con dominio"}
+          icon={<FolderKanban className="h-4 w-4" />}
         />
-        <KpiCard
-          icon={<Wallet className="h-5 w-5 text-gray-500" />}
-          label={`Coste del mes · ${monthLabel}`}
+
+        <StatHero
+          label="Coste total del mes"
           value={`${monthTotal.toFixed(2)}$`}
+          sub={monthLabel}
+          icon={<Wallet className="h-4 w-4" />}
         />
-        <KpiCard
-          icon={
-            <Gauge
-              className={
-                dfsLimit !== null && dfsSpent >= dfsLimit
-                  ? "h-5 w-5 text-red-500"
-                  : dfsLimit !== null && dfsSpent >= dfsLimit * 0.8
-                    ? "h-5 w-5 text-amber-500"
-                    : "h-5 w-5 text-gray-500"
-              }
-            />
-          }
-          label="DataForSEO (mes)"
-          value={`${dfsSpent.toFixed(2)}$`}
-          sub={dfsLimit !== null ? `/ ${dfsLimit.toFixed(2)}$ configurados` : "sin tope"}
-        />
-        <KpiCard
-          icon={<Target className="h-5 w-5 text-gray-500" />}
+
+        <StatHero
           label="Keywords en seguimiento"
           value={String(totalKeywordCount)}
+          sub="últimos 90 días"
+          icon={<Target className="h-4 w-4" />}
+          delta={
+            trendUpTotal + trendDownTotal > 0
+              ? {
+                  dir: trendUpTotal >= trendDownTotal ? "up" : "down",
+                  text: `${trendUpTotal}↑ · ${trendDownTotal}↓`,
+                }
+              : undefined
+          }
         />
-        <KpiCard
-          icon={<ListChecks className="h-5 w-5 text-gray-500" />}
+
+        <StatHero
           label="Estudios de keywords"
           value={String(studyCount)}
+          sub="DataForSEO Labs"
+          icon={<ListChecks className="h-4 w-4" />}
         />
-      </div>
 
-      {/* Avisos */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Avisos</h2>
-        {alerts.length === 0 ? (
-          <div className="flex items-center gap-2 text-sm text-emerald-600">
-            <CheckCircle2 className="h-4 w-4" />
-            Todo en orden.
+        {/* Avisos — timeline con puntos */}
+        <div className="md:col-span-2 bg-white rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold tracking-tight text-gray-900">Avisos</h2>
+            {alerts.length === 0 && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
           </div>
-        ) : (
-          <ul className="space-y-2">
-            {alerts.map((a, i) => (
-              <li key={i}>
-                <Link href={a.href ?? "#"} className="flex items-start gap-2 text-sm group">
-                  <AlertTriangle
-                    className={
-                      a.tone === "danger"
-                        ? "h-4 w-4 text-red-500 mt-0.5 shrink-0"
-                        : "h-4 w-4 text-amber-500 mt-0.5 shrink-0"
-                    }
+          {alerts.length === 0 ? (
+            <p className="text-sm text-gray-400">Todo en orden. Nada que revisar hoy.</p>
+          ) : (
+            <ul className="space-y-3">
+              {alerts.map((a, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span
+                    className={`mt-1 h-2 w-2 shrink-0 rounded-full ${a.tone === "danger" ? "bg-red-500" : "bg-amber-400"}`}
+                    aria-hidden="true"
                   />
-                  <span className={a.tone === "danger" ? "text-red-700" : "text-amber-700"}>{a.text}</span>
-                  {a.href && (
-                    <ArrowRight className="h-3.5 w-3.5 text-gray-300 group-hover:text-gray-500 mt-0.5 shrink-0" />
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+                  <Link href={a.href ?? "#"} className="group flex-1 min-w-0">
+                    <span className={`text-sm leading-snug ${a.tone === "danger" ? "text-red-700" : "text-amber-700"}`}>
+                      {a.text}
+                    </span>
+                    <ArrowRight className="inline h-3.5 w-3.5 ml-1.5 text-gray-300 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
-      {/* Tabla de proyectos */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Salud de los proyectos</h2>
+      {/* Salud de los proyectos */}
+      <div className="bg-white rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold tracking-tight text-gray-900">Salud de los proyectos</h2>
+          <Link
+            href="/admin/proyectos"
+            className="text-[13px] font-medium text-gray-400 hover:text-brand transition-colors"
+          >
+            Ver todos →
+          </Link>
+        </div>
         {projects.length === 0 ? (
           <p className="text-sm text-gray-500">
             Aún no hay proyectos.{" "}
-            <Link href="/admin/proyectos" className="text-gray-900 underline underline-offset-2">
+            <Link href="/admin/proyectos" className="text-brand underline underline-offset-2">
               Crear el primero
             </Link>
             .
@@ -327,12 +388,12 @@ export default async function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-400 border-b border-gray-100">
-                  <th className="py-2 pr-4 font-medium">Proyecto</th>
-                  <th className="py-2 pr-4 font-medium">Nota auditoría</th>
-                  <th className="py-2 pr-4 font-medium">Tendencia rank</th>
-                  <th className="py-2 pr-4 font-medium">Último geogrid</th>
-                  <th className="py-2 pr-4 font-medium text-right">Coste mes</th>
+                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                  <th className="py-2.5 pl-4 pr-3 font-medium rounded-tl-lg">Proyecto</th>
+                  <th className="py-2.5 px-3 font-medium">Nota auditoría</th>
+                  <th className="py-2.5 px-3 font-medium">Tendencia rank</th>
+                  <th className="py-2.5 px-3 font-medium">Último geogrid</th>
+                  <th className="py-2.5 pl-3 pr-4 font-medium text-right rounded-tr-lg">Coste mes</th>
                 </tr>
               </thead>
               <tbody>
@@ -343,41 +404,49 @@ export default async function DashboardPage() {
                   const cost = monthCostByProject.get(p.id) ?? 0;
                   const trendTotal = trend ? trend.up + trend.down : 0;
                   return (
-                    <tr key={p.id} className="border-b border-gray-50 last:border-0">
-                      <td className="py-2.5 pr-4">
-                        <Link href={`/admin/proyectos/${p.id}`} className="text-gray-900 hover:underline">
-                          {p.name}
+                    <tr key={p.id} className="border-b border-line/60 last:border-0 hover:bg-black/[0.025] transition-colors">
+                      <td className="py-2.5 pl-4 pr-3">
+                        <Link href={`/admin/proyectos/${p.id}`} className="flex items-center gap-2.5 group">
+                          {/* Monograma del proyecto (inicial sobre verde suave) */}
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-[13px] font-bold text-brand">
+                            {p.name.charAt(0).toUpperCase()}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block font-medium text-gray-900 group-hover:text-brand transition-colors truncate">
+                              {p.name}
+                            </span>
+                            {p.domain ? (
+                              <span className="block text-xs text-gray-400 truncate">{p.domain}</span>
+                            ) : (
+                              <span className="block text-xs text-amber-600">sin dominio</span>
+                            )}
+                          </span>
                         </Link>
-                        {p.domain ? (
-                          <span className="block text-xs text-gray-400">{p.domain}</span>
-                        ) : (
-                          <span className="block text-xs text-amber-600">sin dominio</span>
-                        )}
                       </td>
-                      <td className={`py-2.5 pr-4 font-medium ${scoreTone(score)}`}>
+                      <td className={`py-2.5 px-3 font-bold tabular-nums ${scoreTone(score)}`}>
                         {score == null ? "—" : `${score}/100`}
                       </td>
-                      <td className="py-2.5 pr-4">
+                      <td className="py-2.5 px-3">
                         {trend && trendTotal > 0 ? (
                           <span className="flex items-center gap-3">
                             {trend.up > 0 && (
-                              <span className="inline-flex items-center gap-0.5 text-emerald-600">
+                              <span className="inline-flex items-center gap-0.5 text-emerald-600 font-semibold tabular-nums">
                                 <TrendingUp className="h-3.5 w-3.5" />
                                 {trend.up}
                               </span>
                             )}
                             {trend.down > 0 && (
-                              <span className="inline-flex items-center gap-0.5 text-red-600">
+                              <span className="inline-flex items-center gap-0.5 text-red-600 font-semibold tabular-nums">
                                 <TrendingDown className="h-3.5 w-3.5" />
                                 {trend.down}
                               </span>
                             )}
                           </span>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-300">—</span>
                         )}
                       </td>
-                      <td className="py-2.5 pr-4 text-gray-600">
+                      <td className="py-2.5 px-3 text-gray-600 tabular-nums">
                         {geo ? (
                           <span>
                             {geo.foundCount ?? 0}/{geo.gridSize * geo.gridSize}
@@ -386,11 +455,11 @@ export default async function DashboardPage() {
                             )}
                           </span>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-300">—</span>
                         )}
                       </td>
-                      <td className="py-2.5 pr-4 text-right text-gray-900 tabular-nums">
-                        {cost > 0 ? `${cost.toFixed(2)}$` : <span className="text-gray-400">—</span>}
+                      <td className="py-2.5 pl-3 pr-4 text-right font-semibold text-gray-900 tabular-nums">
+                        {cost > 0 ? `${cost.toFixed(2)}$` : <span className="text-gray-300">—</span>}
                       </td>
                     </tr>
                   );
@@ -401,48 +470,41 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* Resumen de costes */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-gray-900">Costes del mes</h2>
+      {/* Costes del mes — barras horizontales proporcionales */}
+      <div className="bg-white rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold tracking-tight text-gray-900">¿A dónde va el gasto?</h2>
           <Link
             href="/admin/costes"
-            className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
+            className="text-[13px] font-medium text-gray-400 hover:text-brand transition-colors"
           >
-            Ver detalle <ArrowRight className="h-3.5 w-3.5" />
+            Ver detalle →
           </Link>
         </div>
         {topEndpoints.length === 0 ? (
-          <p className="text-sm text-gray-500">Sin consumo este mes.</p>
+          <p className="text-sm text-gray-400">Sin consumo este mes.</p>
         ) : (
-          <table className="w-full text-sm">
-            <tbody>
-              {topEndpoints.map((r) => (
-                <tr key={r.endpoint} className="border-b border-gray-50 last:border-0">
-                  <td className="py-2 text-gray-700">
-                    {ENDPOINT_LABELS[r.endpoint] ?? r.endpoint}
-                    <span className="text-xs text-gray-400 ml-1">
-                      · {r.count} {r.count === 1 ? "llamada" : "llamadas"}
-                    </span>
-                  </td>
-                  <td className="py-2 text-right text-gray-900 tabular-nums">{r.cost.toFixed(3)}$</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="space-y-3">
+            {topEndpoints.map((r) => (
+              <div key={r.endpoint} className="flex items-center gap-3">
+                <span className="w-56 shrink-0 text-[13px] text-gray-600 truncate">
+                  {ENDPOINT_LABELS[r.endpoint] ?? r.endpoint}
+                  <span className="text-gray-400"> · {r.count}</span>
+                </span>
+                <div className="flex-1 h-2.5 rounded-full bg-black/[0.05] overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-brand/70"
+                    style={{ width: `${Math.max(4, (r.cost / topEndpointsMax) * 100)}%` }}
+                  />
+                </div>
+                <span className="w-20 shrink-0 text-right text-[13px] font-semibold text-gray-900 tabular-nums">
+                  {r.cost.toFixed(3)}$
+                </span>
+              </div>
+            ))}
+          </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function KpiCard({ icon, label, value, sub }: { icon: ReactNode; label: string; value: string; sub?: string }) {
-  return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
-      <div className="mb-2">{icon}</div>
-      <div className="text-2xl font-semibold text-gray-900">{value}</div>
-      <div className="text-sm text-gray-500">{label}</div>
-      {sub && <div className="text-xs text-gray-400 mt-0.5">{sub}</div>}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import GoogleConnectionCard from "@/components/admin/GoogleConnectionCard";
 import ApiSettingsCard from "@/components/admin/ApiSettingsCard";
 import InformeGlobalConfigCard from "@/components/admin/InformeGlobalConfigCard";
+import PageHeader from "@/components/admin/PageHeader";
 
 const ERROR_MESSAGES: Record<string, string> = {
   cancelado: "Has cancelado la conexión con Google.",
@@ -29,12 +30,11 @@ export default async function ConfiguracionPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Configuración</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Claves de API de terceros y conexión con Google para Search Console y Analytics (Módulo 6).
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Agencia · Ajustes"
+        title="Configuración"
+        description="Claves de API de terceros y conexión con Google para Search Console y Analytics (Módulo 6)."
+      />
 
       <ApiSettingsCard />
 
@@ -46,7 +46,7 @@ export default async function ConfiguracionPage({
         errorMessage={errorMessage}
       />
 
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-2 text-sm text-gray-600">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-2 text-sm text-gray-600">
         <p className="font-semibold text-gray-900">Antes de conectar</p>
         <p>
           Si la cuenta de Google de la agencia es de <strong>Google Workspace</strong>, marca la

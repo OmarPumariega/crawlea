@@ -16,6 +16,7 @@ import {
   onPageAnalysisCostUsd,
 } from "@/lib/dataforseo/pricing";
 import { importKeywordsToDefaultStudy } from "@/lib/keywords/client-import";
+import PageHeader from "@/components/admin/PageHeader";
 
 // Item enriquecido de keyword (visibilidad o content gap). Todos los campos
 // extra llegan GRATIS en la misma respuesta Labs que ya pagábamos — antes se
@@ -103,19 +104,19 @@ function OnPageReportDetail({ analysis }: { analysis: OnPageAnalysisData }) {
   return (
     <div className="mt-2 space-y-2 text-xs">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <div className="bg-gray-50 rounded-lg p-2">
+        <div className="bg-background rounded-lg p-2">
           <p className="text-gray-400">Palabras</p>
           <p className="font-semibold text-gray-900">{analysis.wordCount ?? "—"}</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-2">
+        <div className="bg-background rounded-lg p-2">
           <p className="text-gray-400">Caracteres</p>
           <p className="font-semibold text-gray-900">{analysis.characterCount ?? "—"}</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-2" title="DataForSEO no da recuento de frases; se estima sobre un fragmento del texto (primeros ~3000 caracteres), no la página completa — por eso puede parecer bajo frente al recuento de palabras.">
+        <div className="bg-background rounded-lg p-2" title="DataForSEO no da recuento de frases; se estima sobre un fragmento del texto (primeros ~3000 caracteres), no la página completa — por eso puede parecer bajo frente al recuento de palabras.">
           <p className="text-gray-400">Frases (muestra)</p>
           <p className="font-semibold text-gray-900">{analysis.sentenceCount ?? "—"}</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-2">
+        <div className="bg-background rounded-lg p-2">
           <p className="text-gray-400">Puntuación on-page</p>
           <p className="font-semibold text-gray-900">{analysis.onPageScore != null ? `${Math.round(analysis.onPageScore)}/100` : "—"}</p>
         </div>
@@ -220,7 +221,7 @@ function OnPageButton({ projectId, url }: { projectId: string; url: string }) {
   }
 
   return (
-    <div className="mt-1.5 pt-1.5 border-t border-gray-100">
+    <div className="mt-1.5 pt-1.5 border-t border-line">
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -363,12 +364,12 @@ function VisibilityKpis({ snapshot, trend }: { snapshot: Snapshot; trend?: numbe
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div>
-        <div className="text-2xl font-semibold text-gray-900">{fmtTraffic(snapshot?.organicTraffic ?? null)}</div>
-        <div className="text-sm text-gray-500">Tráfico orgánico (est. mensual)</div>
+        <p className="text-[13px] font-medium text-gray-500">Tráfico orgánico (est. mensual)</p>
+        <p className="text-[28px] font-bold tracking-tight text-gray-900 tabular-nums mt-1 leading-none">{fmtTraffic(snapshot?.organicTraffic ?? null)}</p>
       </div>
       <div>
-        <div className="text-2xl font-semibold text-gray-900">{snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</div>
-        <div className="text-sm text-gray-500">Keywords orgánicas</div>
+        <p className="text-[13px] font-medium text-gray-500">Keywords orgánicas</p>
+        <p className="text-[28px] font-bold tracking-tight text-gray-900 tabular-nums mt-1 leading-none">{snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</p>
       </div>
       {snapshot?.positionBuckets ? (
         <div className="space-y-1">
@@ -428,13 +429,13 @@ function TopKeywords({ keywords, title }: { keywords: TopKeyword[] | null; title
         <input
           type="text" value={search} onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar keyword..."
-          className="px-2 py-1 border border-gray-200 rounded text-[11px] outline-none focus:border-gray-400 w-36"
+          className="px-3 py-1.5 border border-line rounded-full text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 w-44 bg-white transition-colors"
         />
       </div>
       {filtered.length === 0 ? (
         <p className="text-xs text-gray-400">Sin resultados para &laquo;{search}&raquo;.</p>
       ) : (
-        <KeywordChips keywords={filtered} colorClass="bg-gray-50 text-gray-600" />
+        <KeywordChips keywords={filtered} colorClass="bg-background text-gray-600" />
       )}
     </div>
   );
@@ -450,7 +451,7 @@ function ContentGapList({ items, contentGapAt, projectId }: { items: TopKeyword[
   const q = search.trim().toLowerCase();
   const filtered = q ? items.filter((k) => k.keyword.toLowerCase().includes(q)) : items;
   return (
-    <div className="pt-2 border-t border-gray-100 space-y-1.5">
+    <div className="pt-2 border-t border-line space-y-1.5">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <p className="text-xs text-gray-500">
           Content gap ({items.length}) — ranquea por estas y tú no
@@ -459,15 +460,15 @@ function ContentGapList({ items, contentGapAt, projectId }: { items: TopKeyword[
         <input
           type="text" value={search} onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar keyword..."
-          className="px-2 py-1 border border-gray-200 rounded text-[11px] outline-none focus:border-gray-400 w-36"
+          className="px-3 py-1.5 border border-line rounded-full text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 w-44 bg-white transition-colors"
         />
       </div>
       {filtered.length === 0 ? (
         <p className="text-xs text-gray-400">Sin resultados para &laquo;{search}&raquo;.</p>
       ) : (
-        <div className="max-h-80 overflow-y-auto border border-gray-100 rounded-lg">
+        <div className="max-h-80 overflow-y-auto border border-line rounded-xl">
           <table className="w-full text-xs">
-            <thead className="sticky top-0 bg-gray-50 text-left text-gray-400">
+            <thead className="sticky top-0 bg-background text-left text-gray-400">
               <tr>
                 <th className="py-1.5 pl-2 pr-2 font-medium">Keyword</th>
                 <th className="py-1.5 px-2 font-medium text-right">Vol.</th>
@@ -485,7 +486,7 @@ function ContentGapList({ items, contentGapAt, projectId }: { items: TopKeyword[
                 const hasDetail = Boolean(k.description || k.title || k.url);
                 return (
                   <Fragment key={i}>
-                    <tr className="border-t border-gray-50 hover:bg-gray-50/60">
+                    <tr className="border-t border-gray-50 hover:bg-background/60">
                       <td className="py-1.5 pl-2 pr-2 text-gray-900 font-medium">{k.keyword}</td>
                       <td className="py-1.5 px-2 text-right text-gray-600 tabular-nums">
                         {k.volume != null ? k.volume.toLocaleString("es-ES") : "—"}
@@ -883,19 +884,16 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">Competidores</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Espía el tráfico orgánico estimado y las keywords de cualquier dominio (DataForSEO Labs), y
-          descubre el content gap: keywords por las que ranquean y tú no, con CPC, dificultad y el
-          snippet con el que posicionan.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Módulo · Competidores"
+        title="Competidores"
+        description="{Espía el tráfico orgánico estimado y las keywords de cualquier dominio (DataForSEO Labs), y           descubre el content gap: keywords por las que ranquean y tú no, con CPC, dificultad y el           snippet con el que posicionan.}"
+      />
 
       {/* Ubicación de todos los análisis de esta sesión (propio dominio,
           competidores y content gap) — un negocio local no compite igual a
           nivel nacional que en su ciudad. */}
-      <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-1.5">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 space-y-1.5">
         <label className="block text-sm font-medium text-gray-700">
           Ubicación de análisis <span className="text-gray-400 font-normal">(opcional)</span>
         </label>
@@ -920,19 +918,19 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       )}
 
       {/* Aviso de coste estimado por acción (como en geogrid/rank tracking) */}
-      <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-gray-600">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-gray-600">
         <span>Coste estimado por acción:</span>
         <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-gray-400" /> Analizar visibilidad <strong className="text-gray-900">~${analyzeCost.toFixed(2)}</strong></span>
         <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-gray-400" /> Content gap <strong className="text-gray-900">~${gapCost.toFixed(2)}</strong></span>
       </div>
 
       {comparisonRows.length > 1 && (
-        <div className="bg-white rounded-xl border border-gray-100 p-4">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Comparativa frente a la competencia</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
+                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
                   <th className="py-1.5 pr-2 font-medium">Dominio</th>
                   <th className="py-1.5 px-2 font-medium text-right">Tráfico</th>
                   <th className="py-1.5 px-2 font-medium text-right">Keywords</th>
@@ -974,7 +972,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       )}
 
       {/* Visibilidad del propio dominio */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-gray-900">Tu visibilidad {data?.projectDomain ? `· ${data.projectDomain}` : ""}</h3>
           <button
@@ -1003,7 +1001,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       </div>
 
       {/* Añadir competidor */}
-      <form onSubmit={handleAdd} className="bg-white rounded-xl border border-gray-100 p-5 flex items-end gap-3">
+      <form onSubmit={handleAdd} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 flex items-end gap-3">
         <div className="flex-1 space-y-1">
           <label className="block text-sm font-medium text-gray-700">Añadir competidor</label>
           <input
@@ -1012,7 +1010,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
             onChange={(e) => setAddDomain(e.target.value)}
             placeholder="competidor.com"
             required
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+            className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
         </div>
         <button type="submit" className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800">
@@ -1027,11 +1025,11 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
         const pendingAnalyze = data.competitors.filter((c) => !hasUsefulSnapshot(c.snapshot)).length;
         const pendingGap = data.competitors.filter((c) => !c.contentGap || c.contentGap.length === 0).length;
         return (
-          <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-wrap items-center gap-3">
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 flex flex-wrap items-center gap-3">
             <button
               onClick={handleAnalyzeAll}
               disabled={pendingAnalyze === 0 || bulkAnalyzing}
-              className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
             >
               {bulkAnalyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
               {bulkAnalyzeProgress
@@ -1041,7 +1039,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
             <button
               onClick={handleGapAll}
               disabled={pendingGap === 0 || bulkGapping}
-              className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
             >
               {bulkGapping ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
               {bulkGapProgress
@@ -1056,7 +1054,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       <div className="space-y-3">
         {data?.competitors.length === 0 && <p className="text-sm text-gray-500">Aún no hay competidores. Añade uno para espiar su visibilidad.</p>}
         {data?.competitors.map((c) => (
-          <div key={c.id} className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+          <div key={c.id} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-gray-900 truncate">{c.domain}</p>
@@ -1085,7 +1083,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                 <button
                   onClick={() => handleAnalyze(c.domain)}
                   disabled={analyzingDomain === c.domain}
-                  className="flex items-center gap-1 px-2.5 py-1.5 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  className="flex items-center gap-1 px-2.5 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
                   title={`Analizar visibilidad · coste estimado ~$${analyzeCost.toFixed(2)}`}
                 >
                   {analyzingDomain === c.domain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
@@ -1094,7 +1092,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                 <button
                   onClick={() => handleGap(c.id)}
                   disabled={gapId === c.id}
-                  className="flex items-center gap-1 px-2.5 py-1.5 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  className="flex items-center gap-1 px-2.5 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
                   title={`Content gap · coste estimado ~$${gapCost.toFixed(2)}`}
                 >
                   {gapId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
@@ -1114,11 +1112,11 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                 módulos donde se trabaja (estudio / rank tracking), sin copiar
                 a mano. Solo aparecen si hay keywords recolectadas. */}
             {collectKeywords(c).length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
+              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-line">
                 <button
                   onClick={() => handleImportToStudy(c)}
                   disabled={importingId === c.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
                   title="Crear un estudio (Módulo 1) con las keywords de este competidor"
                 >
                   {importingId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowDownToLine className="h-3.5 w-3.5" />}
@@ -1127,7 +1125,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                 <button
                   onClick={() => handleAddToTracking(c)}
                   disabled={trackingId === c.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
                   title="Añadir estas keywords a Rank Tracking (manual)"
                 >
                   {trackingId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Crosshair className="h-3.5 w-3.5" />}

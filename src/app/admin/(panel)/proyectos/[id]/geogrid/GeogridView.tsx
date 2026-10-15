@@ -9,6 +9,7 @@ import GeogridMap from "@/components/admin/GeogridMap";
 import UrlLink from "@/components/admin/UrlLink";
 import GbpPicker, { type GbpCandidate } from "@/components/admin/GbpPicker";
 import type { MapsTopItem } from "@/lib/geogrid/maps";
+import PageHeader from "@/components/admin/PageHeader";
 
 // Item devuelto por "Ver keywords" — mismo shape que RankedKeyword de
 // Competidores (mismo endpoint, incluida la dificultad real).
@@ -104,7 +105,7 @@ function BusinessKeywordsTable({
   }
 
   return (
-    <div className="mt-1.5 mb-1 bg-gray-50 rounded-lg p-2 space-y-1.5">
+    <div className="mt-1.5 mb-1 bg-background rounded-lg p-2 space-y-1.5">
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] text-gray-500">{items.length} keywords</p>
         <button
@@ -317,7 +318,7 @@ function GridWinnersSummary({ points, gridSize }: { points: GridPoint[]; gridSiz
   if (ranked.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
       <div className="flex items-center gap-2">
         <Trophy className="h-4 w-4 text-gray-500" />
         <h3 className="text-sm font-semibold text-gray-900">Quién gana en toda la rejilla</h3>
@@ -591,20 +592,17 @@ export default function GeogridView({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">Geogrid Local SEO</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Mapa de calor del posicionamiento del negocio en Google Maps. Cada geogrid se guarda como
-          una instantánea independiente — lanza uno hoy y otro dentro de un mes para ver la evolución
-          (y compararlos lado a lado). Una rejilla 5×5 son 25 consultas a Maps SERP (~75s).
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Módulo · SEO Local"
+        title="Geogrid Local SEO"
+        description="{Mapa de calor del posicionamiento del negocio en Google Maps. Cada geogrid se guarda como           una instantánea independiente — lanza uno hoy y otro dentro de un mes para ver la evolución           (y compararlos lado a lado). Una rejilla 5×5 son 25 consultas a Maps SERP (~75s).}"
+      />
 
       {/* Mapa real (Leaflet/OSM), siempre visible desde el centro del negocio
           aunque todavía no haya ningún geogrid ejecutado, con un círculo
           numerado por punto (mismo lenguaje visual que LocalFalcon/DinoRank)
           y un panel lateral con el pack local real del punto seleccionado. */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-gray-500" />
           <div>
@@ -640,7 +638,7 @@ export default function GeogridView({
                 onSelectPoint={(p) => setSelectedPoint({ row: p.row, col: p.col })}
               />
             </div>
-            <div className="lg:w-72 shrink-0 lg:border-l lg:border-gray-100 lg:pl-4">
+            <div className="lg:w-72 shrink-0 lg:border-l lg:border-line lg:pl-4">
               <PointRankingPanel point={selectedPointData} projectId={projectId} runId={current?.id ?? null} />
             </div>
           </div>
@@ -661,7 +659,7 @@ export default function GeogridView({
         <GridWinnersSummary points={current.points} gridSize={current.gridSize} />
       )}
 
-      <form onSubmit={handleTrigger} className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+      <form onSubmit={handleTrigger} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
         <GbpPicker
           projectId={projectId}
           currentGbpName={gbpName}
@@ -677,7 +675,7 @@ export default function GeogridView({
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="dentista madrid"
             required
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+            className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -691,7 +689,7 @@ export default function GeogridView({
                   onClick={() => setGridSize(n)}
                   className={cn(
                     "px-3 py-2 rounded-lg text-sm font-medium border",
-                    gridSize === n ? "bg-gray-900 text-white border-gray-900" : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                    gridSize === n ? "bg-gray-900 text-white border-gray-900" : "border-line text-gray-600 hover:bg-background"
                   )}
                 >
                   {n}×{n}
@@ -708,7 +706,7 @@ export default function GeogridView({
               step={0.5}
               value={radiusKm}
               onChange={(e) => setRadiusKm(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
             />
           </div>
         </div>
@@ -729,7 +727,7 @@ export default function GeogridView({
       </form>
 
       {(current?.status === "pending" || current?.status === "running") && (
-        <div className="flex items-center gap-2 text-sm bg-gray-50 text-gray-600 px-3 py-2 rounded-lg">
+        <div className="flex items-center gap-2 text-sm bg-background text-gray-600 px-3 py-2 rounded-lg">
           <Loader2 className="h-4 w-4 animate-spin" />
           {current.status === "pending"
             ? "En cola, empezará en breve (el cron lo procesa cada 60s)..."
@@ -745,7 +743,7 @@ export default function GeogridView({
       )}
 
       {canCompare && runBefore && runAfter && (
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-gray-900">
@@ -816,7 +814,7 @@ export default function GeogridView({
               }}
               className={cn(
                 "flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg border",
-                compareMode ? "bg-gray-900 text-white border-gray-900" : "text-gray-600 border-gray-200 hover:bg-gray-50"
+                compareMode ? "bg-gray-900 text-white border-gray-900" : "text-gray-600 border-line hover:bg-background"
               )}
             >
               <GitCompareArrows className="h-3.5 w-3.5" />
@@ -840,7 +838,7 @@ export default function GeogridView({
                   key={run.id}
                   className={cn(
                     "bg-white rounded-lg border p-3 flex items-center gap-3",
-                    current?.id === run.id ? "border-gray-900" : "border-gray-100",
+                    current?.id === run.id ? "border-gray-900" : "border-line",
                     selected && compareMode && "ring-1 ring-gray-900"
                   )}
                 >

@@ -59,9 +59,9 @@ function shortPath(path: string): string {
 
 function Kpi({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4">
-      <div className="text-2xl font-semibold text-gray-900 tabular-nums">{value}</div>
-      <div className="text-xs text-gray-500">{label}</div>
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 flex flex-col">
+      <p className="text-[13px] font-medium text-gray-500">{label}</p>
+      <p className="text-2xl font-bold tracking-tight text-gray-900 tabular-nums mt-1.5 leading-none">{value}</p>
     </div>
   );
 }
@@ -82,7 +82,7 @@ function MonthlyChart({ points }: { points: Ga4MonthPoint[] }) {
             onClick={() => setMetric(m)}
             className={cn(
               "px-2.5 py-1 rounded-md text-xs font-medium border",
-              metric === m ? "bg-gray-900 text-white border-gray-900" : "border-gray-200 text-gray-600 hover:bg-gray-50"
+              metric === m ? "bg-gray-900 text-white border-gray-900" : "border-line text-gray-600 hover:bg-background"
             )}
           >
             {m === "sessions" ? "Sesiones" : "Conversiones"}
@@ -177,14 +177,14 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
         <Kpi label="Duración media" value={fmtDuration(t.averageSessionDuration)} />
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
         <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Evolución (12 meses)</h4>
         <MonthlyChart points={data.monthly} />
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         {data.byChannel.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
             <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Por canal de tráfico</h4>
             <div className="space-y-2">
               {data.byChannel.map((c) => (
@@ -202,7 +202,7 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
           </div>
         )}
         {data.byDevice.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
             <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Por dispositivo</h4>
             <div className="space-y-1.5">
               {data.byDevice.map((d) => (
@@ -216,14 +216,14 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
         <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-400">
           Páginas de aterrizaje ({data.topLandingPages.length})
         </h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-400 border-b border-gray-100">
+              <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
                 <th className="py-1.5 pr-3 font-medium">Página</th>
                 <th className="py-1.5 pr-3 font-medium text-right">Sesiones</th>
                 <th className="py-1.5 pr-3 font-medium text-right">Conv.</th>

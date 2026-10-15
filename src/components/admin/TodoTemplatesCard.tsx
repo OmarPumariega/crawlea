@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ListChecks, Loader2, Plus, Trash2, Pencil, X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Pill from "@/components/admin/Pill";
 import type { TodoTemplateItem as Template } from "@/lib/tasks";
 
 // Catálogo global de tareas preestablecidas (CRUD), común a toda la agencia
@@ -10,13 +11,8 @@ import type { TodoTemplateItem as Template } from "@/lib/tasks";
 // Tareas de cada proyecto (modal "Gestionar plantillas"), desde donde también
 // se aplican a un proyecto concreto.
 
-const PRIORITY_BADGE: Record<string, string> = {
-  alta: "bg-red-50 text-red-600",
-  media: "bg-amber-50 text-amber-700",
-  baja: "bg-gray-100 text-gray-500",
-};
-
-const INPUT = "w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400";
+const INPUT =
+  "w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors";
 
 export default function TodoTemplatesCard() {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -105,9 +101,11 @@ export default function TodoTemplatesCard() {
   const groups = Array.from(new Set(templates.map((t) => t.category ?? "Sin categoría")));
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-5">
-      <div className="flex items-center gap-2">
-        <ListChecks className="h-5 w-5 text-gray-500" />
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-5">
+      <div className="flex items-center gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background text-gray-500">
+          <ListChecks className="h-5 w-5" />
+        </span>
         <div>
           <h2 className="text-sm font-semibold text-gray-900">Plantillas de tareas</h2>
           <p className="text-xs text-gray-400 mt-0.5">
@@ -117,7 +115,7 @@ export default function TodoTemplatesCard() {
         </div>
       </div>
 
-      <form onSubmit={handleCreate} className="grid sm:grid-cols-2 gap-3 bg-gray-50 p-3 rounded-lg">
+      <form onSubmit={handleCreate} className="grid sm:grid-cols-2 gap-3 bg-background p-4 rounded-xl">
         <div className="space-y-1 sm:col-span-2">
           <label className="text-xs font-medium text-gray-600">Título *</label>
           <input className={INPUT} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Revisar robots.txt" />
@@ -142,7 +140,7 @@ export default function TodoTemplatesCard() {
           <button
             type="submit"
             disabled={creating || !title.trim()}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong transition-colors disabled:opacity-50"
           >
             {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
             Guardar plantilla
@@ -154,17 +152,22 @@ export default function TodoTemplatesCard() {
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
       ) : templates.length === 0 ? (
-        <p className="text-sm text-gray-500">Todavía no has creado ninguna plantilla.</p>
+        <div className="py-12 text-center">
+          <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+            <ListChecks className="h-5 w-5" />
+          </span>
+          <p className="text-sm text-gray-500">Todavía no has creado ninguna plantilla.</p>
+        </div>
       ) : (
         <div className="space-y-4">
           {groups.map((g) => (
             <div key={g} className="space-y-2">
-              <h3 className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{g}</h3>
+              <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">{g}</h3>
               <ul className="space-y-1.5">
                 {templates
                   .filter((t) => (t.category ?? "Sin categoría") === g)
                   .map((t) => (
-                    <li key={t.id} className="border border-gray-100 rounded-lg p-3">
+                    <li key={t.id} className="border border-line rounded-xl p-3 transition-colors hover:bg-background">
                       {editId === t.id ? (
                         <div className="space-y-2">
                           <input className={INPUT} value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
@@ -178,10 +181,10 @@ export default function TodoTemplatesCard() {
                             </select>
                           </div>
                           <div className="flex gap-2">
-                            <button onClick={() => saveEdit(t.id)} className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-900 text-white text-xs rounded-lg">
+                            <button onClick={() => saveEdit(t.id)} className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand text-white text-xs font-medium rounded-lg hover:bg-brand-strong transition-colors">
                               <Check className="h-3.5 w-3.5" /> Guardar
                             </button>
-                            <button onClick={() => setEditId(null)} className="inline-flex items-center gap-1 px-2.5 py-1 text-gray-500 text-xs">
+                            <button onClick={() => setEditId(null)} className="inline-flex items-center gap-1 px-2.5 py-1 text-gray-500 text-xs hover:text-gray-900">
                               <X className="h-3.5 w-3.5" /> Cancelar
                             </button>
                           </div>
@@ -191,9 +194,9 @@ export default function TodoTemplatesCard() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium text-gray-900 truncate">{t.title}</span>
-                              <span className={cn("text-[10px] px-1.5 py-0.5 rounded", PRIORITY_BADGE[t.priority] ?? PRIORITY_BADGE.media)}>
+                              <Pill tone={t.priority === "alta" ? "danger" : t.priority === "baja" ? "neutral" : "warning"}>
                                 {t.priority}
-                              </span>
+                              </Pill>
                             </div>
                             {t.detail && <p className="text-xs text-gray-500 mt-0.5">{t.detail}</p>}
                           </div>

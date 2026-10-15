@@ -81,7 +81,7 @@ export default function AuditIssuesTrendChart({ runs }: { runs: AuditRun[] }) {
   const labelStep = Math.max(1, Math.ceil(n / 6));
 
   return (
-    <div ref={wrapRef} className="bg-white rounded-xl border border-gray-100 p-5">
+    <div ref={wrapRef} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
       <div className="flex items-center gap-2 mb-3">
         <AlertCircle className="h-4 w-4 text-gray-400" />
         <h3 className="text-sm font-semibold text-gray-900">Incidencias detectadas por ejecución</h3>

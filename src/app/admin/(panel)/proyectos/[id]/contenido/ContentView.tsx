@@ -24,6 +24,7 @@ import {
 } from "@/lib/seo/content";
 import { normalizeKeyword } from "@/lib/keywords/normalize";
 import OptimizeUrlPanel from "./OptimizeUrlPanel";
+import PageHeader from "@/components/admin/PageHeader";
 
 type Generation = {
   id: string;
@@ -356,22 +357,25 @@ export default function ContentView({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">Generador de Contenido</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          {mode === "generar"
+      <PageHeader
+        eyebrow="Módulo · Contenido"
+        title="Generador de Contenido"
+        description={
+          mode === "generar"
             ? "Genera un texto completo con jerarquía de encabezados, usando el tono de marca del proyecto."
-            : "Analiza una URL ya publicada y recibe una lista de cambios concretos para optimizarla."}
-        </p>
-      </div>
+            : "Analiza una URL ya publicada y recibe una lista de cambios concretos para optimizarla."
+        }
+      />
 
-      <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 w-fit">
+      <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
         <button
           type="button"
           onClick={() => setMode("generar")}
           className={cn(
-            "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-            mode === "generar" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-800"
+            "px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
+            mode === "generar"
+              ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
+              : "text-gray-500 hover:text-gray-800"
           )}
         >
           Generar contenido nuevo
@@ -380,8 +384,10 @@ export default function ContentView({ projectId }: { projectId: string }) {
           type="button"
           onClick={() => setMode("optimizar")}
           className={cn(
-            "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-            mode === "optimizar" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-800"
+            "px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
+            mode === "optimizar"
+              ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
+              : "text-gray-500 hover:text-gray-800"
           )}
         >
           Optimizar URL existente
@@ -417,19 +423,19 @@ export default function ContentView({ projectId }: { projectId: string }) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="block text-sm font-medium text-gray-700">Tipo de contenido</label>
             <Select.Root value={type} onValueChange={(v) => handleTypeChange(v as ContentType)}>
-              <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white">
+              <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white">
                 <Select.Value />
                 <Select.Icon>
                   <ChevronDown className="h-4 w-4 text-gray-400" />
                 </Select.Icon>
               </Select.Trigger>
               <Select.Portal>
-                <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
                   <Select.Viewport>
                     {CONTENT_TYPES.map((value) => (
                       <Select.Item
@@ -453,7 +459,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
               min={20}
               value={targetWords}
               onChange={(e) => setTargetWords(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
             />
           </div>
         </div>
@@ -466,7 +472,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
             onChange={(e) => setTopic(e.target.value)}
             placeholder="Cómo elegir un buen abogado de familia en Madrid"
             required
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+            className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
         </div>
 
@@ -479,7 +485,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
             />
           </div>
           <div className="space-y-1">
@@ -490,7 +496,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
               type="url"
               value={targetUrl}
               onChange={(e) => setTargetUrl(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
             />
           </div>
         </div>
@@ -504,7 +510,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
             onChange={(e) => setInternalLinks(e.target.value)}
             rows={2}
             placeholder={"https://www.ejemplo.com/servicios\nhttps://www.ejemplo.com/contacto"}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+            className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
         </div>
 
@@ -563,7 +569,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
       </form>
 
       {current && (
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-400 uppercase tracking-wide">
@@ -598,7 +604,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
 
       {/* Comparación línea a línea contra otra versión del mismo tema */}
       {current && compareTarget && diff && (
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
@@ -618,7 +624,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
               <X className="h-4 w-4" />
             </button>
           </div>
-          <div className="rounded-lg border border-gray-100 overflow-hidden font-mono text-xs">
+          <div className="rounded-lg border border-line overflow-hidden font-mono text-xs">
             {diff.map((line, idx) => (
               <div
                 key={idx}
@@ -644,7 +650,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
               <span className="h-3 w-3 rounded bg-red-50 border border-red-200" /> Quitada
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-3 w-3 rounded bg-white border border-gray-200" /> Sin cambios
+              <span className="h-3 w-3 rounded bg-white border border-line" /> Sin cambios
             </span>
           </div>
         </div>
@@ -652,7 +658,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
 
       {/* Otras versiones del mismo tema */}
       {current && otherVersions.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-gray-400" />
             <h3 className="text-sm font-semibold text-gray-900">Otras versiones de este tema</h3>
@@ -662,7 +668,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
             {otherVersions.map((v) => (
               <div
                 key={v.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-gray-100 p-3"
+                className="flex items-center justify-between gap-3 rounded-lg border border-line p-3"
               >
                 <div className="min-w-0">
                   <p className="text-sm text-gray-900 truncate">{v.topic}</p>
@@ -712,8 +718,8 @@ export default function ContentView({ projectId }: { projectId: string }) {
                   setCompareTarget(null);
                 }}
                 className={cn(
-                  "w-full text-left bg-white rounded-lg border p-3 hover:bg-gray-50 transition-colors",
-                  current?.id === gen.id ? "border-gray-900" : "border-gray-100"
+                  "w-full text-left bg-white rounded-lg border p-3 hover:bg-background transition-colors",
+                  current?.id === gen.id ? "border-gray-900" : "border-line"
                 )}
               >
                 <div className="flex items-center justify-between">

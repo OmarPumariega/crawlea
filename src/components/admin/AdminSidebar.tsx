@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import {
   Anchor,
   Braces,
@@ -14,6 +15,7 @@ import {
   LayoutDashboard,
   LineChart,
   ListChecks,
+  LogOut,
   Map,
   NotebookPen,
   PenLine,
@@ -53,7 +55,7 @@ type ProjectNav = { top: NavModule[]; groups: NavGroup[]; bottom: NavModule[] };
 // carpetas plegables: Investigación · On-Page · Técnico · Seguimiento. Geogrid
 // solo aparece en proyectos locales (negocio con coordenadas) y cuelga del
 // grupo Seguimiento. Copilot ya NO es una entrada de nav — es un widget
-// flotante persistente (CopilotWidget.tsx, montado en AdminShell), disponible
+// flotante (CopilotWidget.tsx, montado en AdminShell), disponible
 // en cualquier página de un proyecto sin navegar a ningún sitio.
 function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
   const groups: NavGroup[] = [
@@ -114,7 +116,7 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
 }
 
 // ¿Es esta la ruta activa? Para Perfil (== base) exige coincidencia exacta;
-// para el resto acepta rutas anidadas (p.ej. .../keywords/estudios/123).
+// para el resto acepta rutas anidadas (p. ej. .../keywords/estudios/123).
 function isModuleActive(href: string, base: string, pathname: string): boolean {
   if (href === base) return pathname === href;
   return pathname === href || pathname.startsWith(href + "/");
@@ -143,7 +145,9 @@ export default function AdminSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const projectId = useProjectIdFromPath();
+  const { data: session } = useSession();
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
+  const [query, setQuery] = useState("");
 
   // Carga la lista de proyectos (para el selector) cuando se está dentro de un
   // proyecto. El sidebar vive en el shell (nivel panel) y no recibe el proyecto
@@ -175,7 +179,28 @@ export default function AdminSidebar({
 
   const project = projects.find((p) => p.id === projectId) ?? null;
   const base = project ? `/admin/proyectos/${project.id}` : "";
-  const nav = project ? projectNav(base, project.isLocalBusiness) : null;
+  const nav = useMemo(
+    () => (project ? projectNav(base, project.isLocalBusiness) : null),
+    [project, base]
+  );
+
+  // Búsqueda: filtra la navegación (ítems globales + módulos del proyecto).
+  const q = query.trim().toLowerCase();
+  const filterModules = (mods: NavModule[]) =>
+    q ? mods.filter((m) => m.label.toLowerCase().includes(q)) : mods;
+  const navItemsFiltered = q
+    ? NAV_ITEMS.filter((i) => i.label.toLowerCase().includes(q))
+    : NAV_ITEMS;
+  const navFiltered = nav
+    ? {
+        top: filterModules(nav.top),
+        groups: nav.groups
+          .map((g) => ({ ...g, modules: filterModules(g.modules) }))
+          .filter((g) => g.modules.length > 0),
+        bottom: filterModules(nav.bottom),
+      }
+    : null;
+  const searching = q.length > 0;
 
   // Grupo plegable abierto. Por defecto (y al navegar a otro módulo) se abre el
   // grupo que contiene el módulo activo; el usuario puede abrir otro a mano.
@@ -212,125 +237,219 @@ export default function AdminSidebar({
     onClose();
   }
 
+  const email = session?.user?.email ?? "";
+  const nombre = email.split("@")[0] || "equipo";
+
   return (
     <>
       {navOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-20 md:hidden"
+          className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-20 md:hidden"
           onClick={onClose}
         />
       )}
       <aside
         className={cn(
-          "fixed md:static inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-100 flex flex-col transition-transform md:translate-x-0",
+          "fixed md:static inset-y-0 left-0 z-30 w-[268px] bg-sidebar border-r border-line flex flex-col transition-transform md:translate-x-0",
           navOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex items-center justify-between px-5 py-5">
-          <div>
-            <Logo />
-            <p className="text-xs text-gray-500 mt-1">Agencia Ciro</p>
-          </div>
-          <button className="md:hidden text-gray-400" onClick={onClose} aria-label="Cerrar menú">
+        {/* Marca */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-4">
+          <Logo />
+          <button className="md:hidden text-gray-400 hover:text-gray-900 transition-colors" onClick={onClose} aria-label="Cerrar menú">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
-          {NAV_ITEMS.map((item) => {
-            const active =
-              item.href === "/admin"
-                ? pathname === "/admin"
-                : pathname.startsWith(item.href);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                  active ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
-          })}
+        {/* Buscador de navegación: filtra módulos y secciones al escribir */}
+        <div className="px-4 pb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar módulo…"
+              className="w-full bg-white border border-line rounded-xl pl-9 pr-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+            />
+          </div>
+        </div>
 
-          {/* Selector de proyecto + módulos (solo dentro de un proyecto).
-              El selector permite cambiar de proyecto sin ir a la lista (1 clic),
-              y mantiene el módulo activo al cambiar. */}
-          {projectId && (
-            <div className="pt-4 mt-4 border-t border-gray-100 space-y-2">
-              <label className="block px-3 text-xs font-medium text-gray-500">Proyecto</label>
+        <nav className="flex-1 px-3 overflow-y-auto pb-4 space-y-5">
+          {/* Navegación global */}
+          {navItemsFiltered.length > 0 && (
+            <div className="space-y-1">
+              {navItemsFiltered.map((item) => {
+                const active =
+                  item.href === "/admin"
+                    ? pathname === "/admin"
+                    : pathname.startsWith(item.href);
+                const Icon = item.icon;
+                return (
+                  <NavLink key={item.href} href={item.href} active={active} icon={<Icon className="h-[18px] w-[18px]" />} onClick={onClose}>
+                    {item.label}
+                  </NavLink>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Contexto de proyecto: selector + módulos (solo dentro de un
+              proyecto). El selector permite cambiar de proyecto sin ir a la
+              lista (1 clic), y mantiene el módulo activo al cambiar. */}
+          {projectId && navFiltered && (
+            <div className="space-y-4">
+              <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                Proyecto
+              </p>
               <ProjectSwitcher projects={projects} currentId={projectId} onSelect={switchProject} />
-              {nav && (
-                <div className="space-y-0.5">
-                  {nav.top.map((m) => (
-                    <ModuleLink key={m.href} module={m} base={base} pathname={pathname} onClick={onClose} />
-                  ))}
 
-                  {nav.groups.map((g) => {
-                    const isOpen = openGroup === g.id;
-                    const groupHasActive = g.id === activeGroupId;
-                    const GIcon = g.icon;
-                    return (
-                      <div key={g.id}>
-                        <button
-                          type="button"
-                          onClick={() => setOverride(openGroup === g.id ? null : g.id)}
-                          aria-expanded={isOpen}
-                          className={cn(
-                            "w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide transition-colors",
-                            groupHasActive ? "text-gray-700" : "text-gray-400 hover:text-gray-700"
-                          )}
-                        >
-                          <GIcon className="h-3.5 w-3.5 shrink-0" />
-                          <span className="flex-1 text-left">{g.label}</span>
-                          <ChevronDown
-                            className={cn(
-                              "h-3.5 w-3.5 shrink-0 transition-transform",
-                              isOpen ? "" : "-rotate-90"
-                            )}
-                          />
-                        </button>
-                        {isOpen && (
-                          <div className="mt-0.5 mb-1 space-y-0.5">
-                            {g.modules.map((m) => (
-                              <ModuleLink
-                                key={m.href}
-                                module={m}
-                                base={base}
-                                pathname={pathname}
-                                onClick={onClose}
-                                indented
-                              />
-                            ))}
-                          </div>
+              <div className="space-y-1">
+                {navFiltered.top.map((m) => (
+                  <ModuleLink
+                    key={m.href}
+                    module={m}
+                    base={base}
+                    pathname={pathname}
+                    onClick={onClose}
+                    forceOpen={searching}
+                  />
+                ))}
+
+                {navFiltered.groups.map((g) => {
+                  const isOpen = searching || openGroup === g.id;
+                  const groupHasActive = g.id === activeGroupId;
+                  const GIcon = g.icon;
+                  return (
+                    <div key={g.id}>
+                      <button
+                        type="button"
+                        onClick={() => setOverride(openGroup === g.id ? null : g.id)}
+                        aria-expanded={isOpen}
+                        className={cn(
+                          "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold transition-colors",
+                          groupHasActive ? "text-gray-800" : "text-gray-400 hover:text-gray-700"
                         )}
-                      </div>
-                    );
-                  })}
+                      >
+                        <GIcon className="h-4 w-4 shrink-0" />
+                        <span className="flex-1 text-left">{g.label}</span>
+                        <ChevronDown
+                          className={cn(
+                            "h-3.5 w-3.5 shrink-0 transition-transform",
+                            isOpen ? "" : "-rotate-90"
+                          )}
+                        />
+                      </button>
+                      {isOpen && (
+                        <div className="mt-0.5 space-y-1 pb-1">
+                          {g.modules.map((m) => (
+                            <ModuleLink
+                              key={m.href}
+                              module={m}
+                              base={base}
+                              pathname={pathname}
+                              onClick={onClose}
+                              forceOpen={searching}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
 
-                  {nav.bottom.map((m) => (
-                    <ModuleLink key={m.href} module={m} base={base} pathname={pathname} onClick={onClose} />
-                  ))}
-                </div>
-              )}
+                {navFiltered.bottom.map((m) => (
+                  <ModuleLink
+                    key={m.href}
+                    module={m}
+                    base={base}
+                    pathname={pathname}
+                    onClick={onClose}
+                    forceOpen={searching}
+                  />
+                ))}
+              </div>
+
               <Link
                 href="/admin/proyectos"
                 onClick={onClose}
-                className="block px-3 pt-1 text-xs text-gray-400 hover:text-gray-900"
+                className="block px-3 pt-1 text-[13px] text-gray-400 hover:text-brand transition-colors"
               >
-                Gestionar proyectos
+                Gestionar proyectos →
               </Link>
             </div>
           )}
+
+          {searching &&
+            navItemsFiltered.length === 0 &&
+            (!navFiltered || (navFiltered.top.length === 0 && navFiltered.groups.length === 0 && navFiltered.bottom.length === 0)) && (
+              <p className="px-3 text-sm text-gray-400">Sin resultados para “{query}”.</p>
+            )}
         </nav>
+
+        {/* Tarjeta de usuario */}
+        <div className="border-t border-line p-3">
+          <div className="flex items-center gap-3 rounded-xl px-2 py-2">
+            <span
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-white text-sm font-semibold"
+              aria-hidden="true"
+            >
+              {nombre.charAt(0).toUpperCase()}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-gray-900 truncate capitalize">{nombre}</p>
+              <p className="text-xs text-gray-400 truncate">Administrador</p>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: "/admin/acceso" })}
+              className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </aside>
     </>
+  );
+}
+
+// Ítem de navegación global: píldora verde cuando está activo.
+function NavLink({
+  href,
+  active,
+  icon,
+  onClick,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  icon: React.ReactNode;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+        active
+          ? "bg-brand text-white shadow-[0_6px_16px_-6px_rgba(14,107,79,0.5)]"
+          : "text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-[0_1px_3px_rgba(26,29,26,0.06)]"
+      )}
+    >
+      <span
+        className={cn(
+          "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors",
+          active ? "bg-white/20" : "bg-black/[0.05]"
+        )}
+      >
+        {icon}
+      </span>
+      {children}
+    </Link>
   );
 }
 
@@ -339,38 +458,32 @@ function ModuleLink({
   base,
   pathname,
   onClick,
-  indented,
+  forceOpen = false,
 }: {
   module: NavModule;
   base: string;
   pathname: string;
   onClick: () => void;
-  indented?: boolean;
+  forceOpen?: boolean;
 }) {
   const active = isModuleActive(m.href, base, pathname);
   const Icon = m.icon;
-  // Los módulos sueltos (no indentados) comparten la tipología de las cabeceras
-  // de grupo: mayúsculas, text-xs, font-semibold. Los indentados (hijos de un
-  // grupo) van en minúsculas normales a text-sm.
-  const sizeText = indented
-    ? "pl-9 text-sm"
-    : "pl-3 text-xs font-semibold uppercase tracking-wide";
-  const iconSize = indented ? "h-4 w-4" : "h-3.5 w-3.5";
+  // Al buscar (forceOpen) los módulos se muestran planos; normalmente los
+  // hijos de grupo van indentados bajo su carpeta.
+  const indent = forceOpen ? "" : "ml-5";
   return (
     <Link
       href={m.href}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 py-1.5 pr-3 rounded-lg transition-colors",
-        sizeText,
+        "flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium transition-all",
+        indent,
         active
-          ? "bg-gray-100 text-gray-900"
-          : indented
-            ? "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-            : "text-gray-400 hover:text-gray-900"
+          ? "bg-brand text-white shadow-[0_6px_16px_-6px_rgba(14,107,79,0.5)]"
+          : "text-gray-500 hover:bg-white hover:text-gray-900"
       )}
     >
-      <Icon className={cn(iconSize, "shrink-0")} />
+      <Icon className={cn("h-4 w-4 shrink-0", active ? "" : "text-gray-400")} />
       <span className="truncate">{m.label}</span>
     </Link>
   );

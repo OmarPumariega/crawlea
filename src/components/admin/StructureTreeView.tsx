@@ -111,7 +111,7 @@ function TreeBranch({
       </div>
 
       {hasChildren && open && (
-        <ul className="relative ml-[9px] border-l border-gray-200 pl-4 space-y-3 mt-2">
+        <ul className="relative ml-[9px] border-l border-line pl-4 space-y-3 mt-2">
           {node.children.map((child) => (
             <TreeBranch key={child.path} node={child} domain={domain} depth={depth + 1} />
           ))}
@@ -135,7 +135,7 @@ export default function StructureTreeView({
         <Globe className="h-4 w-4 text-gray-400" />
         Inicio{site ? <span className="text-gray-400 font-normal"> — {site}</span> : null}
       </div>
-      <ul className="relative ml-[7px] border-l border-gray-200 pl-4 space-y-3">
+      <ul className="relative ml-[7px] border-l border-line pl-4 space-y-3">
         {root.children.map((child) => (
           <TreeBranch key={child.path} node={child} domain={site} depth={0} />
         ))}

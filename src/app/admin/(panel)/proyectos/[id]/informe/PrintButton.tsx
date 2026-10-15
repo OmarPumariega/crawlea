@@ -45,7 +45,7 @@ export default function PrintButton({ className, projectName }: { className?: st
       type="button"
       onClick={handlePrint}
       className={cn(
-        "print:hidden inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap",
+        "print:hidden inline-flex items-center justify-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong transition-colors whitespace-nowrap",
         className
       )}
     >

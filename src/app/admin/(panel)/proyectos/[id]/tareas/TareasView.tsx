@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Plus, Trash2, ChevronDown, ChevronUp, Calendar, AlertCircle, CheckCircle2, Settings2 } from "lucide-react";
+import { Loader2, Plus, Trash2, ChevronDown, ChevronUp, Calendar, AlertCircle, CheckCircle2, ListChecks, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import PageHeader from "@/components/admin/PageHeader";
+import Pill from "@/components/admin/Pill";
 import Modal from "@/components/admin/Modal";
 import UrlLink from "@/components/admin/UrlLink";
 import TodoTemplatesCard from "@/components/admin/TodoTemplatesCard";
@@ -28,9 +30,9 @@ type Todo = {
 // el botón activo del formulario. baja=verde, media=ámbar, alta=rojo.
 type Priority = "baja" | "media" | "alta";
 const PRIORITY_META: Record<Priority, { label: string; badge: string; button: string; dot: string }> = {
-  baja: { label: "Baja", badge: "bg-emerald-100 text-emerald-700", button: "Baja", dot: "bg-emerald-500" },
-  media: { label: "Media", badge: "bg-amber-100 text-amber-700", button: "Media", dot: "bg-amber-500" },
-  alta: { label: "Alta", badge: "bg-red-100 text-red-700", button: "Alta", dot: "bg-red-500" },
+  baja: { label: "Baja", badge: "bg-emerald-50 text-emerald-700", button: "Baja", dot: "bg-emerald-500" },
+  media: { label: "Media", badge: "bg-amber-50 text-amber-700", button: "Media", dot: "bg-amber-500" },
+  alta: { label: "Alta", badge: "bg-red-50 text-red-700", button: "Alta", dot: "bg-red-500" },
 };
 const PRIORITY_ORDER: Record<Priority, number> = { alta: 0, media: 1, baja: 2 };
 function priorityRank(p: string): number {
@@ -85,7 +87,7 @@ function AutoTaskCard({
   if (!meta) return null;
 
   return (
-    <div className="border border-gray-100 rounded-lg overflow-hidden">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3">
         <input
           type="checkbox"
@@ -93,7 +95,7 @@ function AutoTaskCard({
           onChange={onToggleDone}
           disabled={busy}
           title={todo.done ? "Marcar como pendiente" : "Marcar como resuelta"}
-          className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-400 shrink-0"
+          className="h-4 w-4 rounded-md border-line text-brand accent-[#0e6b4f] focus:ring-2 focus:ring-brand/25 shrink-0"
         />
         <button
           type="button"
@@ -111,9 +113,9 @@ function AutoTaskCard({
           <span className={cn("text-sm font-medium truncate", todo.done ? "text-gray-400 line-through" : "text-gray-900")}>
             {meta.label}
           </span>
-          <span className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 shrink-0">
+          <Pill tone="neutral" className="shrink-0">
             {todo.affectedUrls.length} {todo.affectedUrls.length === 1 ? "página" : "páginas"}
-          </span>
+          </Pill>
           <span className="flex-1" />
           {open ? (
             <ChevronUp className="h-4 w-4 text-gray-400 shrink-0" />
@@ -132,9 +134,9 @@ function AutoTaskCard({
       </div>
 
       {open && (
-        <div className="px-4 pb-4 border-t border-gray-100 pt-3 space-y-3">
+        <div className="px-4 pb-4 border-t border-line pt-3 space-y-3">
           <p className="text-sm text-gray-600">{meta.description}</p>
-          <div className="bg-blue-50 text-blue-900 text-sm px-3 py-2 rounded-lg">
+          <div className="bg-blue-50 border border-blue-100 text-blue-900 text-sm px-3 py-2 rounded-xl">
             <span className="font-medium">Cómo arreglarlo: </span>
             {meta.fix}
           </div>
@@ -147,7 +149,7 @@ function AutoTaskCard({
               ))}
             </ul>
           )}
-          <p className="text-[11px] text-gray-400">
+          <p className="font-mono text-[11px] text-gray-400">
             Detectado el {new Date(todo.createdAt).toLocaleDateString("es-ES")}
             {todo.done && todo.completedAt
               ? ` · resuelta o superada por una auditoría más reciente el ${new Date(todo.completedAt).toLocaleDateString("es-ES")}`
@@ -180,7 +182,7 @@ function ManualTaskCard({
   const prioMeta = PRIORITY_META[todo.priority as Priority] ?? PRIORITY_META.media;
 
   return (
-    <div className="border border-gray-100 rounded-lg overflow-hidden">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3">
         <input
           type="checkbox"
@@ -188,7 +190,7 @@ function ManualTaskCard({
           onChange={onToggleDone}
           disabled={busy}
           title={todo.done ? "Marcar como pendiente" : "Marcar como completada"}
-          className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-400 shrink-0"
+          className="h-4 w-4 rounded-md border-line text-brand accent-[#0e6b4f] focus:ring-2 focus:ring-brand/25 shrink-0"
         />
         <div className="flex items-center gap-3 flex-1 min-w-0 text-left">
           <span
@@ -199,15 +201,10 @@ function ManualTaskCard({
             {title}
           </span>
           {todo.dueDate && (
-            <span
-              className={cn(
-                "text-[11px] px-2 py-0.5 rounded-full shrink-0",
-                overdue ? "bg-red-100 text-red-700 font-medium" : "bg-gray-100 text-gray-600"
-              )}
-            >
+            <Pill tone={overdue ? "danger" : "neutral"} className="shrink-0">
               {overdue ? "vencida " : "vence "}
               {new Date(todo.dueDate).toLocaleDateString("es-ES")}
-            </span>
+            </Pill>
           )}
         </div>
         <button
@@ -221,11 +218,11 @@ function ManualTaskCard({
       </div>
 
       {detail && (
-        <div className="px-4 pb-4 border-t border-gray-100 pt-3 space-y-2">
+        <div className="px-4 pb-4 border-t border-line pt-3 space-y-2">
           <p className={cn("text-sm whitespace-pre-line", todo.done ? "text-gray-400" : "text-gray-600")}>
             {detail}
           </p>
-          <p className="text-[11px] text-gray-400">
+          <p className="font-mono text-[11px] text-gray-400">
             Creada el {new Date(todo.createdAt).toLocaleDateString("es-ES")}
           </p>
         </div>
@@ -396,23 +393,23 @@ export default function TareasView({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">Tareas</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Lista de seguimiento del proyecto — manuales y auto-generadas desde hallazgos de
-          auditoría. Marca, completa o elimina para tener siempre a la vista lo pendiente.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Proyecto · Tareas"
+        title="Tareas"
+        description="Lista de seguimiento del proyecto — manuales y auto-generadas desde hallazgos de auditoría. Marca, completa o elimina para tener siempre a la vista lo pendiente."
+      />
 
       {/* Añadir tarea: un único card con dos modos (manual / desde plantilla) */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 w-fit">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+        <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
           <button
             type="button"
             onClick={() => setAddMode("manual")}
             className={cn(
-              "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-              addMode === "manual" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-800"
+              "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
+              addMode === "manual"
+                ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
+                : "text-gray-500 hover:text-gray-800"
             )}
           >
             Manual
@@ -421,8 +418,10 @@ export default function TareasView({ projectId }: { projectId: string }) {
             type="button"
             onClick={selectTemplateMode}
             className={cn(
-              "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-              addMode === "template" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-800"
+              "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
+              addMode === "template"
+                ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
+                : "text-gray-500 hover:text-gray-800"
             )}
           >
             Desde plantilla
@@ -440,13 +439,13 @@ export default function TareasView({ projectId }: { projectId: string }) {
                   onChange={(e) => setTitle(e.target.value)}
                   maxLength={200}
                   placeholder="Revisar títulos de la home"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                  className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                 />
               </div>
               <button
                 type="submit"
                 disabled={creating || !title.trim()}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong transition-colors disabled:opacity-50"
               >
                 {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                 Añadir tarea
@@ -461,7 +460,7 @@ export default function TareasView({ projectId }: { projectId: string }) {
                 maxLength={2000}
                 rows={3}
                 placeholder="Notas, contexto o pasos adicionales"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 resize-y"
+                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors resize-y"
               />
             </div>
 
@@ -477,7 +476,7 @@ export default function TareasView({ projectId }: { projectId: string }) {
                       "flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors",
                       priority === p
                         ? cn(PRIORITY_META[p].badge, "border-transparent font-medium")
-                        : "border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300"
+                        : "border-line text-gray-500 hover:text-gray-900 hover:bg-background"
                     )}
                   >
                     <span className={cn("h-2 w-2 rounded-full", PRIORITY_META[p].dot)} />
@@ -502,7 +501,7 @@ export default function TareasView({ projectId }: { projectId: string }) {
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                  className="border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                 />
                 {dueDate && (
                   <button
@@ -516,7 +515,7 @@ export default function TareasView({ projectId }: { projectId: string }) {
               </div>
             )}
 
-            {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+            {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{error}</p>}
           </form>
         ) : (
           <div className="space-y-3">
@@ -545,12 +544,12 @@ export default function TareasView({ projectId }: { projectId: string }) {
               <ul className="space-y-1.5">
                 {templates.map((t) => (
                   <li key={t.id}>
-                    <label className="flex items-start gap-2 text-sm cursor-pointer p-2 rounded-lg hover:bg-gray-50">
+                    <label className="flex items-start gap-2 text-sm cursor-pointer p-2 rounded-xl hover:bg-background transition-colors">
                       <input
                         type="checkbox"
                         checked={selectedTpls.has(t.id)}
                         onChange={() => toggleTpl(t.id)}
-                        className="h-4 w-4 mt-0.5"
+                        className="h-4 w-4 mt-0.5 rounded-md border-line text-brand accent-[#0e6b4f]"
                       />
                       <span className="min-w-0">
                         <span className="text-gray-900 font-medium">{t.title}</span>
@@ -567,7 +566,7 @@ export default function TareasView({ projectId }: { projectId: string }) {
                 type="button"
                 onClick={applyTemplates}
                 disabled={applying || selectedTpls.size === 0}
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong transition-colors disabled:opacity-50"
               >
                 {applying && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 Añadir {selectedTpls.size > 0 ? `(${selectedTpls.size})` : ""}
@@ -581,41 +580,41 @@ export default function TareasView({ projectId }: { projectId: string }) {
         <TodoTemplatesCard />
       </Modal>
 
-      <div className="flex items-center justify-between gap-3 flex-wrap border-b border-gray-200">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
           <button
             onClick={() => setTab("pendientes")}
             className={cn(
-              "px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
+              "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
               tab === "pendientes"
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-500 hover:text-gray-800"
+                ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
+                : "text-gray-500 hover:text-gray-800"
             )}
           >
-            Pendientes ({pendingCount})
+            Pendientes <span className="tabular-nums">({pendingCount})</span>
           </button>
           <button
             onClick={() => setTab("completadas")}
             className={cn(
-              "px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
+              "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
               tab === "completadas"
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-500 hover:text-gray-800"
+                ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
+                : "text-gray-500 hover:text-gray-800"
             )}
           >
-            Completadas ({completedCount})
+            Completadas <span className="tabular-nums">({completedCount})</span>
           </button>
         </div>
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex items-center gap-2">
           {dateFilter !== "all" && (
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-400 tabular-nums">
               {tabTodos.length} de {tabTodosUnfiltered.length}
             </span>
           )}
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-            className="px-2 py-1 border border-gray-200 rounded-lg text-xs outline-none focus:border-gray-400 bg-white text-gray-600"
+            className="border border-line rounded-xl px-2.5 py-1.5 text-xs bg-white text-gray-600 outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           >
             <option value="all">Todas las fechas</option>
             <option value="this-month">Este mes</option>
@@ -630,18 +629,23 @@ export default function TareasView({ projectId }: { projectId: string }) {
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
       ) : tabTodos.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
-          <p className="text-sm text-gray-500">
-            {tab === "pendientes"
-              ? "Sin tareas pendientes — todo al día."
-              : "Todavía no se ha completado ninguna tarea."}
-          </p>
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+          <div className="py-12 text-center">
+            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+              {tab === "pendientes" ? <CheckCircle2 className="h-5 w-5" /> : <ListChecks className="h-5 w-5" />}
+            </span>
+            <p className="text-sm text-gray-500">
+              {tab === "pendientes"
+                ? "Sin tareas pendientes — todo al día."
+                : "Todavía no se ha completado ninguna tarea."}
+            </p>
+          </div>
         </div>
       ) : (
         <>
           {autoTodos.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-gray-900">
+              <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
                 Hallazgos de auditoría ({autoTodos.length})
               </h3>
               <div className="space-y-2">
@@ -660,7 +664,9 @@ export default function TareasView({ projectId }: { projectId: string }) {
 
           {manualTodos.length > 0 && (
             <div className="space-y-2">
-              {autoTodos.length > 0 && <h3 className="text-sm font-semibold text-gray-900">Tareas manuales</h3>}
+              {autoTodos.length > 0 && (
+                <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Tareas manuales</h3>
+              )}
               <div className="space-y-2">
                 {manualTodos.map((todo) => {
                   const overdue = !todo.done && todo.dueDate !== null && new Date(todo.dueDate) < today;

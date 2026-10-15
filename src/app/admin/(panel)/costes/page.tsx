@@ -5,6 +5,7 @@ import { Loader2, AlertTriangle, Download, X, ChevronLeft, ChevronRight } from "
 import { cn } from "@/lib/utils";
 import { downloadCsv } from "@/lib/csv";
 import ProjectSwitcher, { type ProjectInfo } from "@/components/admin/ProjectSwitcher";
+import PageHeader from "@/components/admin/PageHeader";
 
 type EndpointRow = { api: string; endpoint: string; cost: number; count: number };
 type ProjectRow = { projectId: string | null; name: string; cost: number; limit: number | null };
@@ -118,41 +119,40 @@ export default function CostesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">Costes de API</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {data.project ? data.project.name : "Todos los proyectos"}
-          </p>
-        </div>
-        <button
-          onClick={() =>
-            downloadCsv(`costes-${data.monthLabel.replace(/\s+/g, "-")}${data.project ? `-${data.project.name}` : ""}.csv`, ["Sección", "Concepto", "Coste (USD)", "Llamadas / tope"], [
-              ...data.byProject.map((r) => ["Por proyecto", r.name, r.cost.toFixed(3), r.limit !== null ? `tope ${r.limit.toFixed(2)}$` : ""]),
-              ...data.byEndpoint.map((r) => ["Por tipo de llamada", ENDPOINT_LABELS[r.endpoint] ?? r.endpoint, r.cost.toFixed(3), `${r.count} llamadas`]),
-              ...data.recentCalls.map((c) => [
-                "Llamada individual",
-                `${ENDPOINT_LABELS[c.endpoint] ?? c.endpoint}${c.model ? ` (${c.model})` : ""}`,
-                c.cost.toFixed(4),
-                new Date(c.createdAt).toLocaleString("es-ES"),
-              ]),
-            ])
-          }
-          className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 shrink-0"
-          title="Exportar a CSV"
-        >
-          <Download className="h-3.5 w-3.5" />
-          Exportar CSV
-        </button>
-      </div>
+      <PageHeader
+        eyebrow="Agencia · Costes"
+        title="Costes de API"
+        description={data.project ? data.project.name : "Todos los proyectos"}
+        actions={
+          <button
+            onClick={() =>
+              downloadCsv(`costes-${data.monthLabel.replace(/\s+/g, "-")}${data.project ? `-${data.project.name}` : ""}.csv`, ["Sección", "Concepto", "Coste (USD)", "Llamadas / tope"], [
+                ...data.byProject.map((r) => ["Por proyecto", r.name, r.cost.toFixed(3), r.limit !== null ? `tope ${r.limit.toFixed(2)}$` : ""]),
+                ...data.byEndpoint.map((r) => ["Por tipo de llamada", ENDPOINT_LABELS[r.endpoint] ?? r.endpoint, r.cost.toFixed(3), `${r.count} llamadas`]),
+                ...data.recentCalls.map((c) => [
+                  "Llamada individual",
+                  `${ENDPOINT_LABELS[c.endpoint] ?? c.endpoint}${c.model ? ` (${c.model})` : ""}`,
+                  c.cost.toFixed(4),
+                  new Date(c.createdAt).toLocaleString("es-ES"),
+                ]),
+              ])
+            }
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-xl hover:bg-background shrink-0"
+            title="Exportar a CSV"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Exportar CSV
+          </button>
+        }
+      />
 
       {/* Navegador de mes/año — sin esto solo se podía ver el mes en curso.
           No deja avanzar más allá del mes actual (no hay datos futuros). */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-1 py-1">
+        <div className="flex items-center gap-1 bg-white border border-line rounded-xl px-1 py-1">
           <button
             onClick={() => shiftMonth(-1)}
-            className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md"
+            className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-background rounded-md"
             title="Mes anterior"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -163,7 +163,7 @@ export default function CostesPage() {
           <button
             onClick={() => shiftMonth(1)}
             disabled={isCurrentMonth}
-            className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md disabled:opacity-30 disabled:hover:bg-transparent"
+            className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-background rounded-md disabled:opacity-30 disabled:hover:bg-transparent"
             title="Mes siguiente"
           >
             <ChevronRight className="h-4 w-4" />
@@ -200,7 +200,7 @@ export default function CostesPage() {
       </div>
 
       {/* DataForSEO vs tope */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-900">DataForSEO</h2>
           {dfs.limitUsd !== null && dfs.blocked && (
@@ -226,7 +226,7 @@ export default function CostesPage() {
       </div>
 
       {/* Total mes (todas las APIs) */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
         <h2 className="text-sm font-semibold text-gray-900">
           Total del mes (todas las APIs){data.project && <> · {data.project.name}</>}
         </h2>
@@ -235,7 +235,7 @@ export default function CostesPage() {
       </div>
 
       {/* Desglose por endpoint */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
         <h2 className="text-sm font-semibold text-gray-900">Por tipo de llamada</h2>
         {data.byEndpoint.length === 0 ? (
           <p className="text-sm text-gray-500">Sin consumo este mes.</p>
@@ -260,7 +260,7 @@ export default function CostesPage() {
           proyecto ya está todo acotado, esta tabla no aportaría nada. Cada
           fila lleva directo a su vista filtrada (mismo atajo que el selector). */}
       {data.scope === "global" && (
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
           <h2 className="text-sm font-semibold text-gray-900">Por proyecto</h2>
           {data.byProject.length === 0 ? (
             <p className="text-sm text-gray-500">Sin consumo este mes.</p>
@@ -272,7 +272,7 @@ export default function CostesPage() {
                     key={(r.projectId ?? "null") + r.name}
                     className={cn(
                       "border-b border-gray-50 last:border-0",
-                      r.projectId && "cursor-pointer hover:bg-gray-50"
+                      r.projectId && "cursor-pointer hover:bg-background"
                     )}
                     onClick={() => r.projectId && setSelectedProjectId(r.projectId)}
                   >
@@ -296,7 +296,7 @@ export default function CostesPage() {
       {/* Llamadas individuales — solo en la vista de un proyecto: control
           total hasta la llamada concreta (qué API, qué módulo, cuándo, coste). */}
       {data.scope === "project" && (
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
           <h2 className="text-sm font-semibold text-gray-900">
             Llamadas recientes ({data.recentCalls.length}{data.recentCalls.length === 100 ? "+" : ""})
           </h2>
@@ -306,7 +306,7 @@ export default function CostesPage() {
             <div className="max-h-96 overflow-y-auto">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-white">
-                  <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
+                  <tr className="text-left text-xs text-gray-400 border-b border-line">
                     <th className="font-medium py-1.5 pr-2">Módulo / llamada</th>
                     <th className="font-medium py-1.5 px-2">Modelo</th>
                     <th className="font-medium py-1.5 px-2 text-right">Coste</th>

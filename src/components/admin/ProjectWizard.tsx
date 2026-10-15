@@ -35,7 +35,7 @@ const STEPS: StepDescriptor[] = [
 ];
 
 const INPUT =
-  "w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400";
+  "w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors";
 const LABEL = "block text-sm font-medium text-gray-700";
 
 type GscSite = { siteUrl: string; permissionLevel: string };
@@ -297,11 +297,11 @@ export default function ProjectWizard() {
         </p>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 sm:p-6">
         <Stepper steps={STEPS} current={step} onStepClick={(i) => gotoStep(i)} />
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-5 sm:p-6 space-y-4">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 sm:p-6 space-y-4">
         {/* PASO 1 */}
         {step === 0 && (
           <div className="space-y-4">
@@ -472,12 +472,12 @@ export default function ProjectWizard() {
                 <div className="space-y-1">
                   <label className={LABEL}>Search Console</label>
                   <Select.Root value={gscSiteUrl || undefined} onValueChange={setGscSiteUrl}>
-                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white">
+                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white">
                       <Select.Value placeholder="Sin seleccionar" />
                       <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
-                      <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                      <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
                         <Select.Viewport>
                           {gscSites.map((s) => (
                             <Select.Item key={s.siteUrl} value={s.siteUrl} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100">
@@ -492,12 +492,12 @@ export default function ProjectWizard() {
                 <div className="space-y-1">
                   <label className={LABEL}>Google Analytics (GA4)</label>
                   <Select.Root value={ga4PropertyId || undefined} onValueChange={setGa4PropertyId}>
-                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white">
+                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white">
                       <Select.Value placeholder="Sin seleccionar" />
                       <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
-                      <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                      <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
                         <Select.Viewport>
                           {ga4Properties.map((p) => (
                             <Select.Item key={p.propertyId} value={p.propertyId} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100">
@@ -578,7 +578,7 @@ export default function ProjectWizard() {
             {competitors.length > 0 && (
               <ul className="space-y-1.5">
                 {competitors.map((d) => (
-                  <li key={d} className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 rounded-lg">
+                  <li key={d} className="flex items-center justify-between gap-2 px-3 py-2 bg-background rounded-lg">
                     <span className="text-sm text-gray-700 truncate">{d}</span>
                     <button
                       type="button"
@@ -615,7 +615,7 @@ export default function ProjectWizard() {
                 ))}
               </ul>
             </div>
-            <div className="text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-lg p-3 space-y-1">
+            <div className="text-xs text-gray-600 bg-background border border-line rounded-xl p-3 space-y-1">
               <p className="font-medium text-gray-700">Al pulsar “Crear y lanzar” se ejecutará en segundo plano:</p>
               <ul className="list-disc pl-4 space-y-0.5">
                 <li>Importar las keywords del estudio al Rank Tracking y comprobar su posición.</li>
@@ -627,7 +627,7 @@ export default function ProjectWizard() {
                 la ficha del proyecto.
               </p>
             </div>
-            <label className="flex items-start gap-2 cursor-pointer p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
+            <label className="flex items-start gap-2 cursor-pointer p-3 rounded-lg border border-line hover:bg-background">
               <input
                 type="checkbox"
                 checked={runAudit}
@@ -647,7 +647,7 @@ export default function ProjectWizard() {
         {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
 
         {/* Navegación */}
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100">
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-line">
           {step === 0 ? (
             <Link href="/admin/proyectos" className="text-sm text-gray-500 hover:text-gray-900 inline-flex items-center gap-1">
               <ArrowLeft className="h-4 w-4" /> Cancelar

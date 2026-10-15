@@ -130,7 +130,7 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
   return (
     <div className="space-y-6">
       {!loadingRecent && recentRuns.length > 0 && !run && (
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-gray-400" />
             <h3 className="text-sm font-semibold text-gray-900">Análisis recientes del proyecto</h3>
@@ -140,7 +140,7 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
               <button
                 key={h.id}
                 onClick={() => selectRecent(h)}
-                className="w-full text-left bg-white rounded-lg border border-gray-100 p-3 hover:bg-gray-50 transition-colors"
+                className="w-full text-left bg-white rounded-lg border border-line p-3 hover:bg-background transition-colors"
               >
                 <p className="text-sm text-gray-900 truncate">{h.url}</p>
                 <div className="flex items-center justify-between mt-0.5">
@@ -157,7 +157,7 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-700">URL a optimizar</label>
           <input
@@ -166,7 +166,7 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://www.ejemplo.com/servicios/abogados-familia"
             required
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+            className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
           <p className="text-xs text-gray-400">
             Se lee el contenido actual de la página y se compara contra el top-10 de Google, tus
@@ -182,7 +182,7 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
             type="text"
             value={targetKeyword}
             onChange={(e) => setTargetKeyword(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+            className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
         </div>
 
@@ -200,7 +200,7 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
 
       {run && (
         <>
-          <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4 text-gray-400" />
               <h3 className="text-sm font-semibold text-gray-900">Estado actual de la página</h3>
@@ -235,7 +235,7 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
             <h3 className="text-sm font-semibold text-gray-900">
               Cambios recomendados ({run.suggestions.length})
             </h3>
@@ -247,7 +247,7 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
             ) : (
               <div className="space-y-3">
                 {run.suggestions.map((s, i) => (
-                  <div key={i} className="border border-gray-100 rounded-lg p-3 space-y-1.5">
+                  <div key={i} className="border border-line rounded-xl p-3 space-y-1.5">
                     <div className="flex items-center gap-2">
                       <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded", TYPE_BADGE[s.type])}>
                         {TYPE_LABEL[s.type]}
@@ -271,7 +271,7 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
       )}
 
       {(loadingHistory || history.length > 0) && (
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-gray-400" />
             <h3 className="text-sm font-semibold text-gray-900">Optimizaciones previas de esta URL</h3>
@@ -285,8 +285,8 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
                   key={h.id}
                   onClick={() => setRun(h)}
                   className={cn(
-                    "w-full text-left bg-white rounded-lg border p-3 hover:bg-gray-50 transition-colors",
-                    run?.id === h.id ? "border-gray-900" : "border-gray-100"
+                    "w-full text-left bg-white rounded-lg border p-3 hover:bg-background transition-colors",
+                    run?.id === h.id ? "border-gray-900" : "border-line"
                   )}
                 >
                   <div className="flex items-center justify-between">

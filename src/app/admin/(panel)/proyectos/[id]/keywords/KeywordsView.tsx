@@ -15,8 +15,11 @@ import {
   Download,
   Upload,
   Pencil,
+  FileSearch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PageHeader from "@/components/admin/PageHeader";
+import Pill, { type PillTone } from "@/components/admin/Pill";
 import { suggestionsCostUsd } from "@/lib/dataforseo/pricing";
 import { downloadCsv } from "@/lib/csv";
 import LocationPicker, { type LocationValue } from "@/components/admin/LocationPicker";
@@ -88,17 +91,18 @@ type Suggestion = {
 
 // Mismo criterio que Competidores: dificultad SEO real (0-100), no el proxy
 // de competition/competitionIndex de Google Ads.
-function difficultyBadge(score: number | null | undefined): { label: string; cls: string } | null {
+function difficultyBadge(score: number | null | undefined): { label: string; tone: PillTone } | null {
   if (score == null) return null;
-  if (score >= 67) return { label: `${score} · Alta`, cls: "bg-red-50 text-red-700" };
-  if (score >= 34) return { label: `${score} · Media`, cls: "bg-amber-50 text-amber-700" };
-  return { label: `${score} · Baja`, cls: "bg-emerald-50 text-emerald-700" };
+  if (score >= 67) return { label: `${score} · Alta`, tone: "danger" };
+  if (score >= 34) return { label: `${score} · Media`, tone: "warning" };
+  return { label: `${score} · Baja`, tone: "success" };
 }
 
-const INTENT_STYLES: Record<string, string> = {
-  informacional: "bg-gray-100 text-gray-600",
-  mixta: "bg-amber-50 text-amber-700",
-  transaccional: "bg-emerald-50 text-emerald-700",
+const INTENT_TONES: Record<string, PillTone> = {
+  informacional: "info",
+  mixta: "warning",
+  transaccional: "brand",
+  navegacional: "neutral",
 };
 const COMPETITION_STYLES: Record<string, string> = {
   HIGH: "text-red-600",
@@ -165,24 +169,24 @@ function buildTree(pages: StructurePage[]): TreeNode[] {
 }
 function StructureTree({ nodes, depth }: { nodes: TreeNode[]; depth: number }) {
   return (
-    <ul className={cn(depth > 0 && "pl-4 border-l border-gray-100 ml-1")}>
+    <ul className={cn(depth > 0 && "pl-4 border-l border-line ml-1.5")}>
       {nodes.map((node) => (
         <li key={node.path} className="space-y-1.5">
-          <div className="text-xs text-gray-400 font-mono">{node.segment}</div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">{node.segment}</div>
           {node.page && (
-            <div className="ml-5 bg-white border border-gray-100 rounded-lg p-3 space-y-2">
+            <div className="ml-5 bg-white border border-line rounded-xl p-3.5 space-y-2 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
               <p className="text-sm font-medium text-gray-900">{node.page.h1}</p>
               {node.page.headings.length > 0 && (
                 <ul className="text-xs text-gray-500 space-y-0.5 pl-3">
                   {node.page.headings.map((h, i) => (
-                    <li key={i} className="border-l border-gray-200 pl-2">{h}</li>
+                    <li key={i} className="border-l border-line pl-2">{h}</li>
                   ))}
                 </ul>
               )}
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] text-gray-400">{node.page.navLabel}</span>
+                <span className="font-mono text-[10px] uppercase tracking-wide text-gray-400">{node.page.navLabel}</span>
                 {node.page.keywords.map((k, i) => (
-                  <span key={i} className="text-[11px] px-1.5 py-0.5 rounded bg-gray-50 text-gray-500">{k}</span>
+                  <span key={i} className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-background text-gray-500">{k}</span>
                 ))}
               </div>
             </div>
@@ -474,7 +478,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
       <div className="space-y-6">
         <button
           onClick={() => setCurrent(null)}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
+          className="flex items-center gap-1 -ml-1 px-1.5 py-1 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-background transition-colors"
         >
           <ArrowLeft className="h-4 w-4" /> Volver a estudios
         </button>
@@ -482,8 +486,8 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         <div>
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">{current.name}</h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <h2 className="text-xl font-semibold tracking-tight text-gray-900">{current.name}</h2>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400 mt-2 tabular-nums">
                 {current.keywords.length} keywords · {current.languageCode.toUpperCase()}/{current.locationCode} · {new Date(current.createdAt).toLocaleDateString("es-ES")}
               </p>
             </div>
@@ -491,7 +495,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               <button
                 onClick={startEdit}
                 disabled={deletingStudy}
-                className="p-1.5 text-gray-400 hover:text-gray-900 disabled:opacity-50"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-background disabled:opacity-50 transition-colors"
                 title="Editar estudio"
               >
                 <Pencil className="h-4 w-4" />
@@ -499,7 +503,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               <button
                 onClick={handleDeleteStudy}
                 disabled={deletingStudy}
-                className="p-1.5 text-gray-400 hover:text-red-600 disabled:opacity-50"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
                 title="Eliminar estudio"
               >
                 {deletingStudy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -513,30 +517,30 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
 
         {/* Panel inline de edición del estudio */}
         {editing && (
-          <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Nombre del estudio</label>
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+            <div className="space-y-1.5">
+              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Nombre del estudio</label>
               <input
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 maxLength={120}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
             </div>
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Notas</label>
+            <div className="space-y-1.5">
+              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Notas</label>
               <textarea
                 value={editNotes}
                 onChange={(e) => setEditNotes(e.target.value)}
                 rows={4}
                 maxLength={2000}
                 placeholder="Notas internas sobre este estudio (opcional)..."
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
             </div>
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Ubicación de la búsqueda</label>
+            <div className="space-y-1.5">
+              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Ubicación de la búsqueda</label>
               <div className="max-w-sm">
                 <LocationPicker value={editLocation} onChange={setEditLocation} />
               </div>
@@ -550,7 +554,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               <button
                 onClick={handleSaveStudy}
                 disabled={savingStudy}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                className="flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
               >
                 {savingStudy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 Guardar
@@ -558,7 +562,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               <button
                 onClick={() => setEditing(false)}
                 disabled={savingStudy}
-                className="px-4 py-2 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="border border-line bg-white text-gray-700 text-sm rounded-xl px-4 py-2 hover:bg-background transition-colors disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -567,31 +571,33 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         )}
 
         {/* Buscar keywords relacionadas (Planificador) */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900">Buscar keywords relacionadas</h3>
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+          <h3 className="text-lg font-bold tracking-tight text-gray-900">Buscar keywords relacionadas</h3>
           <div className="flex flex-wrap items-end gap-3">
-            <div className="flex-1 min-w-[200px] space-y-1">
-              <label className="block text-xs text-gray-500">Keyword semilla</label>
+            <div className="flex-1 min-w-[200px] space-y-1.5">
+              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Keyword semilla</label>
               <input
                 type="text"
                 value={seed}
                 onChange={(e) => setSeed(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="abogado de familia"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
             </div>
-            <div className="space-y-1">
-              <label className="block text-xs text-gray-500">Nº resultados</label>
-              <div className="flex gap-1">
+            <div className="space-y-1.5">
+              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Nº resultados</label>
+              <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
                 {LIMITS.map((n) => (
                   <button
                     key={n}
                     type="button"
                     onClick={() => setLimit(n)}
                     className={cn(
-                      "px-2.5 py-2 rounded-lg text-xs font-medium border",
-                      limit === n ? "bg-gray-900 text-white border-gray-900" : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                      "rounded-xl px-3 py-1.5 text-xs font-medium transition-colors",
+                      limit === n
+                        ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
+                        : "text-gray-500 hover:text-gray-800"
                     )}
                   >
                     {n}
@@ -602,7 +608,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
             <button
               onClick={handleSearch}
               disabled={searching}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+              className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
             >
               {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
               Buscar
@@ -612,61 +618,73 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
             Coste estimado de la búsqueda: ~${suggestionsCostUsd(limit).toFixed(2)} (las que añadas después son gratis, ya cacheadas).
           </p>
 
-          {suggError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{suggError}</p>}
+          {suggError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{suggError}</p>}
 
           {suggestions.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-500">{suggestions.length} sugerencias</p>
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">{suggestions.length} sugerencias</p>
                 <button
                   onClick={() => addItems(suggestions)}
-                  className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
+                  className="flex items-center gap-1 text-xs font-medium text-brand hover:text-brand-strong"
                 >
                   <ArrowDownToLine className="h-3.5 w-3.5" /> Añadir todas
                 </button>
               </div>
-              <div className="max-h-80 overflow-y-auto border border-gray-100 rounded-lg">
+              <div className="max-h-80 overflow-auto rounded-xl border border-line">
                 <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                      <th className="py-2.5 px-3 pl-4 font-medium rounded-tl-lg">Keyword</th>
+                      <th className="py-2.5 px-3 font-medium w-20">Volumen</th>
+                      <th className="py-2.5 px-3 font-medium w-14">Tend.</th>
+                      <th className="py-2.5 px-3 font-medium w-16">Comp.</th>
+                      <th className="py-2.5 px-3 font-medium w-20">CPC</th>
+                      <th className="py-2.5 px-3 font-medium w-24">Dif.</th>
+                      <th className="py-2.5 px-3 font-medium w-28">Intención</th>
+                      <th className="py-2.5 px-3 pr-4 font-medium rounded-tr-lg w-12"></th>
+                    </tr>
+                  </thead>
                   <tbody>
                     {suggestions.map((s) => {
                       const already = inStudy.has(s.keyword);
                       return (
-                        <tr key={s.keyword} className="border-b border-gray-50 last:border-0">
-                          <td className="py-2 px-3 text-gray-900">{s.keyword}</td>
-                          <td className="py-2 px-2 text-gray-600 tabular-nums w-20">
+                        <tr key={s.keyword} className="border-b border-line/60 last:border-0 hover:bg-black/[0.025] transition-colors">
+                          <td className="py-2.5 px-3 pl-4 text-gray-900">{s.keyword}</td>
+                          <td className="py-2.5 px-3 text-gray-600 tabular-nums w-20">
                             {s.searchVolume === null ? <span className="text-gray-300">—</span> : s.searchVolume.toLocaleString("es-ES")}
                           </td>
-                          <td className="py-2 px-2 w-14">
+                          <td className="py-2.5 px-3 w-14">
                             <SeasonalitySparkline points={s.monthlySearches} />
                           </td>
-                          <td className="py-2 px-2 w-16">
+                          <td className="py-2.5 px-3 w-16">
                             <span className={cn("text-xs font-medium", COMPETITION_STYLES[s.competition ?? ""] ?? "text-gray-400")}>
                               {s.competition ?? "—"}
                             </span>
                           </td>
-                          <td className="py-2 px-2 w-20 text-gray-600 tabular-nums">{fmtCpc(s.cpc)}</td>
-                          <td className="py-2 px-2 w-24">
+                          <td className="py-2.5 px-3 text-gray-600 tabular-nums w-20">{fmtCpc(s.cpc)}</td>
+                          <td className="py-2.5 px-3 w-24">
                             {(() => {
                               const dif = difficultyBadge(s.difficulty);
                               return dif ? (
-                                <span className={cn("text-[11px] px-1.5 py-0.5 rounded font-medium", dif.cls)}>{dif.label}</span>
+                                <Pill tone={dif.tone} className="px-1.5 text-[11px]">{dif.label}</Pill>
                               ) : (
                                 <span className="text-gray-300 text-xs">—</span>
                               );
                             })()}
                           </td>
-                          <td className="py-2 px-2 w-28">
+                          <td className="py-2.5 px-3 w-28">
                             {s.intent && (
-                              <span className={cn("text-[11px] px-2 py-0.5 rounded-full", INTENT_STYLES[s.intent] ?? "bg-gray-100 text-gray-500")}>
+                              <Pill tone={INTENT_TONES[s.intent] ?? "neutral"} className="px-2 text-[11px]">
                                 {s.intent}
-                              </span>
+                              </Pill>
                             )}
                           </td>
-                          <td className="py-2 px-2 w-12 text-right">
+                          <td className="py-2.5 px-3 pr-4 w-12 text-right">
                             <button
                               onClick={() => addItems([s])}
                               disabled={already}
-                              className="p-1 text-gray-400 hover:text-gray-900 disabled:text-emerald-500 disabled:cursor-default"
+                              className="p-1 rounded-md text-gray-400 hover:text-gray-900 hover:bg-background disabled:text-brand disabled:cursor-default transition-colors"
                               title={already ? "Ya en el estudio" : "Añadir al estudio"}
                             >
                               <Plus className="h-4 w-4" />
@@ -683,12 +701,12 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         </div>
 
         {/* Pegar lista (alternativa) */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
           <button
             onClick={() => setShowPaste((v) => !v)}
-            className="flex items-center gap-1 text-sm font-medium text-gray-700"
+            className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
           >
-            <ChevronDown className={cn("h-4 w-4 transition-transform", showPaste && "rotate-180")} />
+            <ChevronDown className={cn("h-4 w-4 text-gray-400 transition-transform", showPaste && "rotate-180")} />
             O pegar una lista de keywords
           </button>
           {showPaste && (
@@ -698,12 +716,12 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                 onChange={(e) => setPasteText(e.target.value)}
                 rows={5}
                 placeholder={"una keyword por línea"}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 font-mono"
+                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors font-mono"
               />
               <button
                 onClick={handleResolve}
                 disabled={resolving || !pasteText.trim()}
-                className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="inline-flex items-center gap-2 border border-line bg-white text-gray-700 text-sm rounded-xl px-4 py-2 hover:bg-background transition-colors disabled:opacity-50"
               >
                 {resolving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                 Añadir al estudio
@@ -713,13 +731,13 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         </div>
 
         {/* Tabla de keywords del estudio */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-900">Keywords del estudio ({current.keywords.length})</h3>
+            <h3 className="text-lg font-bold tracking-tight text-gray-900">Keywords del estudio ({current.keywords.length})</h3>
             <button
               onClick={exportCsv}
               disabled={current.keywords.length === 0}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 border border-line bg-white text-gray-700 text-xs font-medium rounded-xl px-3 py-1.5 hover:bg-background transition-colors disabled:opacity-50"
               title="Exportar a CSV"
             >
               <Download className="h-3.5 w-3.5" />
@@ -728,68 +746,73 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
           </div>
 
           {current.keywords.length === 0 ? (
-            <p className="text-sm text-gray-500">Aún no hay keywords. Busca relacionadas o pega una lista para empezar.</p>
+            <div className="py-12 text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+                <Search className="h-5 w-5" />
+              </div>
+              <p className="text-sm text-gray-500">Aún no hay keywords. Busca relacionadas o pega una lista para empezar.</p>
+            </div>
           ) : (
-            <div className="overflow-x-auto -mx-2">
+            <div className="overflow-x-auto rounded-xl border border-line">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
-                    <th className="font-medium py-2 px-2">Keyword</th>
-                    <th className="font-medium py-2 px-2">Volumen</th>
-                    <th className="font-medium py-2 px-2">Tend.</th>
-                    <th className="font-medium py-2 px-2">Comp.</th>
-                    <th className="font-medium py-2 px-2">CPC</th>
-                    <th className="font-medium py-2 px-2">Dif.</th>
-                    <th className="font-medium py-2 px-2">Intención</th>
-                    <th className="font-medium py-2 px-2">Posición</th>
-                    <th className="font-medium py-2 px-2">TF-IDF</th>
-                    <th className="font-medium py-2 px-2 text-right">Prio.</th>
-                    <th className="py-2 px-2 w-10"></th>
+                  <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                    <th className="py-2.5 px-3 pl-4 font-medium rounded-tl-lg">Keyword</th>
+                    <th className="py-2.5 px-3 font-medium">Volumen</th>
+                    <th className="py-2.5 px-3 font-medium">Tend.</th>
+                    <th className="py-2.5 px-3 font-medium">Comp.</th>
+                    <th className="py-2.5 px-3 font-medium">CPC</th>
+                    <th className="py-2.5 px-3 font-medium">Dif.</th>
+                    <th className="py-2.5 px-3 font-medium">Intención</th>
+                    <th className="py-2.5 px-3 font-medium">Posición</th>
+                    <th className="py-2.5 px-3 font-medium">TF-IDF</th>
+                    <th className="py-2.5 px-3 font-medium text-right">Prio.</th>
+                    <th className="py-2.5 px-3 pr-4 font-medium rounded-tr-lg w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {current.keywords.map((kw) => (
-                    <tr key={kw.id} className="border-b border-gray-50">
-                      <td className="py-2 px-2 text-gray-900">{kw.keyword}</td>
-                      <td className="py-2 px-2 text-gray-700 tabular-nums">
+                    <tr key={kw.id} className="border-b border-line/60 last:border-0 hover:bg-black/[0.025] transition-colors">
+                      <td className="py-2.5 px-3 pl-4 text-gray-900">{kw.keyword}</td>
+                      <td className="py-2.5 px-3 text-gray-700 tabular-nums">
                         {kw.searchVolume === null ? <span className="text-gray-300">—</span> : kw.searchVolume.toLocaleString("es-ES")}
                       </td>
-                      <td className="py-2 px-2">
+                      <td className="py-2.5 px-3">
                         <SeasonalitySparkline points={kw.monthlySearches} />
                       </td>
-                      <td className="py-2 px-2">
+                      <td className="py-2.5 px-3">
                         <span className={cn("text-xs font-medium", COMPETITION_STYLES[kw.competition ?? ""] ?? "text-gray-400")}>
                           {kw.competition ?? "—"}
                         </span>
                       </td>
-                      <td className="py-2 px-2 text-gray-600 tabular-nums">{fmtCpc(kw.cpc)}</td>
-                      <td className="py-2 px-2">
+                      <td className="py-2.5 px-3 text-gray-600 tabular-nums">{fmtCpc(kw.cpc)}</td>
+                      <td className="py-2.5 px-3">
                         {(() => {
                           const dif = difficultyBadge(kw.difficulty);
                           return dif ? (
-                            <span className={cn("text-[11px] px-1.5 py-0.5 rounded font-medium", dif.cls)}>{dif.label}</span>
+                            <Pill tone={dif.tone} className="px-1.5 text-[11px]">{dif.label}</Pill>
                           ) : (
                             <span className="text-gray-300">—</span>
                           );
                         })()}
                       </td>
-                      <td className="py-2 px-2">
+                      <td className="py-2.5 px-3">
                         {kw.intent ? (
-                          <span className={cn("text-[11px] px-2 py-0.5 rounded-full", INTENT_STYLES[kw.intent] ?? "bg-gray-100 text-gray-500")}>
+                          <Pill tone={INTENT_TONES[kw.intent] ?? "neutral"} className="px-2 text-[11px]">
                             {kw.intent}
-                          </span>
+                          </Pill>
                         ) : (
                           <span className="text-gray-300">—</span>
                         )}
                       </td>
-                      <td className="py-2 px-2 text-gray-700 tabular-nums">
+                      <td className="py-2.5 px-3 text-gray-700 tabular-nums">
                         {kw.rankPosition == null ? <span className="text-gray-300">—</span> : `#${kw.rankPosition}`}
                       </td>
-                      <td className="py-2 px-2">
+                      <td className="py-2.5 px-3">
                         {kw.tfidfAvailable ? (
                           <Link
                             href={`/admin/proyectos/${projectId}/contenido/tfidf?keyword=${encodeURIComponent(kw.keyword)}`}
-                            className="text-[11px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100 font-medium"
+                            className="text-[11px] px-2 py-0.5 rounded-full bg-brand/10 text-brand hover:bg-brand/20 font-medium transition-colors"
                           >
                             Ver →
                           </Link>
@@ -797,11 +820,11 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                           <span className="text-gray-300">—</span>
                         )}
                       </td>
-                      <td className="py-2 px-2 text-right text-gray-700 tabular-nums">{kw.priority}</td>
-                      <td className="py-2 px-2 text-right">
+                      <td className="py-2.5 px-3 text-right text-gray-700 tabular-nums">{kw.priority}</td>
+                      <td className="py-2.5 px-3 pr-4 text-right">
                         <button
                           onClick={() => handleRemove(kw.id)}
-                          className="p-1 text-gray-300 hover:text-red-600"
+                          className="p-1 rounded-md text-gray-300 hover:text-red-600 hover:bg-red-50 transition-colors"
                           title="Quitar del estudio"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -818,11 +841,11 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         {/* Estructura de URLs — sección propia, no un botón secundario perdido
             en la tabla: es el resultado final del módulo, sobre el que luego
             trabajan Título/Meta y Contenido. */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">Estructura de URLs</h3>
-              <p className="text-xs text-gray-500 mt-0.5 max-w-md">
+              <h3 className="text-lg font-bold tracking-tight text-gray-900">Estructura de URLs</h3>
+              <p className="text-xs text-gray-500 mt-1 max-w-md">
                 Propone, vía IA, un árbol de páginas (slug, H1, encabezados) a partir de las
                 keywords de este estudio — listo como brief para Contenido y Título/Meta.
               </p>
@@ -830,7 +853,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
             <button
               onClick={handleGenerateStructure}
               disabled={generatingStructure || current.keywords.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 shrink-0"
+              className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50 shrink-0"
             >
               {generatingStructure ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {current.structure ? "Regenerar estructura" : "Generar estructura de URLs"}
@@ -841,12 +864,12 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
             <p className="text-xs text-gray-400">Añade al menos una keyword al estudio para poder generarla.</p>
           )}
           {structureError && (
-            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{structureError}</p>
+            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{structureError}</p>
           )}
 
           {tree.length > 0 ? (
             <div className="pt-2">
-              <p className="text-xs text-gray-400 mb-3">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">
                 Generada con {current.structureModel} · {new Date(current.updatedAt).toLocaleString("es-ES")}
               </p>
               <StructureTree nodes={tree} depth={0} />
@@ -867,40 +890,147 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
   // ===== Vista de listado de estudios =====
   return (
     <div className="space-y-6">
+      <PageHeader
+        eyebrow="Módulo · Keywords"
+        title="Keyword Research"
+        description="Estudios de palabras clave por proyecto. Cada estudio es un espacio de trabajo: busca relacionadas, añade las que interesan y construye el árbol de URLs."
+      />
+
+      {/* Estudios primero (los datos), alta e importación después */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">Keyword Research</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Estudios de palabras clave por proyecto. Cada estudio es un espacio de trabajo: busca
-          relacionadas, añade las que interesan y construye el árbol de URLs.
-        </p>
+        <h3 className="text-lg font-bold tracking-tight text-gray-900 mb-3">Estudios</h3>
+        {loadingStudies ? (
+          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+        ) : studies.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] py-12 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+              <FileSearch className="h-5 w-5" />
+            </div>
+            <p className="text-sm text-gray-500">Todavía no hay estudios para este proyecto.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {studies.map((s) => (
+              <div key={s.id} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4">
+                {listEditId === s.id ? (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={listEditName}
+                      onChange={(e) => setListEditName(e.target.value)}
+                      className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+                      placeholder="Nombre del estudio"
+                    />
+                    <textarea
+                      value={listEditNotes}
+                      onChange={(e) => setListEditNotes(e.target.value)}
+                      rows={2}
+                      className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+                      placeholder="Notas o descripción breve (opcional)..."
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleListSave}
+                        disabled={listSaving}
+                        className="inline-flex items-center gap-1.5 bg-brand text-white text-xs font-medium rounded-xl px-3 py-1.5 hover:bg-brand-strong transition-colors disabled:opacity-50"
+                      >
+                        {listSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Guardar"}
+                      </button>
+                      <button
+                        onClick={() => setListEditId(null)}
+                        className="px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-4">
+                    {/* Número de keywords como protagonista de la tarjeta */}
+                    <button
+                      onClick={() => openStudy(s.id)}
+                      className="shrink-0 flex h-14 w-14 flex-col items-center justify-center rounded-xl bg-brand/10 hover:bg-brand/15 transition-colors"
+                      title="Abrir estudio"
+                    >
+                      <span className="text-xl font-bold tabular-nums text-brand leading-none">{s._count.keywords}</span>
+                      <span className="text-[10px] font-medium text-brand/70 mt-1">keys</span>
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <button
+                          onClick={() => openStudy(s.id)}
+                          className="text-sm font-semibold text-gray-900 hover:text-brand transition-colors text-left min-w-0 truncate"
+                        >
+                          {s.name}
+                        </button>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); startListEdit(s); }}
+                            className="p-1 rounded-md text-gray-300 hover:text-gray-900 hover:bg-background transition-colors"
+                            title="Editar nombre y notas"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleListDelete(s.id, s.name); }}
+                            className="p-1 rounded-md text-gray-300 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            title="Eliminar estudio"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      {s.notes && (
+                        <p className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2">{s.notes}</p>
+                      )}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                        <span className="inline-flex items-center rounded-full bg-black/[0.04] px-2 py-0.5 text-[11px] font-medium text-gray-500">
+                          {s.languageCode.toUpperCase()}/{s.locationCode}
+                        </span>
+                        {s.hasStructure && (
+                          <span className="inline-flex items-center rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand">
+                            estructura
+                          </span>
+                        )}
+                        <span className="text-[11px] text-gray-400">
+                          {new Date(s.createdAt).toLocaleDateString("es-ES")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <form onSubmit={handleCreateStudy} className="bg-white rounded-xl border border-gray-100 p-5 flex items-end gap-3">
-        <div className="flex-1 space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Nuevo estudio</label>
+      <form onSubmit={handleCreateStudy} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 flex items-end gap-3">
+        <div className="flex-1 space-y-1.5">
+          <label className="block text-sm font-medium text-gray-600">Nuevo estudio</label>
           <input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Briefing Q3 — Cliente X"
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+            className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
         </div>
         <button
           type="submit"
           disabled={creating}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+          className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
         >
           {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           Crear
         </button>
       </form>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-2">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-2">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h3 className="text-sm font-medium text-gray-700">O sube un CSV con keywords ya investigadas</h3>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <h3 className="text-sm font-semibold text-gray-900">O sube un CSV con keywords ya investigadas</h3>
+            <p className="text-xs text-gray-500 mt-1 max-w-2xl">
               Columnas: keyword (obligatoria) y, si las tienes, volumen / competencia / cpc / intención.
               También acepta la exportación tal cual de Google Ads Keyword Planner (&laquo;Historial de
               estadísticas de palabras clave&raquo;). Se usan tal cual vengan en el archivo — no se
@@ -909,7 +1039,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
           </div>
           <label
             className={cn(
-              "flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 cursor-pointer shrink-0",
+              "inline-flex items-center gap-2 border border-line bg-white text-gray-700 text-sm rounded-xl px-4 py-2 hover:bg-background transition-colors cursor-pointer shrink-0 font-medium",
               importingFile && "opacity-50 pointer-events-none"
             )}
           >
@@ -928,92 +1058,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
           </label>
         </div>
         {importFileError && (
-          <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{importFileError}</p>
-        )}
-      </div>
-
-      <div>
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Estudios</h3>
-        {loadingStudies ? (
-          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-        ) : studies.length === 0 ? (
-          <p className="text-sm text-gray-500">Todavía no hay estudios para este proyecto.</p>
-        ) : (
-          <div className="space-y-2">
-            {studies.map((s) => (
-              <div key={s.id} className="bg-white rounded-lg border border-gray-100 p-3">
-                {listEditId === s.id ? (
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={listEditName}
-                      onChange={(e) => setListEditName(e.target.value)}
-                      className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
-                      placeholder="Nombre del estudio"
-                    />
-                    <textarea
-                      value={listEditNotes}
-                      onChange={(e) => setListEditNotes(e.target.value)}
-                      rows={2}
-                      className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
-                      placeholder="Notas o descripción breve (opcional)..."
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleListSave}
-                        disabled={listSaving}
-                        className="px-3 py-1 bg-gray-900 text-white text-xs rounded-lg hover:bg-gray-800 disabled:opacity-50"
-                      >
-                        {listSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Guardar"}
-                      </button>
-                      <button
-                        onClick={() => setListEditId(null)}
-                        className="px-3 py-1 text-xs text-gray-500 hover:text-gray-900"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <button
-                        onClick={() => openStudy(s.id)}
-                        className="text-sm text-gray-900 hover:underline text-left flex-1 min-w-0 truncate"
-                      >
-                        {s.name}
-                      </button>
-                      <div className="flex items-center gap-1 shrink-0 ml-2">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); startListEdit(s); }}
-                          className="p-1 text-gray-300 hover:text-gray-900"
-                          title="Editar nombre y notas"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleListDelete(s.id, s.name); }}
-                          className="p-1 text-gray-300 hover:text-red-600"
-                          title="Eliminar estudio"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                    {s.notes && (
-                      <p className="text-xs text-gray-500 mt-0.5 leading-snug">{s.notes}</p>
-                    )}
-                    <button
-                      onClick={() => openStudy(s.id)}
-                      className="text-xs text-gray-400 hover:text-gray-600 mt-0.5 block"
-                    >
-                      {s._count.keywords} keywords{s.hasStructure ? " · estructura" : ""} · {s.languageCode.toUpperCase()}/{s.locationCode} · {new Date(s.createdAt).toLocaleDateString("es-ES")}
-                    </button>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
+          <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{importFileError}</p>
         )}
       </div>
     </div>

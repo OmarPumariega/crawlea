@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Plus, Trash2, Pencil, X, Check, ImagePlus } from "lucide-react";
+import { Loader2, Plus, Trash2, Pencil, X, Check, ImagePlus, StickyNote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import PageHeader from "@/components/admin/PageHeader";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import { NOTE_IMAGE_MAX_COUNT, NOTE_TITLE_MAX_LENGTH } from "@/lib/notes/constants";
 
@@ -51,7 +52,7 @@ function ImageGrid({
             <img
               src={imageUrl(projectId, noteId, img.id)}
               alt={img.filename ?? "Foto adjunta"}
-              className="h-20 w-20 object-cover rounded-lg border border-gray-200"
+              className="h-20 w-20 object-cover rounded-xl border border-line"
             />
           </a>
           {onDelete && (
@@ -59,7 +60,7 @@ function ImageGrid({
               type="button"
               onClick={() => onDelete(img.id)}
               title="Quitar foto"
-              className="absolute -top-1.5 -right-1.5 bg-white border border-gray-200 rounded-full p-0.5 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute -top-1.5 -right-1.5 bg-white border border-line rounded-full p-0.5 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <X className="h-3 w-3" />
             </button>
@@ -108,12 +109,12 @@ function PendingImagePicker({
         {previews.map((url, i) => (
           <div key={url} className="relative group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={url} alt={files[i].name} className="h-20 w-20 object-cover rounded-lg border border-gray-200" />
+            <img src={url} alt={files[i].name} className="h-20 w-20 object-cover rounded-xl border border-line" />
             <button
               type="button"
               onClick={() => onChange(files.filter((_, idx) => idx !== i))}
               disabled={disabled}
-              className="absolute -top-1.5 -right-1.5 bg-white border border-gray-200 rounded-full p-0.5 text-gray-400 hover:text-red-600"
+              className="absolute -top-1.5 -right-1.5 bg-white border border-line rounded-full p-0.5 text-gray-400 hover:text-red-600"
             >
               <X className="h-3 w-3" />
             </button>
@@ -125,7 +126,7 @@ function PendingImagePicker({
             onClick={() => inputRef.current?.click()}
             disabled={disabled}
             title="Adjuntar fotos"
-            className="h-20 w-20 flex items-center justify-center rounded-lg border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 disabled:opacity-50"
+            className="h-20 w-20 flex items-center justify-center rounded-xl border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 hover:bg-background disabled:opacity-50 transition-colors"
           >
             <ImagePlus className="h-5 w-5" />
           </button>
@@ -184,8 +185,8 @@ function NoteCard({
   const edited = note.updatedAt !== note.createdAt;
 
   return (
-    <div className="border border-gray-100 rounded-lg overflow-hidden">
-      <div className="px-4 py-3 space-y-2">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] overflow-hidden">
+      <div className="px-5 py-4 space-y-2">
         {editing ? (
           <div className="space-y-2">
             <input
@@ -194,7 +195,7 @@ function NoteCard({
               maxLength={NOTE_TITLE_MAX_LENGTH}
               placeholder="Título (opcional)"
               autoFocus
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium outline-none focus:border-gray-400"
+              className="w-full border border-line rounded-xl px-3 py-2 text-sm font-medium bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
             />
             <RichTextEditor value={draftContent} onChange={setDraftContent} disabled={busy || uploading} />
             <PendingImagePicker
@@ -209,7 +210,7 @@ function NoteCard({
                 type="button"
                 onClick={handleSave}
                 disabled={busy || uploading}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-xs font-medium rounded-lg hover:bg-brand-strong transition-colors disabled:opacity-50"
               >
                 {busy || uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                 Guardar
@@ -232,14 +233,14 @@ function NoteCard({
           </div>
         ) : (
           <>
-            {note.title && <p className="text-sm font-semibold text-gray-900">{note.title}</p>}
+            {note.title && <p className="text-sm font-semibold tracking-tight text-gray-900">{note.title}</p>}
             <div
               className="tiptap text-sm text-gray-800"
               dangerouslySetInnerHTML={{ __html: note.content }}
             />
             <ImageGrid projectId={projectId} noteId={note.id} images={note.images} />
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] text-gray-400">
+              <p className="font-mono text-[11px] text-gray-400">
                 {new Date(note.createdAt).toLocaleDateString("es-ES", {
                   day: "2-digit",
                   month: "short",
@@ -371,15 +372,13 @@ export default function NotasView({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">Notas</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Apuntes internos del negocio del cliente — acuerdos, contactos, cosas a recordar.
-          No son tareas ni aparecen en el Informe.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Proyecto · Notas"
+        title="Notas"
+        description="Apuntes internos del negocio del cliente — acuerdos, contactos, cosas a recordar. No son tareas ni aparecen en el Informe."
+      />
 
-      <form onSubmit={handleCreate} className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+      <form onSubmit={handleCreate} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-700">Nuevo apunte</label>
           <input
@@ -387,7 +386,7 @@ export default function NotasView({ projectId }: { projectId: string }) {
             onChange={(e) => setTitle(e.target.value)}
             maxLength={NOTE_TITLE_MAX_LENGTH}
             placeholder="Título (opcional)"
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+            className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
           <RichTextEditor
             value={content}
@@ -401,11 +400,11 @@ export default function NotasView({ projectId }: { projectId: string }) {
           disabled={creating}
           remainingSlots={NOTE_IMAGE_MAX_COUNT - pendingFiles.length}
         />
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{error}</p>}
         <button
           type="submit"
           disabled={creating || !content.replace(/<[^>]*>/g, "").trim()}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong transition-colors disabled:opacity-50"
         >
           {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           Añadir apunte
@@ -415,8 +414,13 @@ export default function NotasView({ projectId }: { projectId: string }) {
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
       ) : notes.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
-          <p className="text-sm text-gray-500">Todavía no hay apuntes para este proyecto.</p>
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+          <div className="py-12 text-center">
+            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+              <StickyNote className="h-5 w-5" />
+            </span>
+            <p className="text-sm text-gray-500">Todavía no hay apuntes para este proyecto.</p>
+          </div>
         </div>
       ) : (
         <div className={cn("space-y-2")}>

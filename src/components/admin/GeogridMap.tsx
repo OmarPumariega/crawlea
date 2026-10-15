@@ -171,5 +171,5 @@ export default function GeogridMap({
     });
    }, [centerLat, centerLng, radiusKm, points, keyword, selected, mapReady]);
 
-  return <div ref={containerRef} className="h-[420px] w-full rounded-lg overflow-hidden border border-gray-100" />;
+  return <div ref={containerRef} className="h-[420px] w-full rounded-lg overflow-hidden border border-line" />;
 }

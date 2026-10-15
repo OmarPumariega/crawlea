@@ -39,93 +39,145 @@ export default function LoginPage() {
     "Copilot con IA y generación de títulos, metas, schema y contenido",
   ];
 
+  // Alturas de las barras decorativas (motivo de ranking): ascensión clara
+  // con pequeñas vacilaciones — la última, en lima, es "la que sube al primer
+  // puesto".
+  const bars = [32, 48, 60, 74, 92, 116];
+
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
-      {/* Panel de marca (oculto en móvil) */}
+    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+      {/* Panel de tinta (oculto en móvil): la superficie más bold de la
+          identidad — grid de puntos, barras de ranking sobredimensionadas
+          cortadas por el borde y micro-etiquetas en mono. */}
       <aside className="hidden lg:flex flex-col justify-between bg-brand text-white p-12 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20" aria-hidden="true">
-          <div className="absolute -top-16 -right-16 h-72 w-72 rounded-full bg-white/30 blur-3xl" />
-          <div className="absolute bottom-0 -left-10 h-64 w-64 rounded-full bg-black/20 blur-3xl" />
+        <div
+          className="absolute inset-0"
+          aria-hidden="true"
+          style={{
+            backgroundImage:
+              "radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px)",
+            backgroundSize: "22px 22px",
+          }}
+        />
+        <div
+          className="absolute bottom-0 right-0 flex items-end gap-3 pr-10 pb-10"
+          aria-hidden="true"
+        >
+          {bars.map((h, i) => (
+            <div
+              key={i}
+              className="w-9 rounded-t-md origin-bottom animate-[rise_0.7s_ease-out_both]"
+              style={{
+                height: h * 1.6,
+                animationDelay: `${i * 90}ms`,
+                background:
+                  i === bars.length - 1 ? "var(--signal)" : "rgba(255,255,255,0.14)",
+              }}
+            />
+          ))}
         </div>
 
         <div className="relative">
-          <Logo tone="light" className="text-white" textClassName="text-white text-lg" />
+          <Logo tone="light" textClassName="text-white text-lg" />
+          <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.2em] text-signal/90">
+            Panel interno
+          </p>
         </div>
 
-        <div className="relative space-y-6">
-          <h1 className="text-3xl font-semibold leading-tight">
-            El panel SEO interno<br />de Agencia Ciro
+        <div className="relative space-y-6 max-w-md">
+          <h1 className="text-4xl font-semibold leading-[1.12] tracking-tight">
+            El panel SEO interno
+            <br />
+            de Agencia Ciro
           </h1>
-          <p className="text-white/80 max-w-md">
-            Centraliza todo el trabajo SEO de tus clientes con datos reales, sin saltar
-            entre Ahrefs, Semrush ni hojas de cálculo.
+          <p className="text-white/70 leading-relaxed">
+            Centraliza todo el trabajo SEO de tus clientes con datos reales, sin
+            saltar entre Ahrefs, Semrush ni hojas de cálculo.
           </p>
-          <ul className="space-y-2.5">
+          <ul className="space-y-3 pt-6 border-t border-white/10">
             {highlights.map((h) => (
-              <li key={h} className="flex items-start gap-2 text-sm text-white/90">
-                <Check className="h-4 w-4 mt-0.5 shrink-0" />
+              <li key={h} className="flex items-start gap-3 text-sm text-white/85">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-signal/15">
+                  <Check className="h-3 w-3 text-signal" />
+                </span>
                 <span>{h}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative text-xs text-white/60">© {new Date().getFullYear()} Agencia Ciro</p>
+        <p className="relative font-mono text-[11px] uppercase tracking-[0.18em] text-white/50">
+          © {new Date().getFullYear()} Agencia Ciro
+        </p>
       </aside>
 
-      {/* Formulario */}
-      <div className="flex items-center justify-center bg-gray-50 p-6">
+      {/* Formulario sobre papel */}
+      <div className="flex items-center justify-center bg-background p-6">
         <div className="w-full max-w-sm">
           {/* Logo visible en móvil (en escritorio ya está en el panel izquierdo) */}
           <div className="lg:hidden mb-8 flex justify-center">
             <Logo />
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+          <div className="rounded-2xl border border-line bg-white p-8 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_16px_40px_-24px_rgba(26,29,26,0.25)]">
             <div className="mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Iniciar sesión</h2>
-              <p className="text-sm text-gray-500 mt-1">Accede al panel interno</p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
+                Acceso
+              </p>
+              <h2 className="text-xl font-semibold text-gray-900 mt-1">Iniciar sesión</h2>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label htmlFor="login-email" className="block font-mono text-[11px] uppercase tracking-[0.12em] font-medium text-gray-500 mb-1.5">
+                  Email
+                </label>
                 <input
+                  id="login-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15 bg-white"
                   placeholder="tu@email.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                <label htmlFor="login-password" className="block font-mono text-[11px] uppercase tracking-[0.12em] font-medium text-gray-500 mb-1.5">
+                  Contraseña
+                </label>
                 <input
+                  id="login-password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15 bg-white"
                   placeholder="••••••••"
                 />
               </div>
 
               {error && (
-                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+                <p className="text-sm text-red-700 bg-red-50 border border-red-100 px-3 py-2 rounded-xl">
+                  {error}
+                </p>
               )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2 px-4 bg-brand text-white text-sm font-medium rounded-lg hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-2.5 px-4 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-[background-color,transform] active:scale-[0.99]"
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 Entrar
               </button>
             </form>
           </div>
+
+          <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-gray-400">
+            Uso interno · Solo datos reales
+          </p>
         </div>
       </div>
     </div>

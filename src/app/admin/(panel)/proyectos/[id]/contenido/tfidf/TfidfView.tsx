@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import LocationPicker, { type LocationValue } from "@/components/admin/LocationPicker";
 import ImportSuccessNotice from "@/components/admin/ImportSuccessNotice";
 import { normalizeKeyword } from "@/lib/keywords/normalize";
+import PageHeader from "@/components/admin/PageHeader";
 
 type TfidfTerm = { term: string; tfidf: number; docs: number };
 type TopicGap = { text: string; coverage: number; urls: string[] };
@@ -237,14 +238,11 @@ export default function TfidfView({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">TF-IDF / Cobertura de temas</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Analiza el top-10 de Google para una keyword y descubre qué temas (H2/H3) y términos
-          comparten las páginas que ya posicionan. Los resultados se generan automáticamente al
-          chequear keywords en Rank Tracking.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Módulo · Contenido"
+        title="TF-IDF / Cobertura de temas"
+        description="{Analiza el top-10 de Google para una keyword y descubre qué temas (H2/H3) y términos           comparten las páginas que ya posicionan. Los resultados se generan automáticamente al           chequear keywords en Rank Tracking.}"
+      />
 
       {/* Resultados disponibles (auto-generados desde Rank Tracking) */}
       {loadingStored && stored.length === 0 && (
@@ -254,7 +252,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
         </div>
       )}
       {stored.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 space-y-3">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-gray-400" />
@@ -268,12 +266,12 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                 value={storedSearch}
                 onChange={(e) => setStoredSearch(e.target.value)}
                 placeholder="Buscar keyword…"
-                className="px-2.5 py-1 border border-gray-200 rounded-lg text-xs outline-none focus:border-gray-400 w-40"
+                className="px-2.5 py-1 border border-line rounded-xl text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors w-40"
               />
               <select
                 value={storedSort}
                 onChange={(e) => setStoredSort(e.target.value as StoredSort)}
-                className="px-2 py-1 border border-gray-200 rounded-lg text-xs outline-none focus:border-gray-400 bg-white text-gray-600"
+                className="px-2 py-1 border border-line rounded-xl text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white text-gray-600"
               >
                 <option value="alpha">Alfabético</option>
                 <option value="best-position">Mejor posición</option>
@@ -294,7 +292,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                     "px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
                     result === s.result
                       ? "bg-gray-900 text-white border-gray-900"
-                      : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                      : "border-line text-gray-600 hover:bg-background"
                   )}
                   title={new Date(s.updatedAt).toLocaleDateString("es-ES")}
                 >
@@ -313,14 +311,14 @@ export default function TfidfView({ projectId }: { projectId: string }) {
       )}
 
       {/* Formulario de análisis manual */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1">
             <label className="block text-sm font-medium text-gray-700">Keyword</label>
             <input
               type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)}
               placeholder="ej. reformas cocina valencia" required
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-brand"
+              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand"
             />
           </div>
           <div className="space-y-1">
@@ -338,7 +336,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
           </button>
           {showAdvanced && (
             <input type="text" value={languageCode} onChange={(e) => setLanguageCode(e.target.value)}
-              placeholder="es" className="mt-2 w-24 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-brand" />
+              placeholder="es" className="mt-2 w-24 px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand" />
           )}
         </div>
         {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
@@ -362,7 +360,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
               quienes ya posicionan. Llega gratis con el SERP que paga el
               rank tracking / este análisis. */}
           {result.competitors && result.competitors.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
               <div className="flex items-center gap-2 mb-1">
                 <Search className="h-4 w-4 text-gray-400" />
                 <h3 className="text-sm font-semibold text-gray-900">
@@ -411,12 +409,12 @@ export default function TfidfView({ projectId }: { projectId: string }) {
           {((result.peopleAlsoAsk && result.peopleAlsoAsk.length > 0) ||
             (result.relatedSearches && result.relatedSearches.length > 0) ||
             result.featuredSnippet) && (
-            <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
               <h3 className="text-sm font-semibold text-gray-900">Ideas de contenido desde el propio SERP</h3>
               {result.featuredSnippet && (
                 <div>
                   <p className="text-xs font-medium text-gray-500 mb-1">Featured snippet actual</p>
-                  <div className="bg-gray-50 rounded-lg p-3">
+                  <div className="bg-background rounded-lg p-3">
                     <p className="text-sm font-medium text-gray-900">{result.featuredSnippet.title ?? "(sin título)"}</p>
                     {result.featuredSnippet.description && (
                       <p className="text-xs text-gray-600 mt-0.5">{result.featuredSnippet.description}</p>
@@ -454,7 +452,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
 
           {/* Temas del top-10 (H2/H3 con cobertura) */}
           {result.topics.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <FileSearch className="h-4 w-4 text-gray-400" />
@@ -462,12 +460,12 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={copyTopics}
-                    className="flex items-center gap-1.5 px-2.5 py-1 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50">
+                    className="flex items-center gap-1.5 px-2.5 py-1 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background">
                     {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <ClipboardCopy className="h-3.5 w-3.5" />}
                     {copied ? "Copiado" : "Copiar temas"}
                   </button>
                   <button onClick={sendToKeywords} disabled={addingToKeywords}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
                     title="Añadir estos temas/términos al estudio General de Keywords (resuelve volumen real)">
                     {addingToKeywords ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                     Añadir a Keywords
@@ -497,7 +495,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                 {result.topics.slice(0, 40).map((t, i) => {
                   const pct = totalSources > 0 ? Math.round((t.coverage / totalSources) * 100) : 0;
                   return (
-                    <li key={i} className="flex items-center justify-between gap-2 py-1.5 px-3 rounded-lg hover:bg-gray-50">
+                    <li key={i} className="flex items-center justify-between gap-2 py-1.5 px-3 rounded-lg hover:bg-background">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-sm text-gray-900 truncate">{t.text}</span>
                       </div>
@@ -514,7 +512,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
 
           {/* Palabras más frecuentes en encabezados */}
           {result.headingTerms.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
               <div className="flex items-center gap-2 mb-3">
                 <List className="h-4 w-4 text-gray-400" />
                 <h3 className="text-sm font-semibold text-gray-900">Palabras frecuentes en encabezados</h3>
@@ -535,14 +533,14 @@ export default function TfidfView({ projectId }: { projectId: string }) {
 
           {/* Encabezados completos por página */}
           {result.headingsByPage.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Encabezados por página del top-10</h3>
               <div className="space-y-1.5">
                 {result.headingsByPage.map((p, i) => (
-                  <div key={i} className="border border-gray-100 rounded-lg overflow-hidden">
+                  <div key={i} className="border border-line rounded-xl overflow-hidden">
                     <button
                       onClick={() => setExpandedPage(expandedPage === p.url ? null : p.url)}
-                      className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-gray-50"
+                      className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-background"
                     >
                       <span className="text-gray-700 truncate flex-1 text-left">{p.url}</span>
                       <span className="text-xs text-gray-400 shrink-0">{p.headings.length} H2/H3</span>
@@ -551,7 +549,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                         : <ChevronDown className="h-3.5 w-3.5 text-gray-400 shrink-0" />}
                     </button>
                     {expandedPage === p.url && (
-                      <ul className="px-4 py-2 space-y-1 bg-gray-50">
+                      <ul className="px-4 py-2 space-y-1 bg-background">
                         {p.headings.map((h, j) => (
                           <li key={j} className="text-sm text-gray-600">• {h}</li>
                         ))}
@@ -565,7 +563,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
 
           {/* Términos TF-IDF (colapsable) */}
           {result.terms.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
               <button onClick={() => setShowTerms((v) => !v)}
                 className="flex items-center gap-1 text-sm font-semibold text-gray-900">
                 {showTerms ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -574,7 +572,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
               {showTerms && (
                 <div className="overflow-x-auto mt-3">
                   <table className="w-full text-sm">
-                    <thead><tr className="text-left text-xs text-gray-400 border-b border-gray-100">
+                    <thead><tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
                       <th className="py-2 pr-4 font-medium">Término</th>
                       <th className="py-2 pr-4 font-medium">TF-IDF</th>
                       <th className="py-2 font-medium">Nº docs</th>
@@ -595,7 +593,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
           )}
 
           {/* Corpus */}
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Corpus ({result.sources.length} páginas)</h3>
             {result.sources.length === 0 ? (
               <p className="text-sm text-gray-500">No se pudo scrapear ninguna página.</p>

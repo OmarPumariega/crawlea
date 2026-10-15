@@ -9,6 +9,7 @@ import {
 import GeogridMap from "@/components/admin/GeogridMap";
 import PositionDistribution, { type PositionBuckets } from "@/components/admin/PositionDistribution";
 import SectionOrderList from "@/components/admin/SectionOrderList";
+import Pill from "@/components/admin/Pill";
 import { cn } from "@/lib/utils";
 import PrintButton from "./PrintButton";
 import { splitManualTask } from "@/lib/tasks";
@@ -174,7 +175,7 @@ function fmtInt(n: number): string {
 
 function SectionTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
+    <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900 border-b border-line pb-2 mb-4">
       <span className="text-gray-400 print:text-black">{icon}</span>
       {children}
     </h2>
@@ -260,7 +261,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             const label = t.issueType ? ISSUE_META[t.issueType]?.label ?? t.issueType : splitManualTask(t.text).title;
             const sub = t.issueType ? `${t.affectedUrls.length} página${t.affectedUrls.length === 1 ? "" : "s"} corregida${t.affectedUrls.length === 1 ? "" : "s"}` : null;
             return (
-              <li key={t.id} className="flex items-start justify-between gap-3 text-sm border-b border-gray-100 pb-2 last:border-0">
+              <li key={t.id} className="flex items-start justify-between gap-3 text-sm border-b border-line pb-2 last:border-0">
                 <div className="min-w-0"><p className="text-gray-900">{label}</p>{sub && <p className="text-xs text-gray-400">{sub}</p>}</div>
                 <span className="text-xs text-gray-400 shrink-0 whitespace-nowrap">{fmtDate(t.completedAt)}</span>
               </li>
@@ -318,7 +319,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
           {/* Visibilidad en Google (Search Console, gratis) */}
           {data.authority && (data.authority.impressions > 0 || data.authority.queries > 0) && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-3 border-t border-gray-100">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-3 border-t border-line">
               <Stat label={`Impresiones (${data.authority.month})`} value={fmtTraffic(data.authority.impressions)} />
               <Stat label={`Clics (${data.authority.month})`} value={fmtTraffic(data.authority.clicks)} />
               <Stat label="Queries con datos" value={data.authority.queries.toLocaleString("es-ES")} />
@@ -346,13 +347,13 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-gray-400 border-b border-gray-200">
+              <thead><tr className="text-left text-gray-400 border-b border-line">
                 <th className="py-2 pr-4 font-medium">Keyword</th><th className="py-2 pr-4 font-medium">Dispositivo</th>
                 <th className="py-2 pr-4 font-medium text-right">Última</th><th className="py-2 pr-2 font-medium"></th><th className="py-2 pr-4 font-medium text-right">Mejor</th><th className="py-2 pr-4 font-medium">Chequeo</th>
               </tr></thead>
               <tbody>
                 {data.rank.topRank.map((k, i) => (
-                  <tr key={i} className="border-b border-gray-100 last:border-0">
+                  <tr key={i} className="border-b border-line last:border-0">
                     <td className="py-2 pr-4 text-gray-900">{k.keyword}</td>
                     <td className="py-2 pr-4 text-gray-500">{k.device === "mobile" ? "Móvil" : "Escritorio"}</td>
                     <td className="py-2 pr-4 text-right tabular-nums text-gray-900">{k.lastPosition ?? "—"}</td>
@@ -390,7 +391,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       {data.keywords.top.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-gray-400 border-b border-gray-200">
+            <thead><tr className="text-left text-gray-400 border-b border-line">
               <th className="py-2 pr-4 font-medium">Keyword</th>
               <th className="py-2 pr-4 font-medium text-right">Volumen</th>
               <th className="py-2 pr-4 font-medium text-right">Dificultad</th>
@@ -398,7 +399,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             </tr></thead>
             <tbody>
               {data.keywords.top.map((k, i) => (
-                <tr key={i} className="border-b border-gray-100 last:border-0">
+                <tr key={i} className="border-b border-line last:border-0">
                   <td className="py-2 pr-4 text-gray-900">{k.keyword}</td>
                   <td className="py-2 pr-4 text-right tabular-nums text-gray-700">{k.searchVolume ?? "—"}</td>
                   <td className="py-2 pr-4 text-right tabular-nums text-gray-700">{k.difficulty ?? "—"}</td>
@@ -465,7 +466,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       ) : (
         <ul className="space-y-2 text-sm">
           {data["titulos-meta"].map((g, i) => (
-            <li key={i} className="border-b border-gray-100 pb-2 last:border-0">
+            <li key={i} className="border-b border-line pb-2 last:border-0">
               <p className="text-xs text-gray-400">{g.url}</p>
               <p className="text-gray-900">{g.variants[0]?.title ?? "—"}</p>
               <p className="text-xs text-gray-500">{g.variants[0]?.description}</p>
@@ -484,7 +485,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       ) : (
         <ul className="space-y-1 text-sm">
           {data.schema.map((g, i) => (
-            <li key={i} className="flex items-center justify-between gap-2 border-b border-gray-100 pb-1 last:border-0">
+            <li key={i} className="flex items-center justify-between gap-2 border-b border-line pb-1 last:border-0">
               <span className="text-gray-900 truncate">{g.selectedType}</span>
               <span className="text-xs text-gray-400 truncate">{g.url}</span>
               <span className={g.valid ? "text-[10px] text-emerald-600" : "text-[10px] text-amber-600"}>{g.valid ? "válido" : "avisos"}</span>
@@ -503,7 +504,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       ) : (
         <ul className="space-y-1 text-sm">
           {data.contenido.map((g, i) => (
-            <li key={i} className="flex items-center justify-between gap-2 border-b border-gray-100 pb-1 last:border-0">
+            <li key={i} className="flex items-center justify-between gap-2 border-b border-line pb-1 last:border-0">
               <span className="text-gray-900 truncate">{g.topic}</span>
               <span className="text-xs text-gray-400">{fmtDate(g.createdAt)}</span>
             </li>
@@ -532,7 +533,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             <ul className="text-sm space-y-1">
               <p className="text-xs text-gray-400">Top queries reales:</p>
               {data.google.topQueries.map((q, i) => (
-                <li key={i} className="flex items-center justify-between gap-2 border-b border-gray-100 pb-1 last:border-0">
+                <li key={i} className="flex items-center justify-between gap-2 border-b border-line pb-1 last:border-0">
                   <span className="text-gray-900 truncate">{q.query}</span>
                   <span className="text-xs text-gray-400">{fmtInt(q.clicks)} clics · pos. {q.position.toFixed(1)}</span>
                 </li>
@@ -540,7 +541,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             </ul>
           )}
           {data.google.ga4 && (
-            <div className="pt-3 border-t border-gray-100 space-y-3">
+            <div className="pt-3 border-t border-line space-y-3">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Google Analytics (GA4)</p>
               <div className="grid grid-cols-2 gap-4">
                 <Stat label="Sesiones" value={fmtInt(data.google.ga4.sessions)} />
@@ -550,7 +551,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                 <ul className="text-sm space-y-1">
                   <p className="text-xs text-gray-400">Canales de tráfico principales:</p>
                   {data.google.ga4.topChannels.map((c, i) => (
-                    <li key={i} className="flex items-center justify-between gap-2 border-b border-gray-100 pb-1 last:border-0">
+                    <li key={i} className="flex items-center justify-between gap-2 border-b border-line pb-1 last:border-0">
                       <span className="text-gray-900">{c.channel}</span>
                       <span className="text-xs text-gray-400">{fmtInt(c.sessions)} sesiones</span>
                     </li>
@@ -576,7 +577,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           <Stat label="Queries canibalizadas" value={String(data.canibalizaciones.count)} />
           <ul className="text-sm space-y-1">
             {data.canibalizaciones.top.map((c, i) => (
-              <li key={i} className="flex items-center justify-between gap-2 border-b border-gray-100 pb-1 last:border-0">
+              <li key={i} className="flex items-center justify-between gap-2 border-b border-line pb-1 last:border-0">
                 <span className="text-gray-900 truncate">“{c.query}”</span>
                 <span className="text-xs text-gray-400">{c.urls} URLs · {fmtInt(c.clicks)} clics</span>
               </li>
@@ -634,13 +635,13 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-gray-400 border-b border-gray-200">
+              <thead><tr className="text-left text-gray-400 border-b border-line">
                 <th className="py-2 pr-4 font-medium">URL</th><th className="py-2 pr-4 font-medium text-right">PageRank</th>
                 <th className="py-2 pr-4 font-medium text-right">Entrantes</th><th className="py-2 pr-4 font-medium text-right">Salientes</th>
               </tr></thead>
               <tbody>
                 {data.links.pages.map((p) => (
-                  <tr key={p.url} className="border-b border-gray-100 last:border-0">
+                  <tr key={p.url} className="border-b border-line last:border-0">
                     <td className="py-2 pr-4 text-gray-900 max-w-[320px] truncate">{p.url}</td>
                     <td className="py-2 pr-4 text-right tabular-nums text-gray-900">{(p.pagerank * 100).toFixed(2)}%</td>
                     <td className="py-2 pr-4 text-right tabular-nums text-gray-500">{p.incoming}</td>
@@ -681,7 +682,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           {data.competitors.own.topKeywords && data.competitors.own.topKeywords.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {data.competitors.own.topKeywords.map((k, i) => (
-                <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-gray-50 text-gray-600">
+                <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-background text-gray-600">
                   {k.keyword}
                   {k.position != null && <span className="text-gray-400">· #{k.position}</span>}
                 </span>
@@ -697,13 +698,13 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
         <div className="space-y-4">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-gray-400 border-b border-gray-200">
+              <thead><tr className="text-left text-gray-400 border-b border-line">
                 <th className="py-2 pr-4 font-medium">Dominio</th><th className="py-2 pr-4 font-medium text-right">Tráfico orgánico</th>
                 <th className="py-2 pr-4 font-medium text-right">Keywords</th><th className="py-2 pr-4 font-medium">Análisis</th>
               </tr></thead>
               <tbody>
                 {data.competitors.items.map((c) => (
-                  <tr key={c.domain} className="border-b border-gray-100 last:border-0">
+                  <tr key={c.domain} className="border-b border-line last:border-0">
                     <td className="py-2 pr-4 text-gray-900">{c.domain}</td>
                     <td className="py-2 pr-4 text-right tabular-nums text-gray-900">{fmtTraffic(c.organicTraffic)}</td>
                     <td className="py-2 pr-4 text-right tabular-nums text-gray-500">{c.organicKeywords?.toLocaleString("es-ES") ?? "—"}</td>
@@ -733,7 +734,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {c.topKeywords.map((k, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-gray-50 text-gray-600">
+                        <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-background text-gray-600">
                           {k.keyword}
                           {k.position != null && <span className="text-gray-400">· #{k.position}</span>}
                         </span>
@@ -749,7 +750,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                       {(c.contentGap?.length ?? 0) > 15 ? " · top 15 por volumen" : ""}
                     </p>
                     <table className="w-full text-xs">
-                      <thead><tr className="text-left text-gray-300 border-b border-gray-100">
+                      <thead><tr className="text-left text-gray-300 border-b border-line">
                         <th className="py-1.5 pr-2 font-medium">Keyword</th>
                         <th className="py-1.5 px-2 font-medium text-right">Vol.</th>
                         <th className="py-1.5 px-2 font-medium text-right">CPC</th>
@@ -802,7 +803,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-gray-400 border-b border-gray-200">
+            <thead><tr className="text-left text-gray-400 border-b border-line">
               <th className="py-2 pr-4 font-medium">Dominio</th>
               <th className="py-2 pr-4 font-medium text-right">Autoridad</th>
               <th className="py-2 pr-4 font-medium text-right">Backlinks</th>
@@ -810,7 +811,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             </tr></thead>
             <tbody>
               {data.backlinks.own && (
-                <tr className="border-b border-gray-100">
+                <tr className="border-b border-line">
                   <td className="py-2 pr-4 text-gray-900 font-medium">
                     {data.project.domain} <span className="text-[10px] text-emerald-700 font-semibold">· TÚ</span>
                   </td>
@@ -820,7 +821,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                 </tr>
               )}
               {data.backlinks.competitors.map((c) => (
-                <tr key={c.domain} className="border-b border-gray-100 last:border-0">
+                <tr key={c.domain} className="border-b border-line last:border-0">
                   <td className="py-2 pr-4 text-gray-900">{c.domain}</td>
                   <td className="py-2 pr-4 text-right tabular-nums text-gray-900">{c.rank ?? "—"}</td>
                   <td className="py-2 pr-4 text-right tabular-nums text-gray-500">{c.backlinksTotal?.toLocaleString("es-ES") ?? "—"}</td>
@@ -877,7 +878,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                   <p className="text-xs text-gray-500 mb-1.5">Términos TF-IDF ({t.terms.length})</p>
                   <div className="flex flex-wrap gap-1.5">
                     {t.terms.map((term, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-gray-50 text-gray-600">
+                      <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-background text-gray-600">
                         {term.term} <span className="text-gray-400">· {term.tfidf.toFixed(2)}</span>
                       </span>
                     ))}
@@ -902,13 +903,13 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                 <div>
                   <p className="text-xs text-gray-500 mb-1.5">Temas (H2/H3) del top-10 ({t.topics.length})</p>
                   <table className="w-full text-sm">
-                    <thead><tr className="text-left text-gray-400 border-b border-gray-200">
+                    <thead><tr className="text-left text-gray-400 border-b border-line">
                       <th className="py-1.5 pr-4 font-medium">Encabezado</th>
                       <th className="py-1.5 pr-4 font-medium text-right">Páginas que lo cubren</th>
                     </tr></thead>
                     <tbody>
                       {t.topics.map((topic, i) => (
-                        <tr key={i} className="border-b border-gray-100 last:border-0">
+                        <tr key={i} className="border-b border-line last:border-0">
                           <td className="py-1.5 pr-4 text-gray-900">{topic.text}</td>
                           <td className="py-1.5 pr-4 text-right tabular-nums text-gray-500">{topic.coverage}</td>
                         </tr>
@@ -966,7 +967,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
   const visibleSections = order.filter((k) => config[k]);
 
   return (
-    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[19rem_1fr] gap-6 items-start print:block print:max-w-none">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[19rem_1fr] gap-8 items-start print:block print:max-w-none">
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           @page { margin: 1.5cm; }
@@ -996,28 +997,26 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       <aside className="lg:sticky lg:top-6 self-start space-y-4 print:hidden">
         {/* Navegación de mes a ancho completo (antes compartía fila con el
             botón de imprimir y se cortaba en el aside estrecho). */}
-        <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-1 py-1">
-          <Link href={data.prevHref} className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md" title="Mes anterior"><ChevronLeft className="h-4 w-4" /></Link>
+        <div className="flex items-center gap-1 bg-white border border-line rounded-xl px-1 py-1 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+          <Link href={data.prevHref} className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-background rounded-lg transition-colors" title="Mes anterior"><ChevronLeft className="h-4 w-4" /></Link>
           <span className="flex-1 text-sm font-medium text-gray-900 px-2 text-center">{data.monthLabel}</span>
           {data.nextHref === null ? (
             <span className="p-1.5 text-gray-300"><ChevronRight className="h-4 w-4" /></span>
           ) : (
-            <Link href={data.nextHref} className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-md" title="Mes siguiente"><ChevronRight className="h-4 w-4" /></Link>
+            <Link href={data.nextHref} className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-background rounded-lg transition-colors" title="Mes siguiente"><ChevronRight className="h-4 w-4" /></Link>
           )}
         </div>
         <PrintButton className="w-full" projectName={data.project.name} />
 
         {/* Panel de control: secciones activables + reordenables */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-900">Secciones del informe</h3>
-            <div className="flex items-center gap-2">
-              {saved && <span className="text-xs text-emerald-600">Configuración guardada</span>}
-              <button type="button" onClick={save} disabled={saving} className="px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50">
-                {saving ? "Guardando…" : "Guardar configuración"}
-              </button>
-            </div>
+        <div className="bg-white rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <h3 className="text-lg font-bold tracking-tight text-gray-900">Secciones del informe</h3>
+            <button type="button" onClick={save} disabled={saving} className="shrink-0 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50">
+              {saving ? "Guardando…" : "Guardar configuración"}
+            </button>
           </div>
+          {saved && <Pill tone="success" className="mb-3">Configuración guardada</Pill>}
           <p className="text-xs text-gray-400 mb-3">
             Activa o desactiva cada sección y reordénala con las flechas ↑ ↓ — las activadas se
             agrupan siempre arriba.
@@ -1032,7 +1031,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             type="button"
             onClick={reset}
             disabled={resetting || saving}
-            className="mt-3 w-full text-xs text-gray-500 hover:text-gray-900 disabled:opacity-50"
+            className="mt-3 w-full border-t border-line pt-3 text-xs text-gray-500 hover:text-gray-900 transition-colors disabled:opacity-50"
             title="Borra el override de este proyecto y cae al default configurado en Configuración → Informe"
           >
             {resetting ? "Restableciendo…" : "Restablecer al default global"}
@@ -1041,8 +1040,8 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       </aside>
 
       {/* Hoja del informe — se renderizan las secciones activadas, en el orden elegido */}
-      <div className="bg-white rounded-xl border border-gray-200 px-8 py-10 space-y-8 print:border-0 print:rounded-none print:px-0 print:py-0">
-        <div className="border-b border-gray-200 pb-5">
+      <div className="bg-white rounded-xl border border-line px-8 py-10 space-y-8 print:border-0 print:rounded-none print:px-0 print:py-0">
+        <div className="border-b border-line pb-5">
           <div className="flex items-center gap-2 text-gray-400 mb-1">
             <FileText className="h-4 w-4" />
             <span className="text-xs uppercase tracking-wide font-medium">Informe SEO</span>
@@ -1059,7 +1058,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           <div key={key}>{dispatch[key]()}</div>
         ))}
 
-        <footer className="border-t border-gray-200 pt-4 text-xs text-gray-400 print:text-black">
+        <footer className="border-t border-line pt-4 text-xs text-gray-400 print:text-black">
           Informe generado por SEO Ciro · Agencia Ciro
           {!data.isCurrentMonth && " · Informe de un mes anterior — los datos de estado (salud técnica, SEO local) reflejan la última medición hasta el fin de ese mes."}
         </footer>

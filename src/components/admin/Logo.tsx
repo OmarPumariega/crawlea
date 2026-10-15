@@ -1,9 +1,11 @@
 import { cn } from "@/lib/utils";
 
 // Marca de SEO Ciro: cuadrado redondeado + tres barras ascendentes (motivo de
-// ranking/crecimiento). Dos tonos:
-//   • "brand" (default, fondos claros): cuadrado en color de marca, barras blancas.
-//   • "light" (fondos de marca): cuadrado blanco, barras en color de marca.
+// ranking/crecimiento). El símbolo usa el color de marca y no depende del
+// color del texto contenedor:
+//   • "brand" (default): cuadrado verde de marca, barras blancas — el tono
+//     acento del sistema, funciona sobre claro y oscuro.
+//   • "light" (fondos de tinta, p. ej. el login): cuadrado lima, barras tinta.
 
 function LogoMark({
   className,
@@ -12,8 +14,8 @@ function LogoMark({
   className?: string;
   tone?: "brand" | "light";
 }) {
-  const squareFill = tone === "brand" ? "currentColor" : "#ffffff";
-  const barsFill = tone === "brand" ? "#ffffff" : "currentColor";
+  const squareFill = tone === "brand" ? "var(--brand)" : "var(--signal)";
+  const barsFill = tone === "brand" ? "#ffffff" : "var(--ink)";
   return (
     <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden="true">
       <rect width="32" height="32" rx="7" fill={squareFill} />

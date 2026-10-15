@@ -89,7 +89,7 @@ function SettingField({
             onChange={(e) => setValue(e.target.value)}
             placeholder={status.configured ? "Configurado (escribe para sustituirlo)" : placeholder}
             rows={3}
-            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 resize-y"
+            className="flex-1 px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors resize-y"
           />
         ) : (
           <input
@@ -98,7 +98,7 @@ function SettingField({
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={status.configured ? "•••••••••••• (déjalo vacío para no cambiarlo)" : placeholder}
-            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 font-mono"
+            className="flex-1 px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors font-mono"
           />
         )}
         <button
@@ -147,7 +147,7 @@ export default function ApiSettingsCard() {
   const groups = Array.from(new Set(SETTINGS_CATALOG.map((s) => s.group)));
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-5">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-5">
       <div className="flex items-center gap-2">
         <KeyRound className="h-5 w-5 text-gray-500" />
         <div>

@@ -84,7 +84,7 @@ export default function ProjectEditView({ project }: { project: ProjectRecord })
                   setDeleteError("");
                 }}
                 disabled={deleting}
-                className="flex-1 px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="flex-1 px-4 py-2 text-sm text-gray-600 border border-line rounded-xl hover:bg-background disabled:opacity-50"
               >
                 Cancelar
               </button>

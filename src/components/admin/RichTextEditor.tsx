@@ -46,8 +46,8 @@ function ToolbarButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-40 disabled:hover:bg-transparent",
-        active && "bg-gray-900 text-white hover:bg-gray-800 hover:text-white"
+        "p-1.5 rounded-lg text-gray-500 hover:bg-black/[0.05] hover:text-gray-900 transition-colors disabled:opacity-40 disabled:hover:bg-transparent",
+        active && "bg-brand text-white hover:bg-brand-strong hover:text-white"
       )}
     >
       {children}
@@ -108,15 +108,15 @@ export default function RichTextEditor({
 
   if (!editor) {
     return (
-      <div className={cn("border border-gray-200 rounded-lg", className)}>
+      <div className={cn("border border-line rounded-xl", className)}>
         <div className="min-h-[84px] px-3 py-2" />
       </div>
     );
   }
 
   return (
-    <div className={cn("border border-gray-200 rounded-lg focus-within:border-gray-400", className)}>
-      <div className="flex items-center gap-0.5 px-1.5 py-1 border-b border-gray-100">
+    <div className={cn("border border-line rounded-xl focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/15 transition-colors overflow-hidden", className)}>
+      <div className="flex items-center gap-0.5 px-1.5 py-1 border-b border-line bg-background">
         <ToolbarButton
           title="Negrita"
           active={editor.isActive("bold")}
@@ -142,7 +142,7 @@ export default function RichTextEditor({
           <UnderlineIcon className="h-3.5 w-3.5" />
         </ToolbarButton>
 
-        <div className="w-px h-4 bg-gray-200 mx-1" />
+        <div className="w-px h-4 bg-black/10 mx-1" />
 
         <Popover.Root>
           <Popover.Trigger asChild>
@@ -150,7 +150,7 @@ export default function RichTextEditor({
               type="button"
               title="Color de texto"
               disabled={disabled}
-              className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-40"
+              className="p-1.5 rounded-lg text-gray-500 hover:bg-black/[0.05] hover:text-gray-900 transition-colors disabled:opacity-40"
             >
               <Palette className="h-3.5 w-3.5" />
             </button>
@@ -158,7 +158,7 @@ export default function RichTextEditor({
           <Popover.Portal>
             <Popover.Content
               sideOffset={6}
-              className="z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-2 flex items-center gap-1.5"
+              className="z-50 bg-white border border-line rounded-xl shadow-[0_8px_24px_rgba(26,29,26,0.12)] p-2 flex items-center gap-1.5"
             >
               {COLOR_SWATCHES.map((c) => (
                 <button

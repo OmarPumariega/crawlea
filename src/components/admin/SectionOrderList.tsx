@@ -47,8 +47,8 @@ export default function SectionOrderList({
   function Group({ title, keys }: { title: string; keys: SectionKey[] }) {
     if (keys.length === 0) return null;
     return (
-      <div className="space-y-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 px-1">
+      <div className="space-y-1.5">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400 px-1">
           {title} ({keys.length})
         </p>
         <ul className="space-y-1">
@@ -56,8 +56,10 @@ export default function SectionOrderList({
             <li
               key={key}
               className={cn(
-                "flex items-center gap-2 text-sm",
-                variant === "boxed" && "bg-gray-50 rounded-lg px-2 py-1.5"
+                "flex items-center gap-2 text-sm rounded-xl transition-colors",
+                variant === "boxed"
+                  ? "bg-background border border-line/60 px-2.5 py-2"
+                  : "px-1.5 py-1 hover:bg-background"
               )}
             >
               <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
@@ -65,7 +67,7 @@ export default function SectionOrderList({
                   type="checkbox"
                   checked={enabledMap[key]}
                   onChange={() => onToggle(key)}
-                  className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-400"
+                  className="h-4 w-4 rounded accent-brand"
                 />
                 <span className="text-gray-700 truncate">{SECTION_LABELS[key]}</span>
               </label>
@@ -73,7 +75,7 @@ export default function SectionOrderList({
                 type="button"
                 onClick={() => moveWithinGroup(key, -1)}
                 disabled={i === 0}
-                className="p-1 text-gray-300 hover:text-gray-900 disabled:opacity-30"
+                className="p-1 text-gray-400 hover:text-gray-900 hover:bg-white rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                 title="Subir"
               >
                 <ChevronUp className="h-3.5 w-3.5" />
@@ -82,7 +84,7 @@ export default function SectionOrderList({
                 type="button"
                 onClick={() => moveWithinGroup(key, 1)}
                 disabled={i === keys.length - 1}
-                className="p-1 text-gray-300 hover:text-gray-900 disabled:opacity-30"
+                className="p-1 text-gray-400 hover:text-gray-900 hover:bg-white rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                 title="Bajar"
               >
                 <ChevronDown className="h-3.5 w-3.5" />

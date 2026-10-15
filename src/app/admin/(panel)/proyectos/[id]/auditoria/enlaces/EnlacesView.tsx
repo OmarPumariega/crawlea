@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Loader2, Network, Link2, AlertTriangle, Download } from "lucide-react";
 import { downloadCsv } from "@/lib/csv";
 import UrlLink from "@/components/admin/UrlLink";
+import PageHeader from "@/components/admin/PageHeader";
 
 type PageRow = {
   url: string;
@@ -50,7 +51,7 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
 
   if (needsAudit) {
     return (
-      <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-2">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-6 space-y-2">
         <div className="flex items-center gap-2 text-gray-900 font-medium">
           <Network className="h-5 w-5 text-gray-400" />
           Aún no hay grafo de enlaces
@@ -80,18 +81,18 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">Enlazado interno</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          PageRank interno calculado sobre el grafo de enlaces de la última auditoría — identifica qué URLs reciben más fuerza, cuáles están huérfanas y cuáles son hubs distribuidores.
-        </p>
-        <p className="text-xs text-gray-400 mt-1">
-          {all.length} URLs analizadas · {data.totalExternalLinks} enlaces externos · auditoría del {new Date(data.auditDate).toLocaleDateString("es-ES")}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Auditoría · Enlaces"
+        title="Enlazado interno"
+        description="PageRank interno calculado sobre el grafo de enlaces de la última auditoría — identifica qué URLs reciben más fuerza, cuáles están huérfanas y cuáles son hubs distribuidores."
+      />
+      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
+        {all.length} URLs analizadas · {data.totalExternalLinks} enlaces externos · auditoría del{" "}
+        {new Date(data.auditDate).toLocaleDateString("es-ES")}
+      </p>
 
       {/* Tabla completa de PageRank por URL */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Network className="h-4 w-4 text-gray-500" />
@@ -107,7 +108,7 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
                 all.map((p) => [p.url, (p.pagerank * 100).toFixed(2), p.incoming, p.outgoing, p.externalLinks])
               )
             }
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background"
             title="Exportar a CSV"
           >
             <Download className="h-3.5 w-3.5" />
@@ -117,7 +118,7 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
         <div className="overflow-x-auto max-h-[28rem] overflow-y-auto">
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-white">
-              <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
+              <tr className="text-left text-xs text-gray-400 border-b border-line">
                 <th className="font-medium py-2 pr-4">URL</th>
                 <th className="font-medium py-2 px-2 text-right">PageRank</th>
                 <th className="font-medium py-2 px-2 text-right">Entrantes</th>
@@ -167,7 +168,7 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             <h3 className="text-sm font-semibold text-gray-900">
@@ -194,7 +195,7 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
           <div className="flex items-center gap-2 mb-4">
             <Link2 className="h-4 w-4 text-gray-500" />
             <h3 className="text-sm font-semibold text-gray-900">
@@ -222,7 +223,7 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
 
       {/* Dominios externos más enlazados */}
       {data.topExternalDomains.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
           <div className="flex items-center gap-2 mb-4">
             <Link2 className="h-4 w-4 text-gray-500" />
             <h3 className="text-sm font-semibold text-gray-900">

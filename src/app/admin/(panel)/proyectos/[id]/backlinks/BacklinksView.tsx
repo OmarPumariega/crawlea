@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { Loader2, Sparkles, ChevronDown, ChevronUp, ExternalLink, ShieldAlert, Filter, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { backlinkAnalysisCostUsd } from "@/lib/dataforseo/pricing";
+import PageHeader from "@/components/admin/PageHeader";
 
 // TODOS los campos que devuelve /v3/backlinks/backlinks/live — antes solo se
 // mostraban 6, el resto se pedía y se tiraba. Nada se muestra que no venga
@@ -162,7 +163,7 @@ function BacklinkGapCard({
   if (!ownSnapshot || !competitorSnapshot) return null; // falta analizar alguno de los dos — sin ruido
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-2">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 space-y-2">
       <div className="flex items-center gap-2">
         <Link2 className="h-4 w-4 text-gray-400" />
         <h3 className="text-sm font-semibold text-gray-900">
@@ -177,7 +178,7 @@ function BacklinkGapCard({
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-left text-gray-400 border-b border-gray-100">
+              <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
                 <th className="py-1.5 pr-2 font-medium">Dominio</th>
                 <th className="py-1.5 pr-2 font-medium text-right">Autoridad</th>
                 <th className="py-1.5 pr-2 font-medium text-right">Backlinks encontrados</th>
@@ -224,7 +225,7 @@ function BacklinkRow({ b }: { b: TopBacklink }) {
   const days = daysAgo(b.lastSeen ?? b.firstSeen);
   return (
     <>
-      <tr className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60 cursor-pointer" onClick={() => setExpanded((v) => !v)}>
+      <tr className="border-b border-gray-50 last:border-0 hover:bg-background/60 cursor-pointer" onClick={() => setExpanded((v) => !v)}>
         <td className="py-1.5 pr-2 text-gray-900">
           {b.urlFrom ? (
             <a
@@ -263,7 +264,7 @@ function BacklinkRow({ b }: { b: TopBacklink }) {
         <td className="py-1.5 pr-2 text-gray-400">{days !== null ? `hace ${days}d` : "—"}</td>
       </tr>
       {expanded && (
-        <tr className="border-b border-gray-50 last:border-0 bg-gray-50/40">
+        <tr className="border-b border-gray-50 last:border-0 bg-background/40">
           <td colSpan={7} className="p-3">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1.5 text-[11px] text-gray-600">
               <div><span className="text-gray-400">Página destino:</span> {b.urlTo ?? "—"}</div>
@@ -355,7 +356,7 @@ function DomainDetail({
 
   if (!domain) {
     return (
-      <div className="bg-white rounded-xl border border-gray-100 p-4">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4">
         <p className="text-sm text-gray-500">
           Define el dominio del proyecto en su ficha para analizar sus backlinks.
         </p>
@@ -363,7 +364,7 @@ function DomainDetail({
     );
   }
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 space-y-3">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <p className="text-xs text-gray-400">{label}</p>
@@ -373,7 +374,7 @@ function DomainDetail({
           <select
             value={String(limit)}
             onChange={(e) => setLimit(e.target.value === "all" ? "all" : Number(e.target.value))}
-            className="px-2 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-gray-400 bg-white"
+            className="px-2 py-1.5 border border-line rounded-xl text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white"
           >
             {LIMIT_OPTIONS.map((n) => (
               <option key={n} value={n}>Top {n}</option>
@@ -427,7 +428,7 @@ function DomainDetail({
           {(targetPages.length > 0 || referringPages.length > 0) && (
             <div className="grid sm:grid-cols-2 gap-3">
               {targetPages.length > 0 && (
-                <div className="border border-gray-100 rounded-lg p-2.5">
+                <div className="border border-line rounded-xl p-2.5">
                   <p className="text-[11px] font-semibold text-gray-500 mb-1.5">Tus páginas con más enlaces entrantes</p>
                   <ul className="space-y-1">
                     {targetPages.map((p) => (
@@ -440,7 +441,7 @@ function DomainDetail({
                 </div>
               )}
               {referringPages.length > 0 && (
-                <div className="border border-gray-100 rounded-lg p-2.5">
+                <div className="border border-line rounded-xl p-2.5">
                   <p className="text-[11px] font-semibold text-gray-500 mb-1.5">Páginas de origen con más autoridad</p>
                   <ul className="space-y-1">
                     {referringPages.map((p, i) => (
@@ -466,7 +467,7 @@ function DomainDetail({
               </button>
               {expanded && (
                 <div className="mt-2 space-y-2">
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 bg-background rounded-xl px-3 py-2">
                     <Filter className="h-3.5 w-3.5 text-gray-400" />
                     <label className="flex items-center gap-1.5">
                       Autoridad mín.
@@ -476,7 +477,7 @@ function DomainDetail({
                         max={1000}
                         value={minAuthority}
                         onChange={(e) => setMinAuthority(Number(e.target.value) || 0)}
-                        className="w-16 px-1.5 py-0.5 border border-gray-200 rounded text-xs outline-none focus:border-gray-400"
+                        className="w-16 px-1.5 py-0.5 border border-line rounded-lg text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                       />
                     </label>
                     <label className="flex items-center gap-1.5">
@@ -484,7 +485,7 @@ function DomainDetail({
                       <select
                         value={maxDaysAgo ?? ""}
                         onChange={(e) => setMaxDaysAgo(e.target.value ? Number(e.target.value) : null)}
-                        className="px-1.5 py-0.5 border border-gray-200 rounded text-xs outline-none focus:border-gray-400 bg-white"
+                        className="px-1.5 py-0.5 border border-line rounded-lg text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white"
                       >
                         <option value="">cualquier fecha</option>
                         <option value="30">30 días</option>
@@ -501,7 +502,7 @@ function DomainDetail({
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="text-left text-gray-400 border-b border-gray-100">
+                        <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
                           <th className="py-1.5 pr-2 font-medium">Origen</th>
                           <th className="py-1.5 pr-2 font-medium text-right">Autoridad dominio</th>
                           <th className="py-1.5 pr-2 font-medium text-right">Autoridad página</th>
@@ -574,24 +575,21 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">Backlinks</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Enlazado externo: qué dominios enlazan a tu sitio (y a los de tus competidores ya trackeados
-          en Competidores), cuánta autoridad tienen y desde dónde. A diferencia del resto de la
-          herramienta, esto usa un producto de DataForSEO nuevo — cada análisis tiene coste real.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Módulo · Backlinks"
+        title="Backlinks"
+        description="{Enlazado externo: qué dominios enlazan a tu sitio (y a los de tus competidores ya trackeados           en Competidores), cuánta autoridad tienen y desde dónde. A diferencia del resto de la           herramienta, esto usa un producto de DataForSEO nuevo — cada análisis tiene coste real.}"
+      />
 
       {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
 
       {comparisonRows.length > 1 && (
-        <div className="bg-white rounded-xl border border-gray-100 p-4">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Comparativa de autoridad</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
+                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
                   <th className="py-1.5 pr-2 font-medium">Dominio</th>
                   <th className="py-1.5 px-2 font-medium text-right">Autoridad</th>
                   <th className="py-1.5 px-2 font-medium text-right">Backlinks</th>
@@ -628,7 +626,7 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
       />
 
       {data?.competitors.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-100 p-4 flex items-start gap-2">
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 flex items-start gap-2">
           <ShieldAlert className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
           <p className="text-sm text-gray-500">
             Todavía no hay competidores trackeados. Añádelos en el módulo Competidores — aquí se

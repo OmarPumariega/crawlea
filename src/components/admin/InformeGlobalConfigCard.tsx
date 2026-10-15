@@ -8,6 +8,7 @@ import {
   SECTION_KEYS,
 } from "@/lib/informe/sections";
 import SectionOrderList from "@/components/admin/SectionOrderList";
+import Pill from "@/components/admin/Pill";
 
 type ApiResponse = {
   sections: ReportSections;
@@ -102,21 +103,23 @@ export default function InformeGlobalConfigCard() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
       <div className="flex items-start gap-3">
-        <div className="h-9 w-9 rounded-lg bg-gray-900 text-white flex items-center justify-center shrink-0">
+        <div className="h-9 w-9 rounded-xl bg-brand/10 text-brand flex items-center justify-center shrink-0">
           <FileBarChart2 className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-gray-900">Informe — configuración por defecto</h3>
+          <h3 className="text-lg font-bold tracking-tight text-gray-900">Informe — configuración por defecto</h3>
           <p className="text-xs text-gray-500 mt-0.5">
             Define qué secciones aparecen y en qué orden para TODOS los proyectos por defecto. Cada
             proyecto puede tener su propio override desde su módulo Informe.
-            {!isCustom && loading === false && (
-              <span className="text-gray-400"> Actualmente usando el default del sistema.</span>
-            )}
-            {isCustom && <span className="text-emerald-600"> Actualmente personalizada.</span>}
           </p>
+          <div className="mt-2">
+            {!isCustom && loading === false && (
+              <Pill tone="neutral">Actualmente usando el default del sistema.</Pill>
+            )}
+            {isCustom && <Pill tone="success">Actualmente personalizada.</Pill>}
+          </div>
         </div>
       </div>
 

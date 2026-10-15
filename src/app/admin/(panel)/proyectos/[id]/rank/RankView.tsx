@@ -27,6 +27,9 @@ import { cn } from "@/lib/utils";
 import { rankMonthlyCostUsd } from "@/lib/dataforseo/pricing";
 import { downloadCsv } from "@/lib/csv";
 import RankVisibilityChart from "@/components/admin/RankVisibilityChart";
+import PageHeader from "@/components/admin/PageHeader";
+import StatHero from "@/components/admin/StatHero";
+import Pill from "@/components/admin/Pill";
 import LocationPicker, { type LocationValue } from "@/components/admin/LocationPicker";
 import UrlLink from "@/components/admin/UrlLink";
 import { RANK_FREQUENCY_LABELS, RANK_SCAN_FREQUENCIES } from "@/lib/rank/constants";
@@ -92,7 +95,7 @@ function dayKey(iso: string): string {
 // explicable y con umbrales fijos, nunca una caja negra. "Sin chequeo" (n/s)
 // se distingue de "chequeado pero fuera del depth" (—): son señales distintas.
 function positionCell(position: number | null | undefined, checked: boolean): { bg: string; text: string; label: string } {
-  if (!checked) return { bg: "bg-gray-50", text: "text-gray-300", label: "n/s" };
+  if (!checked) return { bg: "bg-background", text: "text-gray-300", label: "n/s" };
   if (position === null || position === undefined) return { bg: "bg-red-50", text: "text-red-500", label: "—" };
   if (position <= 3) return { bg: "bg-emerald-200", text: "text-emerald-900", label: String(position) };
   if (position <= 10) return { bg: "bg-emerald-50", text: "text-emerald-700", label: String(position) };
@@ -158,16 +161,16 @@ function SortableTh({
         type="button"
         onClick={() => onClick(sortKey)}
         className={cn(
-          "flex items-center gap-1 hover:text-gray-900",
+          "flex items-center gap-1 transition-colors hover:text-white",
           align === "right" && "ml-auto flex-row-reverse",
-          isActive ? "text-gray-900" : "text-gray-500"
+          isActive ? "text-white" : "text-white/60"
         )}
       >
         {label}
         {isActive ? (
           dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
         ) : (
-          <ChevronsUpDown className="h-3 w-3 text-gray-300" />
+          <ChevronsUpDown className="h-3 w-3 text-white/30" />
         )}
       </button>
     </th>
@@ -698,325 +701,177 @@ export default function RankView({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">Rank Tracking</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Seguimiento de posiciones orgánicas vía DataForSEO SERP. &laquo;Comprobar ahora&raquo; es
-          instantáneo; las frecuencias programadas las revisa el cron en segundo plano.
-        </p>
-      </div>
-
-      {/* Añadir keyword */}
-      <form onSubmit={handleAdd} className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Keywords a seguir (una por línea)</label>
-            <textarea
-              value={newKeyword}
-              onChange={(e) => setNewKeyword(e.target.value)}
-              placeholder={"abogado de familia madrid\nabogado laboralista madrid\nabogado penalista madrid"}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 resize-y"
-            />
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Ubicación <span className="text-gray-400 font-normal">(opcional)</span>
-              </label>
-              <LocationPicker
-                value={newLocation}
-                onChange={setNewLocation}
-                placeholder="España (nacional)"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Dispositivo</label>
-              <Select.Root value={newDevice} onValueChange={setNewDevice}>
-                <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white">
-                  <Select.Value />
-                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
-                    <Select.Viewport>
-                      <Select.Item value="desktop" className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>Desktop</Select.ItemText></Select.Item>
-                      <Select.Item value="mobile" className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>Móvil</Select.ItemText></Select.Item>
-                    </Select.Viewport>
-                  </Select.Content>
-                </Select.Portal>
-              </Select.Root>
-            </div>
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Frecuencia</label>
-              <Select.Root value={newFrequency} onValueChange={setNewFrequency}>
-                <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white">
-                  <Select.Value />
-                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
-                    <Select.Viewport>
-                      {Object.entries(RANK_FREQUENCY_LABELS).map(([v, l]) => (
-                        <Select.Item key={v} value={v} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>{l}</Select.ItemText></Select.Item>
-                      ))}
-                    </Select.Viewport>
-                  </Select.Content>
-                </Select.Portal>
-              </Select.Root>
-            </div>
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700" title="Resultados a rastrear. A mayor depth, más caro.">Profundidad</label>
-              <Select.Root value={newDepth} onValueChange={setNewDepth}>
-                <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white">
-                  <Select.Value />
-                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
-                    <Select.Viewport>
-                      {DEPTHS.map((d) => (
-                        <Select.Item key={d} value={String(d)} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>Top-{d}</Select.ItemText></Select.Item>
-                      ))}
-                    </Select.Viewport>
-                  </Select.Content>
-                </Select.Portal>
-              </Select.Root>
-            </div>
-          </div>
-        </div>
-        <p className="text-xs text-gray-400">
-          La ubicación simula la búsqueda desde ese punto (ej. &laquo;Gijón&raquo;) en vez de
-          España entera — más fiable para negocios locales. Sin elegir nada, España (nacional).
-        </p>
-
-        {error && <p className="text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg">{error}</p>}
-        <button
-          type="submit"
-          disabled={adding}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
-        >
-          {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-          Añadir a seguimiento
-        </button>
-        <p className="text-xs text-gray-400">
-          {newKeywordCount > 0
-            ? <>Estas {newKeywordCount} keyword(s) costarán <strong className="text-gray-600">~${newKeywordMonthlyCost.toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>
-            : <>Coste por keyword: <strong className="text-gray-600">~${rankMonthlyCostUsd(1, Number(newDepth), newFrequency).toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>}
-          {" "}Total del proyecto al añadirlas: ~${(projectMonthlyCost + newKeywordMonthlyCost).toFixed(2)}/mes.
-        </p>
-      </form>
-
-      {/* Escaneo programado del proyecto — antes vivía escondido dentro del
-          formulario de alta; tarjeta propia para que sea fácil de encontrar
-          y quede claro que es la palanca que sincroniza al mismo día TODAS
-          las keywords con frecuencia automática del proyecto (ver
-          src/lib/rank/job.ts). */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-gray-400" />
-          <h3 className="text-sm font-semibold text-gray-900">Escaneo programado del proyecto</h3>
-        </div>
-        <p className="text-xs text-gray-400">
-          Fija una fecha para que TODAS las keywords con frecuencia automática (no manual) del
-          proyecto se comprueben el mismo día, y se sigan repitiendo cada cierto tiempo a partir de ahí.
-        </p>
-        <div className="flex flex-wrap items-center gap-3">
-          <Select.Root value={scheduleFrequency} onValueChange={setScheduleFrequency}>
-            <Select.Trigger className="flex items-center justify-between px-3 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white gap-2 w-36">
-              <Select.Value />
-              <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
-                <Select.Viewport>
-                  {RANK_SCAN_FREQUENCIES.map((v) => (
-                    <Select.Item key={v} value={v} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>{RANK_FREQUENCY_LABELS[v]}</Select.ItemText></Select.Item>
-                  ))}
-                </Select.Viewport>
-              </Select.Content>
-            </Select.Portal>
-          </Select.Root>
-          <input
-            type="date"
-            value={scheduleDate}
-            onChange={(e) => setScheduleDate(e.target.value)}
-            className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
-          />
-          <button
-            type="button"
-            onClick={handleSaveSchedule}
-            disabled={scheduleSaving || !scheduleDate}
-            className="px-3 py-1.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
-          >
-            {scheduleSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Guardar programación"}
-          </button>
-          {savedSchedule && (
-            <button
-              type="button"
-              onClick={handleClearSchedule}
-              disabled={scheduleSaving}
-              className="text-gray-500 text-sm hover:text-red-600 disabled:opacity-50"
-            >
-              Quitar
-            </button>
-          )}
-        </div>
-        {savedSchedule && (
-          <p className="text-xs text-emerald-600">
-            Próximo escaneo programado: {new Date(savedSchedule.date).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
-            {" "}· cada {RANK_FREQUENCY_LABELS[savedSchedule.frequency].toLowerCase()}
-          </p>
-        )}
-      </div>
-
-      {/* Importar desde estudio */}
-      {studies.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900">Importar desde un estudio</h3>
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex-1 min-w-[200px] space-y-1">
-              <label className="block text-xs font-medium text-gray-500">Estudio (Módulo 1)</label>
-              <Select.Root value={importStudyId} onValueChange={setImportStudyId}>
-                <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white">
-                  <Select.Value placeholder="Selecciona un estudio" />
-                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50 max-h-60">
-                    <Select.Viewport>
-                      {studies.map((s) => (
-                        <Select.Item key={s.id} value={s.id} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100">
-                          <Select.ItemText>{s.name} ({s._count.keywords})</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-                  </Select.Content>
-                </Select.Portal>
-              </Select.Root>
-            </div>
-            <button
-              type="button"
-              onClick={handleImport}
-              disabled={importing}
-              className="flex items-center gap-2 px-3 py-2 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
-            >
-              {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowDownToLine className="h-4 w-4" />}
-              Importar
-            </button>
-          </div>
-          {importStudy && (
-            <p className="text-xs text-gray-400">
-              Importar {importStudy._count.keywords} keywords costará{" "}
-              <strong className="text-gray-600">~${importBatchMonthly.toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).
-            </p>
-          )}
-        </div>
-      )}
-
+      <PageHeader
+        eyebrow="Módulo · Rank tracking"
+        title="Rank Tracking"
+        description="Seguimiento de posiciones orgánicas vía DataForSEO SERP. &laquo;Comprobar ahora&raquo; es instantáneo; las frecuencias programadas las revisa el cron en segundo plano."
+      />
 
       {/* Tabla tipo calendario */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <h3 className="text-sm font-semibold text-gray-900">
-            Keywords en seguimiento {keywords.length > 0 && `(${filteredKeywords.length}/${keywords.length})`}
-          </h3>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-bold tracking-tight text-gray-900">
+              Keywords en seguimiento
+            </h3>
+            {keywords.length > 0 && (
+              <span className="inline-flex items-center rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand tabular-nums">
+                {filteredKeywords.length}/{keywords.length}
+              </span>
+            )}
+          </div>
           {keywords.length > 0 && (
-            <div className="flex items-center gap-3 text-[11px] text-gray-400">
-              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-200" />Top 3</span>
-              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-50 border border-emerald-100" />Top 10</span>
-              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-amber-50 border border-amber-100" />11-20</span>
-              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-orange-50 border border-orange-100" />21-50</span>
-              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-red-50 border border-red-100" />&gt;50 / fuera</span>
-              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-gray-50 border border-gray-200" />n/s = sin chequeo</span>
+            <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[11px] text-gray-500">
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-emerald-200" />Top 3</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-emerald-50 border border-emerald-100" />Top 10</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-amber-50 border border-amber-100" />11-20</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-orange-50 border border-orange-100" />21-50</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-red-50 border border-red-100" />&gt;50 / fuera</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-background border border-line" />sin chequeo</span>
             </div>
           )}
         </div>
 
         {keywords.length > 0 && (
           <>
-            {/* Distribución de posiciones (R4) */}
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-medium">{distribution.top3} en Top 3</span>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">{distribution.top10} en Top 10</span>
-              <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700">{distribution.top20} en 11-20</span>
-              <span className="px-2.5 py-1 rounded-full bg-orange-50 text-orange-700">{distribution.top50} en 21-50</span>
-              <span className="px-2.5 py-1 rounded-full bg-red-50 text-red-600">{distribution.worse} peor de 50</span>
-              <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">{distribution.none} sin posicionar</span>
+            {/* Distribución de posiciones (R4) — bento: total con barra
+                apilada por tramo + los dos tramos que importan como stat. */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+              <div className="lg:col-span-2 bg-brand text-white rounded-2xl p-5 shadow-[0_10px_30px_-10px_rgba(14,107,79,0.55)]">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-[13px] font-medium text-white/60">Keywords en seguimiento</p>
+                  <span className="text-xs text-white/40 tabular-nums">
+                    {filteredKeywords.length}/{keywords.length} visibles
+                  </span>
+                </div>
+                <p className="text-4xl font-bold tracking-tight tabular-nums mt-2 leading-none">
+                  {keywords.length}
+                </p>
+                {/* Barra apilada: proporción de keywords por tramo de posición */}
+                <div className="mt-5 h-2.5 rounded-full bg-white/15 overflow-hidden flex" aria-hidden="true">
+                  {([
+                    [distribution.top3, "bg-signal"],
+                    [distribution.top10, "bg-emerald-400"],
+                    [distribution.top20, "bg-amber-300"],
+                    [distribution.top50, "bg-orange-400"],
+                    [distribution.worse, "bg-red-400"],
+                    [distribution.none, "bg-white/25"],
+                  ] as const).map(([v, c], i) => (
+                    <div
+                      key={i}
+                      className={c}
+                      style={{ width: `${(v / Math.max(1, keywords.length)) * 100}%` }}
+                    />
+                  ))}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-white/60">
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-signal" />Top 3 · {distribution.top3}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-400" />Top 10 · {distribution.top10}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-300" />11-20 · {distribution.top20}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-orange-400" />21-50 · {distribution.top50}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-400" />&gt;50 · {distribution.worse}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-white/25" />sin posicionar · {distribution.none}</span>
+                </div>
+              </div>
+              <StatHero
+                label="En Top 3"
+                value={String(distribution.top3)}
+                sub={`${Math.round((distribution.top3 / Math.max(1, keywords.length)) * 100)}% del total`}
+              />
+              <StatHero
+                label="En Top 10"
+                value={String(distribution.top10)}
+                sub={`${Math.round((distribution.top10 / Math.max(1, keywords.length)) * 100)}% del total`}
+              />
             </div>
 
-            {/* Buscar / filtrar por grupo / exportar */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative flex-1 min-w-[180px]">
-                <Search className="h-3.5 w-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            {/* Barra de herramientas: búsqueda, filtro por grupo y acciones,
+                todo dentro de una tarjeta cohesiva (antes flotaba suelto). */}
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-2.5 flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="h-4 w-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar keyword..."
-                  className="w-full pl-8 pr-3 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-gray-400"
+                  placeholder="Buscar keyword…"
+                  className="w-full border border-line rounded-full pl-10 pr-4 py-2 text-sm bg-background outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 focus:bg-white transition-colors"
                 />
               </div>
               {groups.length > 0 && (
                 <Select.Root value={groupFilter} onValueChange={setGroupFilter}>
-                  <Select.Trigger className="flex items-center justify-between gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-gray-400 bg-white min-w-[140px]">
+                  <Select.Trigger className="flex items-center justify-between gap-1.5 min-w-[150px] border border-line rounded-full px-4 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                     <Select.Value />
                     <Select.Icon><ChevronDown className="h-3.5 w-3.5 text-gray-400" /></Select.Icon>
                   </Select.Trigger>
                   <Select.Portal>
-                    <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                    <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
                       <Select.Viewport>
-                        <Select.Item value="__all__" className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>Todos los grupos</Select.ItemText></Select.Item>
-                        <Select.Item value="__none__" className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>Sin grupo</Select.ItemText></Select.Item>
+                        <Select.Item value="__all__" className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Todos los grupos</Select.ItemText></Select.Item>
+                        <Select.Item value="__none__" className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Sin grupo</Select.ItemText></Select.Item>
                         {groups.map((g) => (
-                          <Select.Item key={g} value={g} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>{g}</Select.ItemText></Select.Item>
+                          <Select.Item key={g} value={g} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{g}</Select.ItemText></Select.Item>
                         ))}
                       </Select.Viewport>
                     </Select.Content>
                   </Select.Portal>
                 </Select.Root>
               )}
-              <button
-                type="button"
-                onClick={handleCheckAll}
-                disabled={checkingAll}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 shrink-0"
-                title="Comprobar ahora la posición de todas las keywords visibles (respeta el filtro/búsqueda actual)"
-              >
-                {checkingAll ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-3.5 w-3.5" />
-                )}
-                {checkingAll && checkAllProgress
-                  ? `Comprobando ${checkAllProgress.done}/${checkAllProgress.total}...`
-                  : "Comprobar todas"}
-              </button>
-              <button
-                type="button"
-                onClick={exportCsv}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 shrink-0"
-                title="Exportar la tabla visible a CSV"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Exportar CSV
-              </button>
+              <div className="flex items-center gap-2 ml-auto">
+                <button
+                  type="button"
+                  onClick={handleCheckAll}
+                  disabled={checkingAll}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand text-white text-sm font-semibold rounded-full hover:bg-brand-strong transition-colors disabled:opacity-50 shrink-0"
+                  title="Comprobar ahora la posición de todas las keywords visibles (respeta el filtro/búsqueda actual)"
+                >
+                  {checkingAll ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  {checkingAll && checkAllProgress
+                    ? `Comprobando ${checkAllProgress.done}/${checkAllProgress.total}…`
+                    : "Comprobar todas"}
+                </button>
+                <button
+                  type="button"
+                  onClick={exportCsv}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 border border-line bg-white text-gray-700 text-sm font-medium rounded-full hover:bg-background transition-colors shrink-0"
+                  title="Exportar la tabla visible a CSV"
+                >
+                  <Download className="h-4 w-4" />
+                  CSV
+                </button>
+              </div>
             </div>
           </>
         )}
 
         {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+          <div className="py-12 flex justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+          </div>
         ) : keywords.length === 0 ? (
-          <p className="text-sm text-gray-500">Aún no sigues ninguna keyword para este proyecto.</p>
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] py-12 text-center">
+            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+              <Search className="h-5 w-5" />
+            </span>
+            <p className="text-sm text-gray-500">Aún no sigues ninguna keyword para este proyecto.</p>
+          </div>
         ) : filteredKeywords.length === 0 ? (
-          <p className="text-sm text-gray-500">Ninguna keyword coincide con el filtro actual.</p>
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] py-12 text-center">
+            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+              <Search className="h-5 w-5" />
+            </span>
+            <p className="text-sm text-gray-500">Ninguna keyword coincide con el filtro actual.</p>
+          </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-100 overflow-x-auto">
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
-                  <SortableTh label="Keyword" sortKey="keyword" active={sortKey} dir={sortDir} onClick={toggleSort} className="pl-4 pr-3 sticky left-0 bg-white" />
+                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                  <SortableTh label="Keyword" sortKey="keyword" active={sortKey} dir={sortDir} onClick={toggleSort} className="pl-4 pr-3 sticky left-0 bg-foreground rounded-tl-lg" />
                   <SortableTh label="Volumen" sortKey="volume" active={sortKey} dir={sortDir} onClick={toggleSort} align="right" className="px-3" />
                   {dateColumns.map((d) => (
                     <SortableTh
@@ -1033,7 +888,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                   <SortableTh label="Actual" sortKey="position" active={sortKey} dir={sortDir} onClick={toggleSort} align="right" className="px-3" />
                   <SortableTh label="Δ" sortKey="delta" active={sortKey} dir={sortDir} onClick={toggleSort} align="right" className="px-3" />
                   <SortableTh label="Mejor" sortKey="best" active={sortKey} dir={sortDir} onClick={toggleSort} align="right" className="px-3" />
-                  <th className="py-2.5 pr-4 pl-3 font-medium text-right whitespace-nowrap">Acciones</th>
+                  <th className="py-2.5 pr-4 pl-3 font-medium text-right whitespace-nowrap rounded-tr-lg">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -1042,14 +897,14 @@ export default function RankView({ projectId }: { projectId: string }) {
                     <tr
                       onClick={() => selectKeyword(kw.id)}
                       className={cn(
-                        "group border-b border-gray-50 last:border-0 cursor-pointer transition-colors hover:bg-gray-50/60",
-                        selectedId === kw.id && "bg-indigo-50/40 hover:bg-indigo-50/60"
+                        "group border-b border-line/60 last:border-0 cursor-pointer transition-colors hover:bg-black/[0.025]",
+                        selectedId === kw.id && "bg-brand/5 hover:bg-brand/[0.07]"
                       )}
                     >
                       <td
                         className={cn(
-                          "py-2 pl-4 pr-3 sticky left-0 bg-white group-hover:bg-gray-50/60",
-                          selectedId === kw.id && "bg-indigo-50/40 group-hover:bg-indigo-50/60",
+                          "py-2.5 pl-4 pr-3 sticky left-0 bg-white group-hover:bg-black/[0.025]",
+                          selectedId === kw.id && "bg-brand/5 group-hover:bg-brand/[0.07]",
                           // Cada <td sticky> abre su propio contexto de apilamiento — sin esto,
                           // el desplegable (z-50) de LocationPicker queda tapado por la fila
                           // siguiente, que gana por orden en el DOM al no haber z-index explícito.
@@ -1117,7 +972,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                           <div className="pl-5 flex items-center gap-1.5 mt-0.5">
                             {kw.competitorPositions.length > 0 && (
                               <span
-                                className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500"
+                                className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/[0.05] text-gray-500"
                                 title="Competidores trackeados en este mismo SERP (gratis, expande la fila para verlos)"
                               >
                                 {kw.competitorPositions.length} competidor{kw.competitorPositions.length === 1 ? "" : "es"}
@@ -1135,11 +990,11 @@ export default function RankView({ projectId }: { projectId: string }) {
                           </div>
                         )}
                       </td>
-                      <td className="py-2 px-3 text-right text-gray-600 tabular-nums whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-right text-gray-600 tabular-nums whitespace-nowrap">
                         {kw.searchVolume === null ? <span className="text-gray-300">—</span> : kw.searchVolume.toLocaleString("es-ES")}
                         {kw.group && (
                           <div className="mt-0.5">
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 whitespace-nowrap">{kw.group}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-brand/10 text-brand whitespace-nowrap">{kw.group}</span>
                           </div>
                         )}
                       </td>
@@ -1159,10 +1014,10 @@ export default function RankView({ projectId }: { projectId: string }) {
                           </td>
                         );
                       })}
-                      <td className="py-2 px-3 text-right text-gray-900 font-medium tabular-nums whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-right text-gray-900 font-medium tabular-nums whitespace-nowrap">
                         {kw.lastPosition === null ? <span className="text-gray-300 font-normal">—</span> : `#${kw.lastPosition}`}
                       </td>
-                      <td className="py-2 px-3 text-right tabular-nums whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-right tabular-nums whitespace-nowrap">
                         {(() => {
                           const d = deltaFor(kw);
                           if (d === null) return <span className="text-gray-300">—</span>;
@@ -1175,22 +1030,22 @@ export default function RankView({ projectId }: { projectId: string }) {
                           );
                         })()}
                       </td>
-                      <td className="py-2 px-3 text-right text-gray-500 tabular-nums whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-right text-gray-500 tabular-nums whitespace-nowrap">
                         {kw.bestPosition === null ? "—" : `#${kw.bestPosition}`}
                       </td>
-                      <td className="py-2 pr-4 pl-3" onClick={(e) => e.stopPropagation()}>
+                      <td className="py-2.5 pr-4 pl-3" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleCheck(kw.id)}
                             disabled={checkingId === kw.id}
-                            className="p-1.5 text-gray-400 hover:text-gray-900 disabled:opacity-50"
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 transition-colors disabled:opacity-50"
                             title="Comprobar ahora"
                           >
                             {checkingId === kw.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                           </button>
                           <button
                             onClick={() => handleDelete(kw.id)}
-                            className="p-1.5 text-gray-300 hover:text-red-600"
+                            className="p-1.5 rounded-lg text-gray-300 hover:text-red-600 transition-colors"
                             title="Eliminar"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -1199,7 +1054,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                       </td>
                     </tr>
                     {selectedId === kw.id && (
-                      <tr className="border-b border-gray-50 last:border-0 bg-gray-50/40">
+                      <tr className="border-b border-line/60 last:border-0 bg-black/[0.015]">
                         <td colSpan={dateColumns.length + 6} className="p-4">
                           <div className="space-y-3">
                             <div className="flex flex-wrap items-center gap-4">
@@ -1213,21 +1068,21 @@ export default function RankView({ projectId }: { projectId: string }) {
                                   }}
                                   placeholder="Sin grupo"
                                   maxLength={60}
-                                  className="px-2 py-1 border border-gray-200 rounded text-xs outline-none focus:border-gray-400 w-32"
+                                  className="border border-line rounded-xl px-2 py-1 text-xs bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors w-32"
                                 />
                               </div>
                               <div className="flex items-center gap-2">
                                 <label className="text-xs text-gray-500">Frecuencia:</label>
                                 <Select.Root value={kw.frequency} onValueChange={(v) => handleFrequency(kw.id, v)}>
-                                  <Select.Trigger className="flex items-center justify-between px-2 py-1 border border-gray-200 rounded text-xs outline-none focus:border-gray-400 bg-white gap-1">
+                                  <Select.Trigger className="flex items-center justify-between gap-1 border border-line rounded-xl px-2 py-1 text-xs bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                                     <Select.Value />
                                     <ChevronDown className="h-3 w-3 text-gray-400" />
                                   </Select.Trigger>
                                   <Select.Portal>
-                                    <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                                    <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
                                       <Select.Viewport>
                                         {Object.entries(RANK_FREQUENCY_LABELS).map(([v, l]) => (
-                                          <Select.Item key={v} value={v} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>{l}</Select.ItemText></Select.Item>
+                                          <Select.Item key={v} value={v} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{l}</Select.ItemText></Select.Item>
                                         ))}
                                       </Select.Viewport>
                                     </Select.Content>
@@ -1237,15 +1092,15 @@ export default function RankView({ projectId }: { projectId: string }) {
                               <div className="flex items-center gap-2">
                                 <label className="text-xs text-gray-500">Profundidad:</label>
                                 <Select.Root value={String(kw.depth)} onValueChange={(v) => handleDepth(kw.id, Number(v))}>
-                                  <Select.Trigger className="flex items-center justify-between px-2 py-1 border border-gray-200 rounded text-xs outline-none focus:border-gray-400 bg-white gap-1">
+                                  <Select.Trigger className="flex items-center justify-between gap-1 border border-line rounded-xl px-2 py-1 text-xs bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                                     <Select.Value />
                                     <ChevronDown className="h-3 w-3 text-gray-400" />
                                   </Select.Trigger>
                                   <Select.Portal>
-                                    <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                                    <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
                                       <Select.Viewport>
                                         {DEPTHS.map((d) => (
-                                          <Select.Item key={d} value={String(d)} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>Top-{d}</Select.ItemText></Select.Item>
+                                          <Select.Item key={d} value={String(d)} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Top-{d}</Select.ItemText></Select.Item>
                                         ))}
                                       </Select.Viewport>
                                     </Select.Content>
@@ -1291,7 +1146,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                                   const last = history[history.length - 1];
                                   if (!last || (!last.title && !last.description)) return null;
                                   return (
-                                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-2 space-y-0.5">
+                                    <div className="bg-background border border-line rounded-xl p-2 space-y-0.5">
                                       {last.title && <p className="text-xs font-medium text-gray-800 line-clamp-1">{last.title}</p>}
                                       {last.description && <p className="text-xs text-gray-500 line-clamp-2">{last.description}</p>}
                                     </div>
@@ -1306,7 +1161,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                                         return (
                                           <Fragment key={p.id}>
                                             <tr
-                                              className={cn("border-b border-gray-50", hasCopy && "cursor-pointer hover:bg-gray-50")}
+                                              className={cn("border-b border-line/60", hasCopy && "cursor-pointer hover:bg-background")}
                                               onClick={() => hasCopy && setCopyExpanded(open ? null : p.id)}
                                             >
                                               <td className="py-1 text-gray-500 whitespace-nowrap">{new Date(p.checkedAt).toLocaleString("es-ES")}</td>
@@ -1329,7 +1184,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                                               </td>
                                             </tr>
                                             {open && hasCopy && (
-                                              <tr className="bg-gray-50">
+                                              <tr className="bg-background">
                                                 <td colSpan={4} className="px-2 py-1.5 space-y-0.5">
                                                   {p.title && <p className="text-xs font-medium text-gray-800">{p.title}</p>}
                                                   {p.description && <p className="text-xs text-gray-600 leading-relaxed">{p.description}</p>}
@@ -1347,7 +1202,7 @@ export default function RankView({ projectId }: { projectId: string }) {
 
                             {/* Competidores en el mismo SERP (R1) — coste marginal cero: la
                                 posición ya venía en la respuesta pagada para la keyword propia. */}
-                            <div className="pt-2 border-t border-gray-100">
+                            <div className="pt-2 border-t border-line">
                               <p className="text-xs font-medium text-gray-600 mb-1.5">Competidores en este SERP</p>
                               {kw.competitorPositions.length === 0 ? (
                                 <p className="text-xs text-gray-400">
@@ -1364,7 +1219,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                                       return (
                                         <Fragment key={c.domain}>
                                           <tr
-                                            className={cn("border-b border-gray-50", hasCopy && "cursor-pointer hover:bg-gray-50")}
+                                            className={cn("border-b border-line/60", hasCopy && "cursor-pointer hover:bg-background")}
                                             onClick={() => hasCopy && setCopyExpanded(open ? null : key)}
                                           >
                                             <td className="py-1 text-gray-700 font-mono">
@@ -1396,12 +1251,12 @@ export default function RankView({ projectId }: { projectId: string }) {
                                             </td>
                                           </tr>
                                           {open && hasCopy && (
-                                            <tr className="bg-gray-50">
+                                            <tr className="bg-background">
                                               <td colSpan={4} className="px-2 py-1.5 space-y-0.5">
                                                 {c.title && <p className="text-xs font-medium text-gray-800">{c.title}</p>}
                                                 {c.description && <p className="text-xs text-gray-600 leading-relaxed">{c.description}</p>}
                                                 {c.url && (
-                                                  <a href={c.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] text-indigo-600 hover:underline">
+                                                  <a href={c.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] text-brand hover:underline">
                                                     <span className="truncate max-w-sm">{c.url}</span>
                                                     <ExternalLink className="h-3 w-3 shrink-0" />
                                                   </a>
@@ -1433,16 +1288,16 @@ export default function RankView({ projectId }: { projectId: string }) {
           {groups.length > 0 && (
             <div className="flex justify-end">
               <Select.Root value={visibilityGroup} onValueChange={setVisibilityGroup}>
-                <Select.Trigger className="flex items-center justify-between gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-gray-400 bg-white min-w-[160px]">
+                <Select.Trigger className="flex items-center justify-between gap-1.5 min-w-[160px] border border-line rounded-xl px-3 py-1.5 text-xs bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                   <Select.Value />
                   <Select.Icon><ChevronDown className="h-3.5 w-3.5 text-gray-400" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
                     <Select.Viewport>
-                      <Select.Item value="__all__" className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>Visibilidad: todo el proyecto</Select.ItemText></Select.Item>
+                      <Select.Item value="__all__" className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Visibilidad: todo el proyecto</Select.ItemText></Select.Item>
                       {groups.map((g) => (
-                        <Select.Item key={g} value={g} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"><Select.ItemText>Visibilidad: {g}</Select.ItemText></Select.Item>
+                        <Select.Item key={g} value={g} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Visibilidad: {g}</Select.ItemText></Select.Item>
                       ))}
                     </Select.Viewport>
                   </Select.Content>
@@ -1453,6 +1308,215 @@ export default function RankView({ projectId }: { projectId: string }) {
           <RankVisibilityChart projectId={projectId} group={visibilityGroup === "__all__" ? undefined : visibilityGroup} />
         </div>
       )}
+      {/* Añadir keyword */}
+      <form onSubmit={handleAdd} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">Keywords a seguir (una por línea)</label>
+            <textarea
+              value={newKeyword}
+              onChange={(e) => setNewKeyword(e.target.value)}
+              placeholder={"abogado de familia madrid\nabogado laboralista madrid\nabogado penalista madrid"}
+              rows={3}
+              className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors resize-y"
+            />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Ubicación <span className="text-gray-400 font-normal">(opcional)</span>
+              </label>
+              <LocationPicker
+                value={newLocation}
+                onChange={setNewLocation}
+                placeholder="España (nacional)"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">Dispositivo</label>
+              <Select.Root value={newDevice} onValueChange={setNewDevice}>
+                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                  <Select.Value />
+                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                    <Select.Viewport>
+                      <Select.Item value="desktop" className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Desktop</Select.ItemText></Select.Item>
+                      <Select.Item value="mobile" className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Móvil</Select.ItemText></Select.Item>
+                    </Select.Viewport>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
+            </div>
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">Frecuencia</label>
+              <Select.Root value={newFrequency} onValueChange={setNewFrequency}>
+                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                  <Select.Value />
+                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                    <Select.Viewport>
+                      {Object.entries(RANK_FREQUENCY_LABELS).map(([v, l]) => (
+                        <Select.Item key={v} value={v} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{l}</Select.ItemText></Select.Item>
+                      ))}
+                    </Select.Viewport>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
+            </div>
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700" title="Resultados a rastrear. A mayor depth, más caro.">Profundidad</label>
+              <Select.Root value={newDepth} onValueChange={setNewDepth}>
+                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                  <Select.Value />
+                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                    <Select.Viewport>
+                      {DEPTHS.map((d) => (
+                        <Select.Item key={d} value={String(d)} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Top-{d}</Select.ItemText></Select.Item>
+                      ))}
+                    </Select.Viewport>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
+            </div>
+          </div>
+        </div>
+        <p className="text-xs text-gray-400">
+          La ubicación simula la búsqueda desde ese punto (ej. &laquo;Gijón&raquo;) en vez de
+          España entera — más fiable para negocios locales. Sin elegir nada, España (nacional).
+        </p>
+
+        {error && <p className="text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl">{error}</p>}
+        <button
+          type="submit"
+          disabled={adding}
+          className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
+        >
+          {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          Añadir a seguimiento
+        </button>
+        <p className="text-xs text-gray-400">
+          {newKeywordCount > 0
+            ? <>Estas {newKeywordCount} keyword(s) costarán <strong className="text-gray-600">~${newKeywordMonthlyCost.toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>
+            : <>Coste por keyword: <strong className="text-gray-600">~${rankMonthlyCostUsd(1, Number(newDepth), newFrequency).toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>}
+          {" "}Total del proyecto al añadirlas: ~${(projectMonthlyCost + newKeywordMonthlyCost).toFixed(2)}/mes.
+        </p>
+      </form>
+
+      {/* Escaneo programado del proyecto — antes vivía escondido dentro del
+          formulario de alta; tarjeta propia para que sea fácil de encontrar
+          y quede claro que es la palanca que sincroniza al mismo día TODAS
+          las keywords con frecuencia automática del proyecto (ver
+          src/lib/rank/job.ts). */}
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-gray-400" />
+          <h3 className="text-sm font-semibold text-gray-900">Escaneo programado del proyecto</h3>
+        </div>
+        <p className="text-xs text-gray-400">
+          Fija una fecha para que TODAS las keywords con frecuencia automática (no manual) del
+          proyecto se comprueben el mismo día, y se sigan repitiendo cada cierto tiempo a partir de ahí.
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <Select.Root value={scheduleFrequency} onValueChange={setScheduleFrequency}>
+            <Select.Trigger className="flex items-center justify-between gap-2 w-36 border border-line rounded-xl px-3 py-1.5 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+              <Select.Value />
+              <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                <Select.Viewport>
+                  {RANK_SCAN_FREQUENCIES.map((v) => (
+                    <Select.Item key={v} value={v} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{RANK_FREQUENCY_LABELS[v]}</Select.ItemText></Select.Item>
+                  ))}
+                </Select.Viewport>
+              </Select.Content>
+            </Select.Portal>
+          </Select.Root>
+          <input
+            type="date"
+            value={scheduleDate}
+            onChange={(e) => setScheduleDate(e.target.value)}
+            className="border border-line rounded-xl px-3 py-1.5 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+          />
+          <button
+            type="button"
+            onClick={handleSaveSchedule}
+            disabled={scheduleSaving || !scheduleDate}
+            className="border border-line bg-white text-gray-700 text-sm font-medium rounded-xl px-3 py-1.5 hover:bg-background transition-colors disabled:opacity-50"
+          >
+            {scheduleSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Guardar programación"}
+          </button>
+          {savedSchedule && (
+            <button
+              type="button"
+              onClick={handleClearSchedule}
+              disabled={scheduleSaving}
+              className="text-gray-500 text-sm hover:text-red-600 disabled:opacity-50"
+            >
+              Quitar
+            </button>
+          )}
+        </div>
+        {savedSchedule && (
+          <p className="text-xs text-emerald-600">
+            Próximo escaneo programado: {new Date(savedSchedule.date).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
+            {" "}· cada {RANK_FREQUENCY_LABELS[savedSchedule.frequency].toLowerCase()}
+          </p>
+        )}
+      </div>
+
+      {/* Importar desde estudio */}
+      {studies.length > 0 && (
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+          <h3 className="text-sm font-semibold text-gray-900">Importar desde un estudio</h3>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[200px] space-y-1">
+              <label className="block text-xs font-medium text-gray-500">Estudio (Módulo 1)</label>
+              <Select.Root value={importStudyId} onValueChange={setImportStudyId}>
+                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                  <Select.Value placeholder="Selecciona un estudio" />
+                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50 max-h-60">
+                    <Select.Viewport>
+                      {studies.map((s) => (
+                        <Select.Item key={s.id} value={s.id} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background">
+                          <Select.ItemText>{s.name} ({s._count.keywords})</Select.ItemText>
+                        </Select.Item>
+                      ))}
+                    </Select.Viewport>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
+            </div>
+            <button
+              type="button"
+              onClick={handleImport}
+              disabled={importing}
+              className="inline-flex items-center gap-2 border border-line bg-white text-gray-700 text-sm rounded-xl px-3 py-2 hover:bg-background transition-colors disabled:opacity-50"
+            >
+              {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowDownToLine className="h-4 w-4" />}
+              Importar
+            </button>
+          </div>
+          {importStudy && (
+            <p className="text-xs text-gray-400">
+              Importar {importStudy._count.keywords} keywords costará{" "}
+              <strong className="text-gray-600">~${importBatchMonthly.toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).
+            </p>
+          )}
+        </div>
+      )}
+
+
     </div>
   );
 }

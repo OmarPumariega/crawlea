@@ -101,20 +101,21 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 function ScoreTile({ label, score, max }: { label: string; score: number | null; max: number }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
-      <div className="text-2xl font-semibold text-gray-900">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 flex flex-col">
+      <p className="text-[13px] font-medium text-gray-500">{label}</p>
+      <p className="text-2xl font-bold tracking-tight text-gray-900 tabular-nums mt-2 leading-none">
         {score === null ? "—" : `${score}/${max}`}
-      </div>
-      <div className="text-sm text-gray-500">{label}</div>
+      </p>
     </div>
   );
 }
 
-function KpiTile({ label, value }: { label: string; value: string | number }) {
+function KpiTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
-      <div className="text-2xl font-semibold text-gray-900 tabular-nums">{value}</div>
-      <div className="text-sm text-gray-500">{label}</div>
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 flex flex-col">
+      <p className="text-[13px] font-medium text-gray-500">{label}</p>
+      <p className="text-3xl font-bold tracking-tight text-gray-900 tabular-nums mt-2">{value}</p>
+      {sub && <p className="text-xs text-gray-400 mt-1.5">{sub}</p>}
     </div>
   );
 }
@@ -127,7 +128,7 @@ const CWV_LABEL: Record<string, string> = { good: "Bueno", warn: "Mejorable", ba
 
 function CwvTile({ label, value, status }: { label: string; value: string; status: string | null }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-3">
+    <div className="bg-background rounded-lg p-3">
       <div className="text-xs text-gray-500">{label}</div>
       <div className={cn("text-xl font-semibold tabular-nums", status ? CWV_TONE[status] : "text-gray-400")}>
         {value}
@@ -176,7 +177,7 @@ function CwvPanel({ detail, psiData }: { detail: Record<string, number>; psiData
   const field = psiData?.fieldData;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-semibold text-gray-900">Core Web Vitals (PageSpeed)</h3>
         <span className="text-[10px] uppercase tracking-wide text-gray-400">Home · móvil</span>
@@ -243,7 +244,7 @@ function CwvPanel({ detail, psiData }: { detail: Record<string, number>; psiData
           <p className="text-xs font-medium text-gray-600 mb-2">Oportunidades de mejora detectadas</p>
           <ul className="space-y-2">
             {psiData.opportunities.slice(0, 6).map((o) => (
-              <li key={o.id} className="bg-gray-50 rounded-lg p-2.5">
+              <li key={o.id} className="bg-background rounded-lg p-2.5">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm text-gray-900 font-medium">{o.title}</span>
                   {o.displayValue && <span className="text-xs text-gray-500 shrink-0">{o.displayValue}</span>}
@@ -277,7 +278,7 @@ function VisibilityPanel({
 }) {
   const hasData = visibility && (visibility.impressions > 0 || visibility.queries > 0);
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Globe className="h-4 w-4 text-gray-400" />
@@ -328,7 +329,7 @@ function LabsVisibilityPanel({
   projectId: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-gray-400" />
@@ -360,7 +361,7 @@ function LabsVisibilityPanel({
           {snapshot.topKeywords && snapshot.topKeywords.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {snapshot.topKeywords.slice(0, 10).map((k, i) => (
-                <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-gray-50 text-gray-600">
+                <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-background text-gray-600">
                   {k.keyword}
                   {k.position !== null && <span className="text-gray-400">· #{k.position}</span>}
                 </span>
@@ -609,7 +610,7 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
       {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
 
       {current && (current.status === "pending" || current.status === "running") && (
-        <div className="bg-gray-50 text-gray-600 px-4 py-3 rounded-lg space-y-1">
+        <div className="bg-background text-gray-600 px-4 py-3 rounded-lg space-y-1">
           <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
             <Loader2 className="h-4 w-4 animate-spin shrink-0" />
             {current.status === "pending"
@@ -657,16 +658,16 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
 
       {showContent && current && current.categoryScores && (
         <>
-          <div className="flex items-center gap-1 border-b border-gray-200">
+          <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
             {TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
                 className={cn(
-                  "px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
+                  "px-3.5 py-1.5 text-sm font-medium rounded-lg transition-colors",
                   tab === t.key
-                    ? "border-gray-900 text-gray-900"
-                    : "border-transparent text-gray-500 hover:text-gray-800"
+                    ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
+                    : "text-gray-500 hover:text-gray-800"
                 )}
               >
                 {t.label}
@@ -676,15 +677,49 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
 
           {tab === "resumen" && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <KpiTile label="Optimización del sitio" value={`${current.overallScore ?? "—"}%`} />
-                <KpiTile label="Páginas rastreadas" value={current.pagesCrawled} />
-                <KpiTile label="Páginas con incidencias" value={pagesWithIssuesCount} />
-                <KpiTile label="Incidencias totales" value={totalIssueInstances} />
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                {/* Nota global — tarjeta protagonista de tinta con barra de color semántico */}
+                {(() => {
+                  const score = current.overallScore;
+                  const tone =
+                    score == null ? "text-white/60"
+                    : score >= 80 ? "text-emerald-300"
+                    : score >= 50 ? "text-amber-300"
+                    : "text-red-300";
+                  const bar =
+                    score == null ? "bg-white/30"
+                    : score >= 80 ? "bg-emerald-400"
+                    : score >= 50 ? "bg-amber-400"
+                    : "bg-red-400";
+                  return (
+                    <div className="lg:col-span-2 bg-brand text-white rounded-2xl p-6 shadow-[0_10px_30px_-10px_rgba(14,107,79,0.55)]">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-[13px] font-medium text-white/60">Optimización del sitio</p>
+                        <span className="text-xs text-white/40">sobre 100</span>
+                      </div>
+                      <p className={`text-6xl font-bold tracking-tight tabular-nums leading-none mt-3 ${tone}`}>
+                        {score == null ? "—" : score}
+                        {score != null && <span className="text-2xl font-semibold text-white/40">%</span>}
+                      </p>
+                      <div className="mt-5 h-2 rounded-full bg-white/15 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-[width] ${bar}`}
+                          style={{ width: `${score ?? 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
+                <KpiTile label="Páginas rastreadas" value={current.pagesCrawled.toLocaleString("es-ES")} />
+                <KpiTile
+                  label="Páginas con incidencias"
+                  value={pagesWithIssuesCount.toLocaleString("es-ES")}
+                  sub={`${Math.round((pagesWithIssuesCount / Math.max(1, current.pagesCrawled)) * 100)}% · ${totalIssueInstances.toLocaleString("es-ES")} incidencias`}
+                />
               </div>
 
               {orphanCount !== null && orphanCount > 0 && (
-                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
                   {orphanCount} página{orphanCount === 1 ? "" : "s"} huérfana{orphanCount === 1 ? "" : "s"} (sin
                   enlaces internos entrantes) detectada{orphanCount === 1 ? "" : "s"} en el último rastreo —{" "}
                   <Link href={`/admin/proyectos/${projectId}/auditoria/enlaces`} className="underline font-medium">
@@ -711,7 +746,7 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
                     inventar una fórmula), pero es el dato clásico de
                     auditoría técnica que faltaba por resumir: enlaces rotos
                     totales encontrados en todo el rastreo. */}
-                <KpiTile label="Enlaces rotos" value={totalBrokenLinks} />
+                <KpiTile label="Enlaces rotos" value={totalBrokenLinks.toLocaleString("es-ES")} />
               </div>
               {!current.categoryScores.rendimiento && (
                 <p className="text-xs text-gray-400">
@@ -770,8 +805,8 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
                 key={run.id}
                 onClick={() => loadDetail(run.id)}
                 className={cn(
-                  "w-full text-left bg-white rounded-lg border p-3 hover:bg-gray-50 transition-colors",
-                  current?.id === run.id ? "border-gray-900" : "border-gray-100"
+                  "w-full text-left bg-white rounded-lg border p-3 hover:bg-background transition-colors",
+                  current?.id === run.id ? "border-gray-900" : "border-line"
                 )}
               >
                 <div className="flex items-center justify-between">

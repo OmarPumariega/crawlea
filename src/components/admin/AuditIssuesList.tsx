@@ -86,11 +86,11 @@ function IssueRow({ issue, pages }: { issue: string; pages: AuditPage[] }) {
   if (!meta) return null;
 
   return (
-    <div className="border border-gray-100 rounded-lg overflow-hidden">
+    <div className="border border-line rounded-xl overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50"
+        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-background"
       >
         <span className="flex items-center justify-center h-6 w-6 rounded-full bg-orange-100 text-orange-600 shrink-0">
           <AlertCircle className="h-3.5 w-3.5" />
@@ -107,7 +107,7 @@ function IssueRow({ issue, pages }: { issue: string; pages: AuditPage[] }) {
       </button>
 
       {open && (
-        <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-line pt-3">
           <p className="text-sm text-gray-600">{meta.description}</p>
 
           {meta.fix ? (
@@ -124,7 +124,7 @@ function IssueRow({ issue, pages }: { issue: string; pages: AuditPage[] }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
+                <tr className="text-left text-xs text-white/80 border-b border-line">
                   <th className="py-1.5 pr-3 font-medium">Página</th>
                   <th className="py-1.5 px-3 font-medium">Detalle</th>
                   <th className="py-1.5 pl-3 font-medium w-8" />

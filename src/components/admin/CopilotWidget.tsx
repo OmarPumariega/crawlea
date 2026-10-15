@@ -125,7 +125,7 @@ export default function CopilotWidget() {
     return (
       <button
         onClick={() => setWidgetState("open")}
-        className="fixed bottom-5 right-5 z-40 h-14 w-14 rounded-full bg-gray-900 text-white shadow-lg flex items-center justify-center hover:bg-gray-800 transition-colors"
+        className="fixed bottom-5 right-5 z-40 h-14 w-14 rounded-full bg-brand text-white shadow-[0_10px_30px_-8px_rgba(14,107,79,0.6)] flex items-center justify-center hover:bg-brand-strong transition-colors"
         aria-label="Abrir Copilot"
       >
         <Bot className="h-6 w-6" />
@@ -137,7 +137,7 @@ export default function CopilotWidget() {
     return (
       <button
         onClick={() => setWidgetState("open")}
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 bg-gray-900 text-white rounded-full pl-4 pr-3.5 py-2.5 shadow-lg hover:bg-gray-800 transition-colors max-w-[280px]"
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 bg-brand text-white rounded-full pl-4 pr-3.5 py-2.5 shadow-[0_10px_30px_-8px_rgba(14,107,79,0.6)] hover:bg-brand-strong transition-colors max-w-[280px]"
       >
         <Bot className="h-4 w-4 shrink-0" />
         <span className="text-sm font-medium truncate">{activeThreadTitle}</span>
@@ -147,8 +147,8 @@ export default function CopilotWidget() {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-40 w-[380px] max-w-[calc(100vw-2rem)] h-[560px] max-h-[calc(100vh-6rem)] bg-white rounded-2xl border border-gray-200 shadow-2xl flex flex-col overflow-hidden">
-      <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-gray-100 shrink-0">
+    <div className="fixed bottom-5 right-5 z-40 w-[380px] max-w-[calc(100vw-2rem)] h-[560px] max-h-[calc(100vh-6rem)] bg-white rounded-2xl border border-line shadow-2xl flex flex-col overflow-hidden">
+      <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-line shrink-0">
         <Bot className="h-4 w-4 text-gray-500 shrink-0" />
         <div className="relative flex-1 min-w-0">
           <button
@@ -159,13 +159,13 @@ export default function CopilotWidget() {
             <ChevronDown className="h-3.5 w-3.5 shrink-0" />
           </button>
           {showThreadList && (
-            <div className="absolute top-full left-0 mt-1 w-72 max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg z-10 p-1">
+            <div className="absolute top-full left-0 mt-1 w-72 max-h-64 overflow-y-auto bg-white border border-line rounded-xl shadow-lg z-10 p-1">
               <button
                 onClick={() => {
                   newThread();
                   setShowThreadList(false);
                 }}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm text-gray-700 hover:bg-background"
               >
                 <Plus className="h-3.5 w-3.5" /> Nuevo hilo
               </button>
@@ -185,7 +185,7 @@ export default function CopilotWidget() {
                       }}
                       className={cn(
                         "flex-1 min-w-0 flex items-center gap-2 px-2 py-1.5 rounded-lg text-left text-sm",
-                        activeThreadId === t.id ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-50"
+                        activeThreadId === t.id ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-background"
                       )}
                     >
                       <MessageSquare className="h-3.5 w-3.5 shrink-0 text-gray-400" />
@@ -242,7 +242,7 @@ export default function CopilotWidget() {
               <div
                 className={cn(
                   "max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap leading-relaxed",
-                  m.role === "user" ? "bg-gray-900 text-white rounded-br-sm" : "bg-gray-100 text-gray-900 rounded-bl-sm"
+                  m.role === "user" ? "bg-brand text-white rounded-br-sm" : "bg-background text-gray-900 rounded-bl-sm border border-line"
                 )}
               >
                 {m.content}
@@ -260,9 +260,9 @@ export default function CopilotWidget() {
         <div ref={messagesEndRef} />
       </div>
 
-      {error && <div className="px-3 py-1.5 text-xs text-red-600 border-t border-gray-100 shrink-0">{error}</div>}
+      {error && <div className="px-3 py-1.5 text-xs text-red-600 border-t border-line shrink-0">{error}</div>}
 
-      <form onSubmit={handleSend} className="border-t border-gray-100 p-2.5 flex items-end gap-1.5 shrink-0">
+      <form onSubmit={handleSend} className="border-t border-line p-2.5 flex items-end gap-1.5 shrink-0">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -274,7 +274,7 @@ export default function CopilotWidget() {
           }}
           rows={1}
           placeholder="Escribe tu pregunta…"
-          className="flex-1 resize-none rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent max-h-24"
+          className="flex-1 resize-none rounded-lg border border-line px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent max-h-24"
         />
         <button
           type="submit"

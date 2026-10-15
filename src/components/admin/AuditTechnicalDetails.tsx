@@ -80,7 +80,7 @@ export default function AuditTechnicalDetails({
   const sitemapUrlSample = (run?.sitemapUrls ?? []).slice(0, 10);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
       <div className="flex items-center gap-2">
         <FileText className="h-4 w-4 text-gray-500" />
         <h3 className="text-sm font-semibold text-gray-900">Detalle técnico</h3>
@@ -107,7 +107,7 @@ export default function AuditTechnicalDetails({
               </div>
             )}
             {run.robotsContent ? (
-              <pre className="text-xs font-mono bg-gray-50 p-3 rounded-lg max-h-48 overflow-y-auto whitespace-pre-wrap break-all">
+              <pre className="text-xs font-mono bg-background p-3 rounded-lg max-h-48 overflow-y-auto whitespace-pre-wrap break-all">
                 {run.robotsContent}
               </pre>
             ) : (
@@ -184,7 +184,7 @@ export default function AuditTechnicalDetails({
             {topDomains.length > 0 ? (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
+                  <tr className="text-left text-xs text-white/80 border-b border-line">
                     <th className="py-1.5 pr-3 font-medium">Dominio</th>
                     <th className="py-1.5 pl-3 font-medium text-right">Páginas que enlazan</th>
                   </tr>

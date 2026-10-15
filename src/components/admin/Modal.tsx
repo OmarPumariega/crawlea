@@ -24,7 +24,7 @@ export default function Modal({
       role="presentation"
     >
       <div
-        className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5 space-y-4"
+        className="bg-white rounded-2xl border border-line shadow-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5 space-y-4 animate-[pop_0.14s_ease-out]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

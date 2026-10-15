@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { Check, ChevronDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Pill from "@/components/admin/Pill";
 import {
   SCHEMA_CATALOG,
   SCHEMA_CATEGORIES,
@@ -60,7 +61,7 @@ export default function SchemaTypePicker({
         <Popover.Trigger asChild>
           <button
             type="button"
-            className="w-full flex items-center justify-between gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white hover:bg-gray-50"
+            className="w-full flex items-center justify-between gap-2 border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors hover:bg-background"
           >
             <span className={cn("truncate text-left", current ? "text-gray-900" : "text-gray-400")}>
               {current ? current.label : "Selecciona un tipo…"}
@@ -72,10 +73,10 @@ export default function SchemaTypePicker({
           <Popover.Content
             align="start"
             sideOffset={4}
-            className="z-50 bg-white border border-gray-200 rounded-lg shadow-lg flex flex-col max-h-96 w-[var(--radix-popover-trigger-width)]"
+            className="z-50 bg-white border border-line rounded-xl shadow-lg flex flex-col max-h-96 w-[var(--radix-popover-trigger-width)]"
           >
-            <div className="p-2 border-b border-gray-100">
-              <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-gray-50">
+            <div className="p-2 border-b border-line">
+              <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-background">
                 <Search className="h-3.5 w-3.5 text-gray-400 shrink-0" />
                 <input
                   autoFocus
@@ -90,7 +91,7 @@ export default function SchemaTypePicker({
             <div className="overflow-y-auto py-1">
               {grouped.map((g) => (
                 <div key={g.category}>
-                  <p className="px-3 py-1 text-[10px] uppercase tracking-wide text-gray-400">
+                  <p className="px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
                     {g.category}
                   </p>
                   {g.entries.map((e) => (
@@ -123,8 +124,8 @@ function Row({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full flex items-start gap-2 px-3 py-1.5 text-left hover:bg-gray-50",
-        active ? "bg-gray-50" : ""
+        "w-full flex items-start gap-2 px-3 py-1.5 text-left hover:bg-background transition-colors",
+        active ? "bg-brand/5" : ""
       )}
     >
       <div className="flex-1 min-w-0">
@@ -133,14 +134,14 @@ function Row({
             {entry.label}
           </span>
           {entry.generator === "deterministic" && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 shrink-0">
+            <Pill tone="success" className="px-1.5 py-0 text-[10px] shrink-0">
               sin IA
-            </span>
+            </Pill>
           )}
         </div>
         <p className="text-xs text-gray-400 leading-snug truncate">{entry.description}</p>
       </div>
-      {active && <Check className="h-3.5 w-3.5 text-gray-900 shrink-0 mt-1" />}
+      {active && <Check className="h-3.5 w-3.5 text-brand shrink-0 mt-1" />}
     </button>
   );
 }

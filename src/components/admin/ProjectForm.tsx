@@ -91,7 +91,7 @@ export default function ProjectForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
         <h2 className="text-sm font-semibold text-gray-900">Datos generales</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
@@ -110,7 +110,7 @@ export default function ProjectForm({
                 }));
               }}
               placeholder="Autocaravanas Ruta Norte"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               required
             />
           </div>
@@ -125,7 +125,7 @@ export default function ProjectForm({
                   set("slug", e.target.value);
                 }}
                 placeholder="autocaravanas-ruta-norte"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 font-mono"
+                className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors font-mono"
                 required
               />
             </div>
@@ -137,7 +137,7 @@ export default function ProjectForm({
               value={form.domain}
               onChange={(e) => set("domain", e.target.value)}
               placeholder="www.ejemplo.com"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
             />
           </div>
           <div className="space-y-1">
@@ -151,7 +151,7 @@ export default function ProjectForm({
               value={form.spendLimitUsd}
               onChange={(e) => set("spendLimitUsd", e.target.value)}
               placeholder="5"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
             />
           </div>
           <p className="text-xs text-gray-400 sm:col-span-1 self-end">
@@ -160,7 +160,7 @@ export default function ProjectForm({
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-900">Negocio local (NAP)</h2>
           <label className="flex items-center gap-2 text-sm text-gray-600">
@@ -190,7 +190,7 @@ export default function ProjectForm({
                   type="text"
                   value={form.phone}
                   onChange={(e) => set("phone", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                  className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                 />
               </div>
               <div className="space-y-1">
@@ -200,7 +200,7 @@ export default function ProjectForm({
                   value={form.hours}
                   onChange={(e) => set("hours", e.target.value)}
                   placeholder="Lunes a viernes 9:00-14:00 y 16:00-19:00"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                  className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                 />
               </div>
             </div>
@@ -221,7 +221,7 @@ export default function ProjectForm({
                     type="text"
                     value={form.businessName}
                     onChange={(e) => set("businessName", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                    className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                   />
                 </div>
                 <div className="space-y-1 sm:col-span-2">
@@ -230,7 +230,7 @@ export default function ProjectForm({
                     type="text"
                     value={form.address}
                     onChange={(e) => set("address", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                    className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                   />
                 </div>
                 <div className="space-y-1">
@@ -243,7 +243,7 @@ export default function ProjectForm({
                     value={form.lat}
                     onChange={(e) => set("lat", e.target.value)}
                     placeholder="40.4168"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                    className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                   />
                 </div>
                 <div className="space-y-1">
@@ -256,7 +256,7 @@ export default function ProjectForm({
                     value={form.lng}
                     onChange={(e) => set("lng", e.target.value)}
                     placeholder="-3.7038"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400"
+                    className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                   />
                 </div>
                 <p className="text-xs text-gray-400 sm:col-span-2">

@@ -8,27 +8,27 @@ import { cn } from "@/lib/utils";
 // módulos que absorben sub-herramientas (Keywords+Arquitectura,
 // Contenido+TF-IDF, Auditoría+Enlaces+Canibalizaciones). Cada pestaña es una
 // ruta real: los deep-links (?estudio=, ?keyword=), los bookmarks y el
-// switchProject del sidebar siguen funcionando sin estado extra. Mismo estilo
-// de pestañas subrayadas que las internas de AuditoriaView.
+// switchProject del sidebar siguen funcionando sin estado extra. Control
+// segmentado: pista gris y pestaña activa como píldora blanca elevada.
 export type ModuleTab = { href: string; label: string };
 
 export default function ModuleTabs({ tabs }: { tabs: ModuleTab[] }) {
   const pathname = usePathname();
   return (
-    <div className="flex items-center gap-1 border-b border-gray-100 overflow-x-auto">
+    <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
       {tabs.map((t) => {
         // Coincidencia exacta: las pestañas no tienen sub-rutas y la raíz del
-        // módulo (p.ej. /keywords) no debe quedar activa en /keywords/arquitectura.
+        // módulo (p. ej. /keywords) no debe quedar activa en /keywords/arquitectura.
         const active = pathname === t.href;
         return (
           <Link
             key={t.href}
             href={t.href}
             className={cn(
-              "px-3 py-2 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors",
+              "px-3.5 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors",
               active
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-gray-500 hover:text-gray-800"
+                ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
+                : "text-gray-500 hover:text-gray-800"
             )}
           >
             {t.label}

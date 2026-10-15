@@ -73,7 +73,7 @@ export default function ProjectSwitcher({
       <Popover.Root open={open} onOpenChange={setOpen}>
         <Popover.Trigger asChild>
           <button
-            className="w-full flex items-center justify-between gap-2 px-2.5 py-2 border border-gray-200 rounded-lg text-sm bg-white hover:bg-gray-50 outline-none focus:border-gray-400"
+            className="w-full flex items-center justify-between gap-2 px-2.5 py-2 border border-line rounded-xl text-sm bg-white hover:bg-background outline-none focus:border-brand transition-colors"
             disabled={projects.length === 0}
           >
             <span className="truncate text-left">
@@ -86,11 +86,11 @@ export default function ProjectSwitcher({
           <Popover.Content
             align="start"
             sideOffset={4}
-            className="z-50 bg-white border border-gray-200 rounded-lg shadow-lg flex flex-col max-h-80 w-[var(--radix-popover-trigger-width)]"
+            className="z-50 bg-white border border-line rounded-2xl shadow-lg flex flex-col max-h-80 w-[var(--radix-popover-trigger-width)] animate-[pop_0.14s_ease-out]"
           >
             {/* Buscador arriba */}
-            <div className="p-2 border-b border-gray-100">
-              <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-gray-50">
+            <div className="p-2 border-b border-line">
+              <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-background">
                 <Search className="h-3.5 w-3.5 text-gray-400 shrink-0" />
                 <input
                   autoFocus
@@ -106,18 +106,18 @@ export default function ProjectSwitcher({
               {/* Recientes (últimos 5 visitados) — solo si hay y no se filtra */}
               {recentProjects.length > 0 && (
                 <>
-                  <p className="flex items-center gap-1 px-3 py-1 text-[10px] uppercase tracking-wide text-gray-400">
+                  <p className="flex items-center gap-1 px-3 py-1 font-mono text-[10px] uppercase tracking-wide text-gray-400">
                     <Clock className="h-3 w-3" /> Recientes
                   </p>
                   {recentProjects.map((p) => (
                     <Row key={p.id} name={p.name} active={p.id === currentId} onClick={() => pick(p.id)} />
                   ))}
-                  {!q && <div className="my-1 border-t border-gray-100" />}
+                  {!q && <div className="my-1 border-t border-line" />}
                 </>
               )}
 
               {/* Todos (o filtrados por búsqueda) */}
-              {!q && <p className="px-3 py-1 text-[10px] uppercase tracking-wide text-gray-400">Todos</p>}
+              {!q && <p className="px-3 py-1 font-mono text-[10px] uppercase tracking-wide text-gray-400">Todos</p>}
               {(q ? filtered : projects.filter((p) => !recentProjects.includes(p))).map((p) => (
                 <Row key={p.id} name={p.name} active={p.id === currentId} onClick={() => pick(p.id)} />
               ))}
@@ -139,12 +139,12 @@ function Row({ name, active, onClick }: { name: string; active: boolean; onClick
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm text-left hover:bg-gray-50",
+        "w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm text-left hover:bg-background",
         active ? "text-gray-900 font-medium" : "text-gray-600"
       )}
     >
       <span className="truncate">{name}</span>
-      {active && <Check className="h-3.5 w-3.5 text-gray-900 shrink-0" />}
+      {active && <Check className="h-3.5 w-3.5 text-brand shrink-0" />}
     </button>
   );
 }

@@ -141,7 +141,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
   const result = run?.status === "completed" ? run.result : null;
 
   return (
-    <div className="bg-white border border-gray-100 rounded-xl p-5 space-y-3">
+    <div className="bg-white border border-line rounded-xl p-5 space-y-3">
       <div className="flex items-start gap-3">
         <div className="h-9 w-9 rounded-lg bg-gray-900 text-white flex items-center justify-center shrink-0">
           <Rocket className="h-4 w-4" />
@@ -157,7 +157,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
       </div>
 
       {running && (
-        <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-lg p-2.5">
+        <div className="flex items-center gap-2 text-xs text-gray-600 bg-background border border-line rounded-xl p-2.5">
           <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
           {run?.status === "pending"
             ? "En cola — empezará en breve."
@@ -180,7 +180,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
             Todo al día: no hay keywords pendientes de importar ni competidores sin analizar.
           </p>
         ) : (
-          <div className="text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-lg p-2.5 space-y-0.5">
+          <div className="text-xs text-gray-600 bg-background border border-line rounded-xl p-2.5 space-y-0.5">
             <div>
               <strong className="text-gray-900">{estimate.keywordsToCheck}</strong> keyword
               {estimate.keywordsToCheck === 1 ? "" : "s"} a importar y chequear
@@ -207,7 +207,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
       )}
 
       {result && (
-        <div className="text-xs space-y-1.5 bg-white border border-gray-200 rounded-lg p-3">
+        <div className="text-xs space-y-1.5 bg-white border border-line rounded-xl p-3">
           <div className="flex items-center gap-2 font-medium text-gray-900">
             {result.errors.length === 0 ? (
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -288,7 +288,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
               <button
                 onClick={() => setConfirming(false)}
                 disabled={launching}
-                className="flex-1 px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="flex-1 px-4 py-2 text-sm text-gray-600 border border-line rounded-xl hover:bg-background disabled:opacity-50"
               >
                 Cancelar
               </button>

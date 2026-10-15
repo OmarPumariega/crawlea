@@ -6,6 +6,7 @@ import * as Select from "@radix-ui/react-select";
 import { Loader2, ChevronDown, Check } from "lucide-react";
 import GscPanel from "@/components/admin/GscPanel";
 import Ga4Panel from "@/components/admin/Ga4Panel";
+import PageHeader from "@/components/admin/PageHeader";
 
 type GscSite = { siteUrl: string; permissionLevel: string };
 type Ga4Property = { propertyId: string; displayName: string; accountName: string };
@@ -18,8 +19,8 @@ type Dashboard = { gsc: SourceResult<GscTotals>; ga4: SourceResult<Ga4Totals> };
 
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
-      <div className="text-2xl font-semibold text-gray-900">{value}</div>
+    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+      <div className="text-3xl font-semibold tracking-tight text-gray-900 tabular-nums">{value}</div>
       <div className="text-sm text-gray-500">{label}</div>
     </div>
   );
@@ -116,10 +117,10 @@ export default function GoogleView({
 
   if (notConnected) {
     return (
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
         <p className="text-sm text-gray-600">
           Todavía no hay ninguna cuenta de Google conectada.{" "}
-          <Link href="/admin/configuracion" className="text-gray-900 font-medium underline">
+          <Link href="/admin/configuracion" className="text-brand font-medium underline">
             Conectar en Configuración →
           </Link>
         </p>
@@ -128,36 +129,35 @@ export default function GoogleView({
   }
 
   if (loadError) {
-    return <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{loadError}</p>;
+    return <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{loadError}</p>;
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900">Integraciones Google</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Elige la propiedad de Search Console y de GA4 de este proyecto.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Módulo · Google"
+        title="Integraciones Google"
+        description="Elige la propiedad de Search Console y de GA4 de este proyecto."
+      />
 
-      <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-700">Search Console</label>
           <Select.Root value={gscSiteUrl || undefined} onValueChange={setGscSiteUrl}>
-            <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white">
+            <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
               <Select.Value placeholder="Sin seleccionar" />
               <Select.Icon>
                 <ChevronDown className="h-4 w-4 text-gray-400" />
               </Select.Icon>
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+              <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
                 <Select.Viewport>
                   {(propiedades?.gscSites ?? []).map((site) => (
                     <Select.Item
                       key={site.siteUrl}
                       value={site.siteUrl}
-                      className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100 flex items-center gap-2"
+                      className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background flex items-center gap-2"
                     >
                       <Select.ItemText>{site.siteUrl}</Select.ItemText>
                       <Select.ItemIndicator>
@@ -174,20 +174,20 @@ export default function GoogleView({
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-700">Google Analytics (GA4)</label>
           <Select.Root value={ga4PropertyId || undefined} onValueChange={setGa4PropertyId}>
-            <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-gray-400 bg-white">
+            <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
               <Select.Value placeholder="Sin seleccionar" />
               <Select.Icon>
                 <ChevronDown className="h-4 w-4 text-gray-400" />
               </Select.Icon>
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-50">
+              <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
                 <Select.Viewport>
                   {(propiedades?.ga4Properties ?? []).map((prop) => (
                     <Select.Item
                       key={prop.propertyId}
                       value={prop.propertyId}
-                      className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100 flex items-center gap-2"
+                      className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background flex items-center gap-2"
                     >
                       <Select.ItemText>
                         {prop.accountName} — {prop.displayName}
@@ -205,17 +205,17 @@ export default function GoogleView({
 
         <div className="space-y-1 opacity-50">
           <label className="block text-sm font-medium text-gray-700">Business Profile</label>
-          <div className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
+          <div className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-background text-gray-400 cursor-not-allowed">
             Pendiente de aprobación de Google (requiere solicitud manual de acceso a la API)
           </div>
         </div>
 
-        {saveError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{saveError}</p>}
+        {saveError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{saveError}</p>}
 
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+          className="flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong disabled:opacity-50 transition-colors"
         >
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
           Guardar
@@ -230,7 +230,7 @@ export default function GoogleView({
         // completo). Así nunca quedan celdas vacías sea cual sea la combinación.
         <div className="grid grid-cols-2 gap-4">
           {dashboard.gsc && "error" in dashboard.gsc ? (
-            <div className="col-span-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+            <div className="col-span-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">
               Search Console: {dashboard.gsc.error}
             </div>
           ) : dashboard.gsc ? (
@@ -241,7 +241,7 @@ export default function GoogleView({
           ) : null}
 
           {dashboard.ga4 && "error" in dashboard.ga4 ? (
-            <div className="col-span-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+            <div className="col-span-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">
               Google Analytics: {dashboard.ga4.error}
             </div>
           ) : dashboard.ga4 ? (

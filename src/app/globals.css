@@ -1,24 +1,98 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* Acento de marca (índigo). La base sigue siendo gris/negra; este color se
-     usa solo donde aporta identidad: logo, login, navegación activa, focos. */
-  --brand: #4f46e5;
+  /* Identidad v3 "framed app": el lienzo del contenido es un gris cálido
+     con suficiente contraste para que las tarjetas BLANCAS respiren y se
+     separen del fondo (antes era casi blanco y las tarjetas no destacaban). */
+  --background: #f2f1ec;
+  --foreground: #1a1d1a;
+
+  /* El marco: gris cálido exterior sobre el que flota la app redondeada, y el
+     tono del panel de navegación (un paso más oscuro que el contenido). */
+  --canvas: #e9e8e3;
+  --sidebar: #f1f0eb;
+
+  /* Marca: verde profundo tipo teal (referencia Bankio). Al ser el token del
+     que cuelgan bg-brand / text-brand / ring-brand, el cambio de identidad se
+     propaga a botones, focos y acentos de todas las vistas sin tocar cada una. */
+  --brand: #0e6b4f;
+  --brand-strong: #0c5d45;
   --brand-foreground: #ffffff;
+
+  /* Tinta oscura para superficies protagonista (login, tarjetas hero) y señal
+     lima: el detalle que vive sobre oscuro (porcentajes destacados). */
+  --ink: #141814;
+  --ink-soft: #1f251f;
+  --signal: #c8f24e;
+
+  /* Hairline sobre papel, más cálida que gray-200. */
+  --line: #e7e5e0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-canvas: var(--canvas);
+  --color-sidebar: var(--sidebar);
   --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
   --color-brand-foreground: var(--brand-foreground);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-signal: var(--signal);
+  --color-line: var(--line);
+  /* Las fuentes llegan como variables CSS de next/font (layout raíz): todas
+     las utilidades font-sans / font-mono heredan la identidad tipográfica. */
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Selección con la señal de marca */
+::selection {
+  background: var(--signal);
+  color: var(--ink);
+}
+
+/* Foco visible único y consistente en toda la app: anillo de marca que
+   respeta los radios y no se recorta en botones/tarjetas redondeadas. */
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 60%, transparent);
+  outline-offset: 2px;
+}
+
+/* Scrollbars finos y discretos, en el tono del papel */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c9c7bc transparent;
+}
+
+/* Animaciones del chrome: barras de ranking del login y apertura de modales */
+@keyframes rise {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Editor enriquecido (RichTextEditor, módulo Notas). Tailwind resetea los

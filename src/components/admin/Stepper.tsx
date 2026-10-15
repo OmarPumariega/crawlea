@@ -39,9 +39,9 @@ export default function Stepper({
               <span
                 className={cn(
                   "flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-full text-xs font-semibold border transition-colors",
-                  isDone && "bg-gray-900 text-white border-gray-900",
-                  isCurrent && "bg-white text-gray-900 border-gray-900",
-                  !isDone && !isCurrent && "bg-white text-gray-400 border-gray-200"
+                  isDone && "bg-brand text-white border-brand",
+                  isCurrent && "bg-white text-brand border-brand",
+                  !isDone && !isCurrent && "bg-white text-gray-400 border-line"
                 )}
               >
                 {isDone ? <Check className="h-3.5 w-3.5" /> : i + 1}
@@ -60,7 +60,7 @@ export default function Stepper({
               <span
                 className={cn(
                   "h-px w-4 sm:w-8 shrink-0",
-                  i < current ? "bg-gray-900" : "bg-gray-200"
+                  i < current ? "bg-brand" : "bg-line"
                 )}
               />
             )}

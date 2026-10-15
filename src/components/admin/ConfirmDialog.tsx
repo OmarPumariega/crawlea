@@ -34,7 +34,7 @@ export default function ConfirmDialog({
       role="presentation"
     >
       <div
-        className="bg-white rounded-xl shadow-xl max-w-sm w-full p-5 space-y-4"
+        className="bg-white rounded-2xl border border-line shadow-xl max-w-sm w-full p-5 space-y-4 animate-[pop_0.14s_ease-out]"
         onClick={(e) => e.stopPropagation()}
         role="alertdialog"
         aria-modal="true"
@@ -51,7 +51,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="px-3 py-1.5 text-sm border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            className="px-3 py-1.5 text-sm border border-line text-gray-700 rounded-xl hover:bg-background disabled:opacity-50"
           >
             {cancelLabel}
           </button>
@@ -60,8 +60,8 @@ export default function ConfirmDialog({
             onClick={onConfirm}
             disabled={busy}
             className={cn(
-              "px-3 py-1.5 text-sm rounded-lg text-white disabled:opacity-50",
-              danger ? "bg-red-600 hover:bg-red-700" : "bg-gray-900 hover:bg-gray-800"
+              "px-3 py-1.5 text-sm rounded-xl text-white disabled:opacity-50",
+              danger ? "bg-red-600 hover:bg-red-700" : "bg-brand hover:bg-brand-strong"
             )}
           >
             {confirmLabel}
