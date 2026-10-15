@@ -38,7 +38,7 @@ export default async function ConfiguracionPage({
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Agencia · Ajustes"
+        eyebrow="Plataforma · Ajustes"
         title="Configuración"
         description="Claves de API de terceros y conexión con Google para Search Console y Analytics (Módulo 6)."
       />
@@ -56,7 +56,7 @@ export default async function ConfiguracionPage({
       <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-2 text-sm text-gray-600">
         <p className="font-semibold text-gray-900">Antes de conectar</p>
         <p>
-          Si la cuenta de Google de la agencia es de <strong>Google Workspace</strong>, marca la
+          Si tu cuenta de Google es de <strong>Google Workspace</strong>, marca la
           app como <strong>Interna</strong> en Google Cloud Console: sin verificación, sin
           caducidad de 7 días.
         </p>

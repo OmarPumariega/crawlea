@@ -1,9 +1,10 @@
 # ============================================================
-# SEO CIRO — Producción en VPS Contabo (gestión por SSH)
+# CRAWLEA — Producción en VPS Contabo (gestión por SSH)
 # Proxy público: Traefik de Coolify (red externa "coolify").
 # La app se descubre por etiquetas Traefik; SSL automático (Let's Encrypt).
 # La DB NO se publica al host ni a Traefik (solo red interna).
-# Dominio placeholder: ajustar seo.agenciaciro.com al subdominio real.
+# Dominio: crawlea.com. Nota: el volumen se llama seo_pgdata por historia
+# (anterior nombre del proyecto) — NO renombrarlo sin migrar la BD.
 # ============================================================
 
 services:
@@ -50,11 +51,11 @@ services:
       - "traefik.docker.network=coolify"
       - "traefik.http.middlewares.seo-gzip.compress=true"
       - "traefik.http.middlewares.seo-redir.redirectscheme.scheme=https"
-      - "traefik.http.routers.seo-http.rule=Host(`seo.agenciaciro.com`)"
+      - "traefik.http.routers.seo-http.rule=Host(`crawlea.com`) || Host(`www.crawlea.com`)"
       - "traefik.http.routers.seo-http.entryPoints=http"
       - "traefik.http.routers.seo-http.middlewares=seo-redir"
       - "traefik.http.routers.seo-http.service=seo-svc"
-      - "traefik.http.routers.seo-https.rule=Host(`seo.agenciaciro.com`)"
+      - "traefik.http.routers.seo-https.rule=Host(`crawlea.com`) || Host(`www.crawlea.com`)"
       - "traefik.http.routers.seo-https.entryPoints=https"
       - "traefik.http.routers.seo-https.middlewares=seo-gzip"
       - "traefik.http.routers.seo-https.tls=true"

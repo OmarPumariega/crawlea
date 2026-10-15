@@ -1,6 +1,6 @@
 import robotsParser from "robots-parser";
 
-export const CRAWLER_USER_AGENT = "SEOCiroBot/1.0 (auditoría interna Agencia Ciro)";
+export const CRAWLER_USER_AGENT = "CrawleaBot/1.0 (+https://crawlea.com)";
 
 export type RobotsRules = {
   isAllowed: (url: string) => boolean;

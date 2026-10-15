@@ -3,8 +3,8 @@ import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { MAX_SHORT } from "@/lib/validation";
 
-// Catálogo global de tareas preestablecidas (no por proyecto). La agencia crea
-// aquí tareas recurrentes y las aplica a cada proyecto desde la pestaña Tareas.
+// Catálogo global de tareas preestablecidas (no por proyecto). Se crean
+// aquí tareas recurrentes y se aplican a cada proyecto desde la pestaña Tareas.
 
 const PRIORITIES = ["baja", "media", "alta"] as const;
 

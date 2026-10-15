@@ -191,7 +191,7 @@ model ApiUsageLog {
 }
 
 // Módulo 6 — conexión OAuth2 de un usuario con Google (GSC/GA4). Antes era un
-// singleton de la agencia (una cuenta para todos los proyectos); en el SaaS
+// singleton (una cuenta para todos los proyectos); en el SaaS
 // cada usuario conecta SU cuenta de Google: userId @unique = una conexión por
 // usuario, y reconectar es un upsert sobre esa clave, sin condición de carrera.
 model GoogleConnection {
@@ -354,7 +354,7 @@ model KeywordStudy {
   locationCode   Int       @default(2724) // España
   structure      Json? // { pages: [{ slug, h1, headings, navLabel, keywords }] }
   structureModel String? // modelo de OpenRouter usado; null hasta que se genera
-  notes          String? // notas/descripción interna de la agencia sobre el estudio
+  notes          String? // notas/descripción interna sobre el estudio
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   keywords       Keyword[]
@@ -515,7 +515,7 @@ model GeogridRun {
   @@index([projectId, triggeredAt])
 }
 
-// Módulo 2 — to-do list por proyecto. Tareas manuales que la agencia anota en
+// Módulo 2 — to-do list por proyecto. Tareas manuales anotadas en
 // la ficha del cliente (pendientes genéricos de SEO, no generados auto). Con
 // fecha opcional (dueDate) para avisos futuros en el dashboard.
 model TodoItem {
@@ -549,10 +549,10 @@ model TodoItem {
   @@index([projectId])
 }
 
-// Apuntes del negocio del cliente: notas internas de la agencia (acuerdos,
+// Apuntes del negocio del cliente: notas internas (acuerdos,
 // contactos, recordatorios) sin estado ni fecha de vencimiento — a diferencia
 // de TodoItem, no son tareas. Lista libre, ordenada por fecha. No aparecen en
-// el Informe (son información interna de agencia, no un resultado de trabajo
+// el Informe (son información interna, no un resultado de trabajo
 // SEO para enseñar al cliente). `content` es HTML (negrita/color/subrayado)
 // generado por el editor enriquecido del front-end, no texto plano.
 model ProjectNote {
@@ -587,10 +587,10 @@ model ProjectNoteImage {
   @@index([noteId])
 }
 
-// Catálogo global de tareas preestablecidas (no por proyecto). La agencia crea
+// Catálogo global de tareas preestablecidas (no por proyecto). Se crean
 // aquí tareas recurrentes tipo "Revisar robots.txt", "Actualizar sitemap"... y
-// las aplica a cada proyecto desde la pestaña Tareas. Single-tenant: no lleva
-// projectId, es común a toda la herramienta.
+// se aplican a cada proyecto desde la pestaña Tareas. Global: no lleva
+// projectId, es común a toda la plataforma.
 model TodoTemplate {
   id        String   @id @default(cuid())
   title     String
@@ -663,7 +663,7 @@ model SerpCache {
 
 // Tier 2 — competidor de un proyecto (espionaje de visibilidad + content gap).
 // El dominio propio del proyecto NO va aquí (se analiza con su `domain`); aquí
-// van los dominios competidores que la agencia quiere vigilar.
+// van los dominios competidores que el usuario quiere vigilar.
 model Competitor {
   id           String    @id @default(cuid())
   projectId    String

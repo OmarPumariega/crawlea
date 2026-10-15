@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import AuthPanel from "@/components/auth/AuthPanel";
 
 export const metadata = {
-  title: "Crear cuenta · SEO Ciro",
+  title: "Crear cuenta · Crawlea",
 };
 
 export default async function RegistroPage() {

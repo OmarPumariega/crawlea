@@ -41,7 +41,7 @@
  * programadas, que dependen de este cron para procesarse.
  */
 
-const TIMER_GLOBAL_KEY = "__seoCiroAuditTimer" as const;
+const TIMER_GLOBAL_KEY = "__crawleaAuditTimer" as const;
 const RUN_INTERVAL_MS = 60 * 1000; // 60s de descanso ENTRE ticks, no de intervalo fijo
 const FIRST_RUN_DELAY_MS = 30_000; // 30s (no cargar el arranque del contenedor)
 

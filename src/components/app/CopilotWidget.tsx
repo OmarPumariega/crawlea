@@ -20,7 +20,7 @@ import ConfirmDialog from "@/components/app/ConfirmDialog";
 type WidgetVisualState = "closed" | "open" | "minimized";
 type StoredState = { state: WidgetVisualState; activeThreadByProject: Record<string, string> };
 
-const STORAGE_KEY = "seoCiro:copilotWidget";
+const STORAGE_KEY = "crawlea:copilotWidget";
 
 function readStored(): StoredState {
   if (typeof window === "undefined") return { state: "closed", activeThreadByProject: {} };

@@ -1,6 +1,6 @@
 # 06 — Roadmap SaaS
 
-Transición de **panel interno de la agencia** a **SaaS público multi-usuario**
+Transición de **panel interno** a **SaaS público multi-usuario**
 (estilo Semrush/Dinorank): la gente se registra, prueba y se suscribe. Este documento
 es la fuente de verdad del estado de esa transición y de las decisiones de producto
 ya tomadas — se actualiza en el mismo commit que el cambio de fase.
@@ -9,7 +9,8 @@ ya tomadas — se actualiza en el mismo commit que el cambio de fase.
 
 | Tema | Decisión | Por qué |
 |---|---|---|
-| Dominio | **Un solo dominio**: web pública en `/`, herramienta en `/app`, admin de plataforma en `/admin` | Un solo despliegue (mismo Docker), sesión compartida, la autoridad SEO se concentra. Un subdominio `app.` puede añadirse después sin rehacer nada. |
+| Marca y dominio | **Crawlea**, dominio `crawlea.com` (compra en trámite) | Nombre elegido para el lanzamiento público. El rebranding es completo: UI, docs, user-agent del crawler (`CrawleaBot/1.0`), remitente de emails, Docker/Traefik y `package.json`. |
+| Estructura de dominio | **Un solo dominio**: web pública en `/`, herramienta en `/app`, admin de plataforma en `/admin` | Un solo despliegue (mismo Docker), sesión compartida, la autoridad SEO se concentra. Un subdominio `app.` puede añadirse después sin rehacer nada. |
 | Registro | **Solo Google** (OAuth). El admin conserva email+contraseña | Sin gestión de contraseñas/reset/verificación de email, cuentas verificadas de serie, menos abuso. Añadir registro por email más adelante no requiere migración. |
 | Pagos | **Stripe** (checkout hospedado, webhooks, billing portal) | Estándar, suscripciones recurrentes, portal sin UI propia, soporta tarjeta/Bizum/SEPA. |
 | Entrada | **Freemium**: plan gratis permanente limitado + planes de pago | Sin urgencia temporal, captura registros (estilo Dinorank). El trial de pago se puede añadir después. |
@@ -112,9 +113,9 @@ Objetivo: la home del SaaS en `/`.
 
 Objetivo: dominio propio y todo lo externo resuelto.
 
-- Dominio nuevo (nombre a decidir por Omar; todo va por env). Quitar `NEXTAUTH_URL`
-  horneado del Dockerfile → env de runtime; labels de Traefik en `docker-compose.yaml`
-  al nuevo Host; redirect 301 de `seo.agenciaciro.com`.
+- Dominio decidido: **crawlea.com** (compra en trámite; ya apuntado en Dockerfile y
+  labels de Traefik). Quitar `NEXTAUTH_URL` horneado del Dockerfile → env de runtime;
+  decidir si se mantiene redirect 301 desde la URL anterior del despliegue actual.
 - Google Cloud: OAuth client de LOGIN (scopes básicos) + **verificación de los
   scopes GSC/GA4** para conexiones por usuario — dependencia externa LENTA
   (semanas), arrancarla cuanto antes.

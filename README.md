@@ -1,12 +1,12 @@
-# SEO Ciro
+# Crawlea
 
-Herramienta SEO creada por **Omar Pumariega** — actualmente en uso por Agencia Ciro
-(de ahí el nombre y que esté alojada en su dominio), pero el proyecto es suyo, no de
-la agencia. Centraliza el trabajo diario de SEO (keyword research, títulos/metas,
-schema, rank tracking, integraciones de Google, generación de contenido, auditoría
-técnica y geogrid local) sobre APIs reales, en vez de depender de
-Ahrefs/Semrush/LocalFalcon. Cada cliente/dominio gestionado es un **proyecto**
-dentro de la misma app — no es multi-tenant por login.
+**Crawlea** (crawlea.com) es una herramienta SEO SaaS creada por **Omar Pumariega**.
+Centraliza el trabajo diario de SEO (keyword research, títulos/metas, schema, rank
+tracking, integraciones de Google, generación de contenido, auditoría técnica y
+geogrid local) sobre APIs reales, en vez de depender de Ahrefs/Semrush/LocalFalcon.
+Cada dominio gestionado es un **proyecto** que pertenece a la cuenta (`User`) que
+lo creó — multi-tenant simple, en transición a SaaS público (registro con Google,
+suscripciones con Stripe; ver `docs/06-roadmap-saas.md`).
 
 **Principio no negociable:** todos los datos que muestra la app vienen de una fuente
 real y verificable (DataForSEO, Google Search Console/GA4, scraping real, PageSpeed

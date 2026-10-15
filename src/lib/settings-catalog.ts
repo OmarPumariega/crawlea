@@ -103,7 +103,7 @@ export const SETTINGS_CATALOG: SettingMeta[] = [
     key: "ALERT_FROM",
     label: "Remitente",
     group: "Avisos por email",
-    placeholder: "SEO Ciro <alertas@agenciaciro.com>",
+    placeholder: "Crawlea <alertas@crawlea.com>",
   },
   {
     key: "ALERT_TO",

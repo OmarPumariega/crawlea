@@ -1,11 +1,11 @@
-# CLAUDE.md — SEO Ciro
+# CLAUDE.md — Crawlea
 
 ## Rol y objetivo
 
-Ingeniero full stack construyendo **SEO Ciro**, una herramienta interna de Agencia Ciro
-para centralizar el trabajo SEO diario de la agencia,
-sustituyendo herramientas de terceros (Ahrefs, Semrush, LocalFalcon...) por un sistema
-propio conectado a APIs reales.
+Ingeniero full stack construyendo **Crawlea** (crawlea.com), un SaaS SEO que
+centraliza el trabajo SEO diario sobre proyectos, sustituyendo herramientas de
+terceros (Ahrefs, Semrush, LocalFalcon...) por un sistema propio conectado a APIs
+reales.
 
 **Principio no negociable (heredado del spec):** todos los datos mostrados deben venir
 de fuentes reales y verificables. Nada se inventa ni se estima sin fuente.
@@ -19,7 +19,7 @@ importante aquí, actualízalo también allí.
 
 ## Lo que estamos construyendo
 
-Un SaaS SEO multi-usuario (transición desde el panel interno de la agencia, en
+Un SaaS SEO multi-usuario (transición desde un panel interno, en
 fases aprobadas) donde cada cliente/dominio es un **proyecto** que pertenece a
 un `User` (multi-tenant simple, sin organizaciones). La Fase 1 ya está hecha:
 registro con Google OAuth (credentials queda solo para el admin de la plataforma),
@@ -46,9 +46,9 @@ infraestructura (colas, caché, tablas de coste) para módulos que todavía no e
 
 ## Stack tecnológico
 
-- **Next.js 16** (App Router) + TypeScript + Tailwind 4 — mismo stack que el proyecto
-  hermano Cirochat (`../Cirochat/cirochat-app`), reutiliza patrones ya validados en
-  producción (auth, cifrado, Docker/Traefik/Coolify)
+- **Next.js 16** (App Router) + TypeScript + Tailwind 4 — reutiliza patrones ya
+  validados en producción por el autor en otros proyectos (auth, cifrado,
+  Docker/Traefik/Coolify)
 - **PostgreSQL + Prisma** (adapter `PrismaPg`) — sin pgvector, esta app no usa embeddings
 - **NextAuth (JWT)** — dos vías: Google OAuth (registro público del SaaS, env
   `GOOGLE_AUTH_CLIENT_ID/SECRET`; sin ellas el botón de Google no aparece) y
@@ -88,15 +88,13 @@ infraestructura (colas, caché, tablas de coste) para módulos que todavía no e
 - **Cron interno sin Redis** (`src/instrumentation.ts` + `instrumentation-node.ts`,
   Módulos 8, 5 y 9) — cada 60s ejecuta en secuencia `runAuditJob` (una `AuditRun`
   pending), `runRankJob` (el proyecto con keywords de rank tracking más vencidas,
-  hasta 50 por tick) y `runGeogridJob` (un `GeogridRun` pending). Mismo patrón que
-  Cirochat pero corregido (ver `docs/02-arquitectura.md` para el gotcha de por qué el
-  patrón de Cirochat probablemente nunca se ejecuta). **Solo corre con
+  hasta 50 por tick) y `runGeogridJob` (un `GeogridRun` pending). **Solo corre con
   `NODE_ENV=production`** — en `npm run dev` nunca se dispara, hace falta
   `npm run build && npm run start`. Para no depender de esperar al siguiente tick en
   dev, las rutas POST de auditoría y geogrid además disparan el procesamiento
   inmediatamente vía import dinámico fire-and-forget al crear el run.
 - **robots-parser** + fetch/cheerio propios (`src/lib/audit/`) — crawler del Módulo 8,
-  identificado como `SEOCiroBot/1.0`, no como un navegador (a diferencia del scraper de
+  identificado como `CrawleaBot/1.0`, no como un navegador (a diferencia del scraper de
   Módulo 3/4). `PAGESPEED_API_KEY` (Google Cloud, sin OAuth) solo se consulta sobre la
   home del proyecto, nunca por página rastreada. El crawl también persiste el grafo de
   enlaces (`AuditRun.linkGraph`), que reutiliza el módulo de PageRank interno.
@@ -116,11 +114,11 @@ reutiliza llamadas ya pagadas).
 ## Esquema de base de datos (Prisma)
 
 Ver [`docs/04-modelo-de-datos.md`](./docs/04-modelo-de-datos.md) para el detalle
-completo (27 modelos). Resumen: `User` (login agencia), `Project` (cliente/dominio, con
+completo (27 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
 NAP, propiedad de Google seleccionada y tope de gasto opcional),
 `TitleMetaGeneration` y `SchemaGeneration` (historial de los Módulos 3 y 4),
 `ApiUsageLog` (coste por llamada a OpenRouter/DataForSEO, base del control de gasto),
-`GoogleConnection` (OAuth2 único de la agencia, Módulo 6), `ContentGeneration` (Módulo 7,
+`GoogleConnection` (OAuth2 por usuario, Módulo 6), `ContentGeneration` (Módulo 7,
 con versionado por tema) + `UrlOptimization` (Módulo 7, "Optimizar URL existente"),
 `AuditRun` + `AuditPage` (Módulo 8, ampliado con checks
 on-page/robots/sitemap), `KeywordStudy` + `Keyword` + `KeywordDataCache` (Módulo 1),
@@ -205,7 +203,8 @@ Proyectos. Tres bloques:
   dedicada) — el coste de olvidarlo es que el informe se queda desincronizado del
   resto de la herramienta sin que nadie se dé cuenta hasta que un cliente pregunta
   por un dato que sí existe pero no aparece.
-- **Conexión con Google** (Módulo 6): OAuth2 de la agencia. Conectar/desconectar, ver
+- **Conexión con Google** (Módulo 6): OAuth2 (una conexión por usuario; la misma
+  tarjeta vive también en `/app/perfil`). Conectar/desconectar, ver
   email y scopes concedidos. La *selección de propiedad* por proyecto vive en la
   ficha de cada proyecto, no aquí — la conexión es una, las propiedades son por
   proyecto.
@@ -249,7 +248,7 @@ sitio; ver el apartado "Copilot" más abajo.
   seguro de pintar con `dangerouslySetInnerHTML` porque el schema cerrado de
   Tiptap nunca emite `<script>`/`<iframe>`/atributos `on*`. Sin estado ni
   prioridad (a diferencia de `TodoItem`, no son tareas) y sin generación
-  automática. No aparece en el Informe: es información interna de agencia, no
+  automática. No aparece en el Informe: es información interna del proyecto, no
   un resultado de trabajo SEO para enseñar al cliente.
 - **Keywords** (Módulo 1): espacio de trabajo tipo Planificador por estudio.
   Siembras una keyword → DataForSEO Labs (`keyword_suggestions`) devuelve relacionadas
@@ -313,7 +312,7 @@ sitio; ver el apartado "Copilot" más abajo.
   posición cae ≥10. **Guard "un chequeo por día natural"** (Europe/Madrid): el primer
   chequeo del día fija la posición; los siguientes la devuelven gratis sin llamar a la
   API ni tocar el histórico (estabilidad frente a la fluctuación del SERP).
-- **Google** (Módulo 6): si no hay conexión de agencia, enlaza a Configuración. Si la
+- **Google** (Módulo 6): si no hay conexión de Google, enlaza a Configuración. Si la
   hay, selectores de propiedad de Search Console y GA4 (Business Profile deshabilitado,
   pendiente de aprobación de Google) + dashboard de últimos 28 días (clics/impresiones
   de GSC, sesiones/conversiones de GA4). Cada fuente se degrada de forma independiente
@@ -457,7 +456,7 @@ sitio; ver el apartado "Copilot" más abajo.
   proyecto (`useProjectIdFromPath`, compartido con `AdminSidebar.tsx`) — el backend
   sigue siendo estrictamente por proyecto, sin endpoint global. Estado
   visual + último hilo activo por proyecto persisten en `localStorage`
-  (`seoCiro:copilotWidget`, mismo patrón que los "recientes" de `ProjectSwitcher.tsx`),
+  (`crawlea:copilotWidget`, mismo patrón que los "recientes" de `ProjectSwitcher.tsx`),
   así que sobreviven a recargas de página. Backend sin cambios: chat de solo lectura vía
   OpenRouter con el contexto del proyecto (auditoría, rankings, gasto) inyectado en el
   system prompt, varios hilos por proyecto con historial (`CopilotThread`), lógica
@@ -475,8 +474,7 @@ sitio; ver el apartado "Copilot" más abajo.
   desde dónde (BD o `.env`), nunca el valor
 - OAuth de Google (Módulo 6): protección CSRF con cookie `google_oauth_state`
   (httpOnly, sameSite=lax, 10 min) comparada contra el parámetro `state` que Google
-  devuelve — suficiente para una herramienta interna de un solo admin, sin tabla de
-  estados. La cookie de sesión de NextAuth viaja intacta durante toda la redirección
+  devuelve — sin tabla de estados en BD. La cookie de sesión de NextAuth viaja intacta durante toda la redirección
   (SameSite=Lax permite cookies en navegación de nivel superior), así que
   `/api/google/oauth/callback` puede volver a comprobar `getServerSession` con normalidad
 
@@ -492,9 +490,10 @@ Ver [`.env.example`](./.env.example).
 
 ## Consideraciones de despliegue (VPS Contabo)
 
-Mismo patrón que Cirochat: `Dockerfile` multi-stage + `docker-compose.yml` con Traefik
-(Coolify) para SSL automático. Dominio actual en `docker-compose.yml` es un
-**placeholder** (`seo.agenciaciro.com`) — ajustar al subdominio real antes de desplegar.
+`Dockerfile` multi-stage + `docker-compose.yaml` con Traefik (Coolify) para SSL
+automático. Dominio: **crawlea.com** (compra en trámite; ya apuntado en los labels
+de Traefik). Pendiente de la Fase 5: quitar el `NEXTAUTH_URL` horneado del
+Dockerfile y pasar a env de runtime.
 
 ## Gotcha de desarrollo
 

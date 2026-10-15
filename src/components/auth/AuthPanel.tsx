@@ -124,7 +124,7 @@ export default function AuthPanel({ variant }: { variant: "acceso" | "registro" 
         </div>
 
         <p className="relative font-mono text-[11px] uppercase tracking-[0.18em] text-white/50">
-          © {new Date().getFullYear()} SEO Ciro
+          © {new Date().getFullYear()} Crawlea
         </p>
       </aside>
 

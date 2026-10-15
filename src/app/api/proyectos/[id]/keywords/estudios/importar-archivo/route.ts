@@ -5,7 +5,7 @@ import { parseKeywordFile, ImportFileError, decodeFileContent } from "@/lib/keyw
 import { computePriorities } from "@/lib/keywords/priority";
 
 // Tope por estudio: mismo límite que el resto del Módulo 1 (route.ts de
-// estudios/estudios/[id]/keywords) — un archivo real de agencia puede traer
+// estudios/estudios/[id]/keywords) — un archivo real puede traer
 // miles de filas, pero por encima de esto el prompt de estructura y la UI
 // dejan de ser manejables.
 const MAX_KEYWORDS = 300;

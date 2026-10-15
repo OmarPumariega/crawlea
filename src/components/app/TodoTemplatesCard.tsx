@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 import Pill from "@/components/app/Pill";
 import type { TodoTemplateItem as Template } from "@/lib/tasks";
 
-// Catálogo global de tareas preestablecidas (CRUD), común a toda la agencia
-// (single-tenant) — accesible desde el selector "Desde plantilla" del módulo
+// Catálogo global de tareas preestablecidas (CRUD), común a toda la cuenta
+// — accesible desde el selector "Desde plantilla" del módulo
 // Tareas de cada proyecto (modal "Gestionar plantillas"), desde donde también
 // se aplican a un proyecto concreto.
 
@@ -110,7 +110,7 @@ export default function TodoTemplatesCard() {
           <h2 className="text-sm font-semibold text-gray-900">Plantillas de tareas</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             Tareas preestablecidas (p.ej. &ldquo;Revisar robots.txt&rdquo;) que aplicar a los proyectos desde su
-            pestaña Tareas. Comunes a toda la agencia.
+            pestaña Tareas. Comunes a toda tu cuenta.
           </p>
         </div>
       </div>

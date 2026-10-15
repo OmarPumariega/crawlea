@@ -757,7 +757,7 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
                 Rendimiento medido sobre la página de inicio, no sobre todo el sitio
                 {current.gscChecked
                   ? ""
-                  : " · sin cruce con Search Console (proyecto sin propiedad GSC o sin conexión de agencia)"}
+                  : " · sin cruce con Search Console (proyecto sin propiedad GSC o sin conexión de Google)"}
               </p>
 
               {/* Core Web Vitals (PageSpeed Insights) — los datos ya los captura el

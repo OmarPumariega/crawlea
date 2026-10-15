@@ -1,5 +1,5 @@
 // Cliente de DataForSEO (Módulo 1 — Keyword Research). Auth HTTP Basic con
-// el login/password de la cuenta de la agencia. Se usan dos endpoints:
+// el login/password de la cuenta de la plataforma. Se usan dos endpoints:
 //
 //   • Volumen/competición/CPC → keywords_data/google_ads/search_volume/live
 //     (Keywords Data API; la mejor fuente para mirar un lote de keywords ya

@@ -174,7 +174,7 @@ export default function TitulosMetaView({ projectId }: { projectId: string }) {
       <PageHeader
         eyebrow="Módulo · Título y Meta"
         title="Título y Meta Descripción"
-        description="Analiza una URL real del proyecto y genera 3 variantes de título y meta descripción siguiendo las reglas SEO de la agencia."
+        description="Analiza una URL real del proyecto y genera 3 variantes de título y meta descripción siguiendo las reglas SEO de Crawlea."
       />
 
       {/* Generador: URL + keyword + acción en una sola barra horizontal */}

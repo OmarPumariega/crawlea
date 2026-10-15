@@ -3,7 +3,7 @@
 // priority = round((volumen / volumenMáximoDelEstudio) * 100)
 //
 // Competición y CPC NO entran en la fórmula: quedan como columnas visibles
-// para que la agencia las pondere a mano (mismo principio "auditable, no caja
+// para ponderarlas a mano (mismo principio "auditable, no caja
 // negra" que scoring.ts del Módulo 8). Mezclarlas exigiría una decisión de
 // negocio (¿prioridad = más volumen, o más volumen con menos competición?)
 // que no corresponde tomar en silencio.

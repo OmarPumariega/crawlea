@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import AuthPanel from "@/components/auth/AuthPanel";
 
 export const metadata = {
-  title: "Acceso · SEO Ciro",
+  title: "Acceso · Crawlea",
 };
 
 export default async function AccesoPage() {

@@ -1,6 +1,6 @@
 // Helper de "día natural" en zona horaria Europe/Madrid para el guard de
 // rank tracking: máximo un chequeo real por keyword y por día (ver
-// check.ts). La zona horaria es la de la agencia (España), con su offset
+// check.ts). La zona horaria es España, con su offset
 // real de verano (+02:00) / invierno (+01:00) calculado en runtime vía
 // Intl.DateTimeFormat — nada hardcodeado, sigue siendo correcto aunque
 // cambien las reglas del horario DST.

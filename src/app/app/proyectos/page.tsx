@@ -32,7 +32,7 @@ export default function ProjectsPage() {
       <PageHeader
         eyebrow="Cartera · Proyectos"
         title="Proyectos"
-        description="Cada cliente/dominio gestionado por la agencia es un proyecto."
+        description="Cada dominio en el que trabajas es un proyecto."
         actions={
           <Link
             href="/app/proyectos/nuevo"

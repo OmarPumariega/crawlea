@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-// Marca de SEO Ciro: cuadrado redondeado + tres barras ascendentes (motivo de
+// Marca de Crawlea: cuadrado redondeado + tres barras ascendentes (motivo de
 // ranking/crecimiento). El símbolo usa el color de marca y no depende del
 // color del texto contenedor:
 //   • "brand" (default): cuadrado verde de marca, barras blancas — el tono
@@ -42,7 +42,7 @@ export default function Logo({
       <LogoMark className="h-7 w-7 shrink-0" tone={tone} />
       {!compact && (
         <span className={cn("font-semibold tracking-tight text-gray-900", textClassName)}>
-          SEO Ciro
+          Crawlea
         </span>
       )}
     </span>

@@ -3,7 +3,7 @@ import { loadRobotsRules, CRAWLER_USER_AGENT } from "@/lib/audit/robots";
 import { normalizeUrl } from "@/lib/seo/normalize-url";
 
 // Techo de seguridad para "rastrear el sitio entero" (tipo Screaming Frog),
-// no un límite pensado para recortar de partida — un sitio de agencia normal
+// no un límite pensado para recortar de partida — un sitio normal
 // nunca lo alcanza. Si lo alcanza, `truncated: true` en el resultado avisa de
 // que puede haber más páginas sin analizar.
 const MAX_PAGES = 5000;

@@ -18,8 +18,9 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SEO Ciro — Panel interno",
-  description: "Herramienta SEO centralizada de Agencia Ciro",
+  title: "Crawlea — Panel SEO",
+  description:
+    "Herramienta SEO todo-en-uno con datos reales: keywords, auditoría técnica, rank tracking, contenido y geogrid local.",
 };
 
 export default function RootLayout({

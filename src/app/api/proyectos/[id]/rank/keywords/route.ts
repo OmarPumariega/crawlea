@@ -154,7 +154,7 @@ export async function POST(
   const frequency =
     typeof body.frequency === "string" && (RANK_FREQUENCIES as readonly string[]).includes(body.frequency)
       ? body.frequency
-      : "monthly"; // default: análisis mensual (estándar de la agencia)
+      : "monthly"; // default: análisis mensual (estándar)
   const languageCode =
     typeof body.languageCode === "string" && /^[a-z]{2}$/i.test(body.languageCode)
       ? body.languageCode.toLowerCase()

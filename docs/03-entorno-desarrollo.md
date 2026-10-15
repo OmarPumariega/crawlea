@@ -15,7 +15,7 @@ npm run db:seed        # crea el usuario admin (ver prisma/seed.ts)
 npm run dev
 ```
 
-Credenciales sembradas por defecto: `admin@agenciaciro.com` / `admin1234`
+Credenciales sembradas por defecto: `admin@crawlea.com` / `admin1234`
 (o las que definas en `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`). Cámbialas antes
 de usar en producción.
 

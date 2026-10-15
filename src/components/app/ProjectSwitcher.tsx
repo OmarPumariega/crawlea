@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export type ProjectInfo = { id: string; name: string; isLocalBusiness: boolean };
 
-const RECENTS_KEY = "seoCiro:recentProjects";
+const RECENTS_KEY = "crawlea:recentProjects";
 const RECENTS_MAX = 5;
 
 // Recientes en localStorage (cliente): los últimos proyectos visitados, para

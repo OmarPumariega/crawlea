@@ -58,7 +58,7 @@ export async function sendEmail(params: {
   if (!t) return false;
   try {
     await t.sendMail({
-      from: from ?? `SEO Ciro <no-reply@${host}>`,
+      from: from ?? `Crawlea <no-reply@${host}>`,
       to,
       subject: params.subject,
       text: params.text,

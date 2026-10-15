@@ -1,8 +1,8 @@
-# Especificación Técnica — Herramienta SEO Centralizada (Agencia Ciro)
+# Especificación Técnica — Herramienta SEO Centralizada
 
 ## 1. Resumen ejecutivo
 
-SaaS interno multi-tenant para centralizar las herramientas SEO usadas a diario en la agencia (Agencia Ciro), sustituyendo múltiples herramientas de terceros por un sistema propio conectado a APIs reales y fiables. Cada cliente/dominio es un "proyecto" con su propio perfil, datos, historial y configuración.
+Herramienta para centralizar el trabajo SEO diario sobre proyectos, sustituyendo múltiples herramientas de terceros por un sistema propio conectado a APIs reales y fiables. Cada cliente/dominio es un "proyecto" con su propio perfil, datos, historial y configuración.
 
 **Principio no negociable:** todos los datos mostrados deben proceder de fuentes reales y verificables (APIs oficiales). Ningún dato se inventa o estima sin fuente.
 
@@ -10,7 +10,7 @@ SaaS interno multi-tenant para centralizar las herramientas SEO usadas a diario 
 
 ## 2. Stack tecnológico propuesto
 
-- **Frontend/Backend:** Next.js 14 (App Router) — mismo stack que Cirochat, reutiliza conocimiento existente
+- **Frontend/Backend:** Next.js 14 (App Router) — reutiliza conocimiento y patrones ya validados
 - **Base de datos:** PostgreSQL + Prisma ORM
 - **Cola de tareas / jobs en background:** BullMQ + Redis (crawler, rank tracking programado, auditorías automáticas)
 - **IA:** Claude API (Sonnet) — clasificación de intención, generación de contenido, títulos/metas, schema, análisis
@@ -32,7 +32,7 @@ SaaS interno multi-tenant para centralizar las herramientas SEO usadas a diario 
 | Google PageSpeed Insights API | Core Web Vitals, rendimiento | Gratis (con cuota) |
 | Claude API (Anthropic) | Generación y análisis de contenido | Pago por uso |
 
-**Autenticación Google:** una sola cuenta OAuth2 (la del usuario/gestor de la agencia), heredando el acceso ya concedido en las cuentas de cada cliente. Selector de propiedad GSC/GA4/GBP por proyecto.
+**Autenticación Google:** una sola cuenta OAuth2 (la del usuario/gestor), heredando el acceso ya concedido en las cuentas de cada cliente. Selector de propiedad GSC/GA4/GBP por proyecto.
 
 ---
 
@@ -74,7 +74,7 @@ SaaS interno multi-tenant para centralizar las herramientas SEO usadas a diario 
 **Fase 2 (pendiente, no incluida en el MVP):** seguimiento de posicionamiento en buscadores de IA (Google AI Overview, ChatGPT, Perplexity, Gemini). La fuente más fiable (DataForSEO LLM Mentions API) exige un compromiso mínimo de $100/mes para acceder al endpoint, muy por encima del resto de APIs de pago por uso. Se deja pendiente de validar demanda real de clientes o de que surja una alternativa de coste más ajustado, dado que es una categoría de mercado todavía emergente.
 
 ### Módulo 6 — Integraciones Google (GSC + GA4 + GBP)
-- Conexión OAuth2 única (cuenta de la agencia)
+- Conexión OAuth2 única (una sola cuenta)
 - Selector de propiedad por proyecto (GSC, GA4, GBP)
 - Dashboard cruzado automático con datos de las 3 fuentes
 - Cruce con Módulo 1 (¿la keyword planeada está posicionando?) y Módulo 3 (¿el título optimizado mejora CTR?)

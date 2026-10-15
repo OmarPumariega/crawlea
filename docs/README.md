@@ -1,8 +1,8 @@
-# Documentación de SEO Ciro
+# Documentación de Crawlea
 
-Base de conocimiento de **SEO Ciro**, el SaaS SEO multi-usuario (en transición desde
-el panel interno de Agencia Ciro) que centraliza todo el trabajo SEO sobre proyectos
-(clientes/dominios), conectado a APIs reales.
+Base de conocimiento de **Crawlea** (crawlea.com), el SaaS SEO multi-usuario que
+centraliza todo el trabajo SEO sobre proyectos (clientes/dominios), conectado a
+APIs reales.
 
 > Si algo no está aquí, está en el código fuente (referenciado con `archivo:linea`)
 > o no existe todavía.
@@ -41,5 +41,3 @@ el panel interno de Agencia Ciro) que centraliza todo el trabajo SEO sobre proye
 - **Secrets:** nunca se incluyen valores reales, solo placeholders
 - **El roadmap manda:** el estado de las fases vive en `06-roadmap-saas.md` y se
   actualiza en el mismo commit que el cambio
-- Este proyecto es hermano de **Cirochat** (`../../Cirochat/cirochat-app`) y reutiliza
-  sus patrones de infraestructura (auth, cifrado, Docker/Traefik) allí donde encajan

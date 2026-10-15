@@ -1,4 +1,4 @@
-# AGENTS.md — SEO Ciro
+# AGENTS.md — Crawlea
 
 Este archivo sigue la convención abierta [agents.md](https://agents.md): un resumen
 del proyecto pensado para que **cualquier asistente de IA** (Cursor, Codex, Copilot,
@@ -10,8 +10,8 @@ cambias algo importante del proyecto, actualiza los dos.
 
 ## Qué es esto
 
-**SEO Ciro** es una herramienta SEO creada por **Omar Pumariega**. Nació como panel
-interno de Agencia Ciro y está en plena transición a **SaaS público multi-usuario**
+**Crawlea** (crawlea.com) es una herramienta SEO SaaS creada por **Omar Pumariega**.
+Nació como panel interno y está en plena transición a **SaaS público multi-usuario**
 (estilo Semrush/Dinorank): registro con Google, suscripciones con Stripe y web
 pública de marketing. Cada cliente/dominio gestionado sigue siendo una fila
 `Project`, pero ahora cada `Project` pertenece a un `User` (multi-tenant simple,
@@ -31,8 +31,8 @@ Estado de la transición (fases aprobadas):
 - **Fase 3 — pendiente:** Stripe (checkout, webhooks, portal) + gating de módulos
   por plan (por ahora el plan free incluye todos los módulos: no hay vía de pago).
 - **Fase 4 — pendiente:** web pública en `/` (home, precios, contacto, legales).
-- **Fase 5 — pendiente:** dominio propio, OAuth de Google verificado, quitar
-  `NEXTAUTH_URL` horneado del Dockerfile.
+- **Fase 5 — pendiente:** dominio crawlea.com (compra en trámite), OAuth de Google
+  verificado, quitar `NEXTAUTH_URL` horneado del Dockerfile.
 
 **Principio no negociable:** todos los datos que muestra la app vienen de una fuente
 real y verificable (DataForSEO, Google Search Console/GA4, scraping real, PageSpeed
@@ -56,7 +56,7 @@ alcance original):
 | 3 | Título y Meta | Scraping real de una URL + 3 variantes de título/meta vía LLM |
 | 4 | Schema | Catálogo de ~20 tipos schema.org, generación de JSON-LD (deterministas + LLM genérico) |
 | 5 | Rank Tracking | Posiciones orgánicas reales (DataForSEO SERP), manual o programado, guard de un chequeo/día |
-| 6 | Google | OAuth2 de agencia, paneles de Search Console y GA4 con snapshots persistidos |
+| 6 | Google | OAuth2 por usuario, paneles de Search Console y GA4 con snapshots persistidos |
 | 7 | Contenido | Generación de contenido vía LLM + "Optimizar URL existente" con cambios concretos accionables; el análisis TF-IDF es una pestaña de este módulo |
 | 8 | Auditoría | Crawler propio (rastrea el sitio entero, no una muestra) + PageSpeed + cruce con GSC, puntuación explicable; enlazado interno (PageRank/huérfanas) y canibalizaciones son pestañas de este módulo |
 | 9 | Geogrid | Mapa de calor de posicionamiento local vía DataForSEO Maps SERP |
@@ -92,7 +92,7 @@ terceros, no por trabajo pendiente — ver `docs/01-vision-general.md`.
   pagadas por el resto de la app)
 - **googleapis** — OAuth2 + Search Console + GA4 (Módulo 6)
 - **cheerio** — scraping real en dos sabores: navegador simulado (Módulos 3/4/7,
-  TF-IDF) y crawler identificado como bot (`SEOCiroBot/1.0`, Módulo 8/Auditoría)
+  TF-IDF) y crawler identificado como bot (`CrawleaBot/1.0`, Módulo 8/Auditoría)
 - **Cron interno sin Redis** (`src/instrumentation.ts` + `instrumentation-node.ts`) —
   cada 60s procesa auditorías/rank tracking/geogrid/bootstrap pendientes. Solo corre
   con `NODE_ENV=production`; en `npm run dev` nunca se dispara

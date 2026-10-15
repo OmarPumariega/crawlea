@@ -132,7 +132,7 @@ URLs opcionalmente generada encima. Tope de 300 keywords por estudio (por encima
   se agrupan como `mixta`.
 - `priority` (0-100): cuota de volumen dentro del estudio
   (`round(volumen / volumenMáximo * 100)`). Competición y CPC **no** entran en la
-  fórmula — quedan como columnas para que la agencia los pondere a mano.
+  fórmula — quedan como columnas para ponderarlas a mano.
 - `structure` (`Json?`): propuesta de URLs/H1/encabezados generada vía OpenRouter sobre
   las keywords ya persistidas. `null` hasta que se genera; regenerar sobrescribe (sin
   versionado en v1, `updatedAt` es la pista de auditoría).
@@ -160,7 +160,7 @@ misma keyword en los dos devices por separado).
   interno; `manual` solo se dispara desde la UI (chequeo síncrono).
 - `depth` (10/30/50/100, default 10): resultados a parsear. DataForSEO factura por bloque de
   10, así que depth=10 es ~10x más barato que depth=100 — el equilibrio entre coste y visión
-  profunda lo decide la agencia por keyword (la mayoría del valor accionable está en página 1).
+  profunda se decide por keyword (la mayoría del valor accionable está en página 1).
 - `RankPosition`: una fila por chequeo, con `position` (null = fuera del depth) y `url`.
   Indexada por (rankKeywordId, checkedAt) para la consulta de histórico.
 
@@ -224,7 +224,7 @@ intención, esta cachea resultados de SERP).
 
 ## `Competitor` / `VisibilitySnapshot` (Competidores, Tier 2)
 
-`Competitor`: dominios competidores que la agencia decide trackear para un proyecto
+`Competitor`: dominios competidores que se decide trackear para un proyecto
 (único por `projectId`+`domain`), más `contentGap`/`contentGapAt` cacheados — volver a
 ver el content gap ya calculado es gratis, solo "Analizar" dispara una llamada nueva a
 DataForSEO Labs `domain_intersection`.

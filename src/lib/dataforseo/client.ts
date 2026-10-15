@@ -1,5 +1,5 @@
 // Cliente HTTP compartido de DataForSEO. Auth HTTP Basic con el
-// login/password de la agencia (DATAFORSEO_LOGIN/DATAFORSEO_PASSWORD).
+// login/password de la plataforma (DATAFORSEO_LOGIN/DATAFORSEO_PASSWORD).
 //
 // Todas las APIs de DataForSEO comparten el mismo patrón de envoltorio:
 //   • body = ARRAY de tasks (código 40503 si mandas un objeto suelto)

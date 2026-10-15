@@ -120,7 +120,7 @@ export default function CostesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Agencia · Costes"
+        eyebrow="Cuenta · Costes"
         title="Costes de API"
         description={data.project ? data.project.name : "Todos los proyectos"}
         actions={

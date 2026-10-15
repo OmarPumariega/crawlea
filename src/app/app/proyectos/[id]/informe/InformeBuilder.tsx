@@ -1059,7 +1059,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
         ))}
 
         <footer className="border-t border-line pt-4 text-xs text-gray-400 print:text-black">
-          Informe generado por SEO Ciro · Agencia Ciro
+          Informe generado por Crawlea
           {!data.isCurrentMonth && " · Informe de un mes anterior — los datos de estado (salud técnica, SEO local) reflejan la última medición hasta el fin de ese mes."}
         </footer>
       </div>

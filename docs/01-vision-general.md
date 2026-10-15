@@ -1,6 +1,6 @@
 # 01 — Visión general
 
-SEO Ciro sustituye herramientas SEO de terceros (Ahrefs, Semrush, LocalFalcon...) por
+Crawlea sustituye herramientas SEO de terceros (Ahrefs, Semrush, LocalFalcon...) por
 un sistema propio conectado a APIs reales. Cada cliente/dominio es un **proyecto** con
 su propio perfil, datos e historial. Ver [`spec-original.md`](./spec-original.md)
 para la especificación funcional completa de los 9 módulos.
@@ -22,7 +22,7 @@ herramienta que se usa a diario — ahora por múltiples cuentas.
 - ✅ Módulo 2 (Gestión de Proyecto) — CRUD: perfil, NAP, tono de marca,
   coordenadas + **lista de To-do por proyecto** (tareas manuales + auto-generadas
   desde auditoría) + **Notas** (apuntes internos del negocio del cliente, texto
-  enriquecido y fotos adjuntas — no aparece en el Informe, es info interna de agencia)
+  enriquecido y fotos adjuntas — no aparece en el Informe, es info interna)
 - 🟡 Módulo 1 — Keyword Research: volumen/intención/prioridad reales vía DataForSEO
   (Keywords Data + Labs Search Intent) + generación de estructura de URLs. Solo
   DataForSEO como fuente por ahora; Google Ads queda pendiente (requiere developer
@@ -33,8 +33,8 @@ herramienta que se usa a diario — ahora por múltiples cuentas.
   vía DataForSEO SERP API. "Comprobar ahora" síncrono + frecuencias
   programadas (diaria/semanal/mensual, default mensual) vía el cron interno. Solo
   orgánico (Geogrid → Módulo 9).
-- 🟡 Módulo 6 — Integraciones Google: Search Console + GA4 vía OAuth2 único de la
-  agencia; Business Profile pendiente de aprobación de acceso de Google
+- 🟡 Módulo 6 — Integraciones Google: Search Console + GA4 vía OAuth2 (una conexión
+  por usuario); Business Profile pendiente de aprobación de acceso de Google
 - ✅ Módulo 7 — Generador de Contenido (Blog/Página/Producto/Novedad GBP vía OpenRouter,
   reutiliza el tono de marca del proyecto) + "Optimizar URL existente"
 - ✅ Módulo 8 — Auditoría Técnica: crawler propio que rastrea el sitio ENTERO (techo
@@ -47,7 +47,7 @@ herramienta que se usa a diario — ahora por múltiples cuentas.
   exactas por punto. Asíncrono vía cron (rejilla 5×5 = 25 llamadas ~75s).
   Solo para proyectos marcados como negocio local con coordenadas definidas.
 - ✅ Cola de tareas — **no** BullMQ/Redis: cron interno vía `src/instrumentation.ts` +
-  `instrumentation-node.ts` (mismo patrón que Cirochat), sondea `AuditRun` cada 60s.
+  `instrumentation-node.ts`, sondea `AuditRun` cada 60s.
   El Módulo 9 debe reutilizar este mismo poller, no montar Redis
 - ✅ Control de costes de API — log por llamada (`ApiUsageLog`) + **tope de gasto
   mensual global** y **por proyecto** (bloquean nuevas llamadas al superarlo, la

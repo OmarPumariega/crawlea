@@ -2,7 +2,7 @@
 
 ## Visión de alto nivel
 
-SEO Ciro es una aplicación **monolítica Next.js 16** (App Router) que contiene el
+Crawlea es una aplicación **monolítica Next.js 16** (App Router) que contiene el
 panel de la herramienta (`/app`), la API REST (`/api`), el futuro panel de
 administración de la plataforma (`/admin`, Fase 2) y la futura web pública (`/`,
 Fase 4). Toda la persistencia vive en una única base **PostgreSQL**. Es
@@ -13,7 +13,7 @@ para el estado de la transición desde el single-tenant original.
 
 ```mermaid
 flowchart LR
-    subgraph "SEO Ciro (Next.js)"
+    subgraph "Crawlea (Next.js)"
         ADM[Panel /app/*<br/>+ /admin/* Fase 2]
         PUB[/acceso · /registro<br/>+ web pública Fase 4/]
         API[API REST<br/>/api/*]
@@ -118,7 +118,7 @@ El panel abandonó las pestañas horizontales por proyecto (el antiguo
   Configuración (`/app/configuracion`).
 - **Nivel de proyecto**: cuando la ruta cae bajo `/app/proyectos/[id]/...`, aparece
   un segundo bloque bajo un divisor: `ProjectSwitcher.tsx` (combobox con buscador +
-  sección "Recientes", últimos 5 vía `localStorage["seoCiro:recentProjects"]`) seguido
+  sección "Recientes", últimos 5 vía `localStorage["crawlea:recentProjects"]`) seguido
   de la lista vertical fija de módulos que devuelve `projectNav()` — Perfil, Tareas,
   Notas; grupos Investigación (Keywords), On-Page (Título y Meta, Schema, Contenido),
   Técnico (Auditoría), Seguimiento (Rank Tracking, Google, Competidores, Backlinks,
@@ -146,11 +146,10 @@ El panel abandonó las pestañas horizontales por proyecto (el antiguo
   100% servido desde caché no genera ninguna fila nueva de coste — la prueba de que el
   caché funciona.
 - **Trabajo en segundo plano sin BullMQ/Redis (decisión del Módulo 8):** el spec
-  original asume BullMQ+Redis para el crawler, pero se optó por el mismo patrón que
-  usa Cirochat para su resumen periódico de conversaciones — un cron interno vía el
-  hook de instrumentación de Next.js, sondeando una tabla de Postgres cada 60s. Motivo:
+  original asume BullMQ+Redis para el crawler, pero se optó por un cron interno vía
+  el hook de instrumentación de Next.js, sondeando una tabla de Postgres cada 60s. Motivo:
   las auditorías son manuales o como mucho mensuales, no tiempo real; evitar Redis
-  significa un servicio menos que desplegar y monitorizar en el VPS de la agencia. Los
+  significa un servicio menos que desplegar y monitorizar en el VPS. Los
   Módulos 5 (Rank Tracking) y 9 (Geogrid) **ya reutilizan** este mismo poller
   (`instrumentation-node.ts` ejecuta `runAuditJob`, `runRankJob` y `runGeogridJob` en
   secuencia cada tick) — no se montó Redis. Las rutas POST de auditoría y geogrid
@@ -158,14 +157,12 @@ El panel abandonó las pestañas horizontales por proyecto (el antiguo
   el run, para no depender de esperar al siguiente tick en dev/producción.
   - **Gotcha real encontrado al construirlo:** Next.js solo auto-descubre un fichero
     llamado exactamente `instrumentation.ts` en la raíz de `src/` — el sufijo `-node`
-    que usa Cirochat (`src/instrumentation-node.ts`) **no** es una convención que Next
-    reconozca por sí sola, es solo el nombre de un módulo pensado para ser importado
-    desde el `instrumentation.ts` real. Cirochat **no tiene** ese `instrumentation.ts`
-    en ningún sitio del repo — su cron de resumen probablemente nunca se ejecuta en
-    producción. SEO Ciro sí tiene el fichero correcto (`src/instrumentation.ts`
-    importa condicionalmente `./instrumentation-node` solo cuando
-    `process.env.NEXT_RUNTIME === "nodejs"`) — si se toca Cirochat, vale la pena
-    verificarlo y arreglarlo igual.
+    (`src/instrumentation-node.ts`) **no** es una convención que Next reconozca por
+    sí sola, es solo el nombre de un módulo pensado para ser importado desde el
+    `instrumentation.ts` real. Crawlea tiene el fichero correcto
+    (`src/instrumentation.ts` importa condicionalmente `./instrumentation-node` solo
+    cuando `process.env.NEXT_RUNTIME === "nodejs"`); sin ese fichero puente, el cron
+    nunca se ejecutaría.
 - **Tope de gasto (`src/lib/dataforseo/spend.ts`):** `assertWithinSpendLimit(projectId?)`
   se llama antes de cualquier llamada de pago a DataForSEO (rank, geogrid, keyword
   suggestions, TF-IDF, competidores). Tres niveles en orden: tope global
@@ -213,10 +210,3 @@ El panel abandonó las pestañas horizontales por proyecto (el antiguo
 - **Free sin límites de módulos de momento:** sin vía de pago no se bloquea a nadie;
   el listado `modulos` del plan y su enforcement llegan con Stripe (Fase 3). Las
   cifras de planes son placeholder en `src/lib/plans.ts`.
-
-## Relación con Cirochat
-
-Mismo stack y patrones de infraestructura que `../../Cirochat/cirochat-app`
-(Next.js, Prisma con adapter `PrismaPg`, NextAuth credentials + JWT, cifrado AES-256-CBC,
-Docker multi-stage + Traefik/Coolify). Sin relación de código entre ambos repos —
-son proyectos independientes que comparten convenciones.
