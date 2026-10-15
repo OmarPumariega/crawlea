@@ -510,6 +510,13 @@ nuevos que desaparecen al reiniciar el dev.
 
 Los 9 módulos del spec están completos, más la funcionalidad fuera de spec descrita
 arriba ("Lo que estamos construyendo"), incluido ya Backlinks (antes Tier 3 bloqueado,
-ver arriba). Lo que queda pendiente (Google Ads como fuente alternativa, Business
-Profile API, SEO para LLMs) está bloqueado por coste o aprobación de terceros — ver el
-roadmap en [`docs/01-vision-general.md`](./docs/01-vision-general.md).
+ver arriba). El proyecto está en transición a SaaS público multi-usuario: el roadmap
+activo (5 fases, decisiones de producto aprobadas, estado por fase) vive en
+[`docs/06-roadmap-saas.md`](./docs/06-roadmap-saas.md) y se actualiza en el mismo
+commit que el cambio. Los pendientes históricos bloqueados por coste/terceros
+(Google Ads, Business Profile API, SEO para LLMs) siguen en
+[`docs/01-vision-general.md`](./docs/01-vision-general.md).
+
+**Antes de tocar código:** [`docs/00-protocolo-trabajo.md`](./docs/00-protocolo-trabajo.md)
+—invariantes no negociables (datos reales, aislamiento multi-tenant, guard de gasto),
+recetas, checklist de verificación y coordinación entre varios agentes/personas.

@@ -2,16 +2,20 @@
 
 ## Visión de alto nivel
 
-SEO Ciro es una aplicación **monolítica Next.js 16** (App Router) que contiene el panel
-de administración, la API REST y (en fases futuras) los jobs en segundo plano. Toda la
-persistencia vive en una única base **PostgreSQL**. Es una herramienta de un solo
-inquilino (la agencia): no hay aislamiento multi-tenant por login como en Cirochat —
-los "clientes" son filas `Project`, no cuentas separadas.
+SEO Ciro es una aplicación **monolítica Next.js 16** (App Router) que contiene el
+panel de la herramienta (`/app`), la API REST (`/api`), el futuro panel de
+administración de la plataforma (`/admin`, Fase 2) y la futura web pública (`/`,
+Fase 4). Toda la persistencia vive en una única base **PostgreSQL**. Es
+**multi-usuario (SaaS)**: cada `User` es dueño de sus `Project` y el aislamiento
+vive en `src/lib/auth-guards.ts` (`requireSession` + `projectForSession`) — el
+admin de la plataforma ve todos los proyectos. Ver [`06-roadmap-saas.md`](./06-roadmap-saas.md)
+para el estado de la transición desde el single-tenant original.
 
 ```mermaid
 flowchart LR
     subgraph "SEO Ciro (Next.js)"
-        ADM[Panel Admin<br/>/admin/*]
+        ADM[Panel /app/*<br/>+ /admin/* Fase 2]
+        PUB[/acceso · /registro<br/>+ web pública Fase 4/]
         API[API REST<br/>/api/*]
         CRON[Cron interno<br/>instrumentation.ts]
     end
@@ -21,18 +25,19 @@ flowchart LR
     end
 
     subgraph "APIs externas activas"
-        EXT[DataForSEO<br/>Keywords/SERP/Maps/Labs]
+        EXT[DataForSEO<br/>Keywords/SERP/Maps/Labs/Backlinks]
         LLM[OpenRouter]
-        GOO[Google GSC/GA4]
+        GOO[Google GSC/GA4<br/>OAuth por usuario]
         SMTP[SMTP / nodemailer]
     end
 
     ADM --> API
-    API --> DB
+    PUB --> API
+    API -->|requireSession +<br/>projectForSession| DB
     API -->|crea AuditRun/GeogridRun pending +<br/>dispara fire-and-forget| DB
     CRON -->|sondea cada 60s:<br/>AuditRun · RankKeyword vencidas · GeogridRun| DB
     CRON -->|crawler + PSI + GSC| WEB[sitios de los proyectos]
-    CRON -->|avisos: auditoría, caída de posición, gasto| SMTP
+    CRON -->|avisos al dueño del proyecto| SMTP
     API --> EXT
     API --> LLM
     API --> GOO
@@ -42,54 +47,64 @@ flowchart LR
 
 ```
 src/
-├── middleware.ts          # protege /admin/* excepto /admin/acceso
+├── middleware.ts          # páginas: /app exige sesión, /admin exige role admin
 ├── instrumentation.ts     # único fichero que Next.js auto-descubre para el hook
 ├── instrumentation-node.ts # lógica real del cron (Módulo 8), solo runtime Node
 ├── app/
-│   ├── admin/
-│   │   ├── (auth)/acceso/         # login
-│   │   └── (panel)/               # requiere sesión (ver layout.tsx)
-│   │       ├── layout.tsx
-│   │       ├── page.tsx           # dashboard general (KPIs, avisos, salud por proyecto)
-│   │       ├── costes/             # panel global de consumo de API (no es tab de proyecto)
-│   │       ├── configuracion/      # conexión OAuth2 de agencia con Google (Módulo 6)
-│   │       └── proyectos/          # Módulo 2 + resto de módulos anidados por [id]
-│   │           └── [id]/
-│   │               ├── perfil, tareas, notas, titulos-meta, schema, rank,
-│   │               │   google, competidores, backlinks, geogrid, informe
-│   │               ├── keywords/     # + keywords/arquitectura (pestaña por ruta)
-│   │               ├── contenido/    # + contenido/tfidf (pestaña por ruta)
-│   │               └── auditoria/    # + auditoria/enlaces y
-│   │                               #   auditoria/canibalizaciones (pestañas)
-│   │               (el nav de módulos vive en el sidebar global; las
-│   │                sub-herramientas fusionadas son pestañas por ruta —
-│   │                ver "Navegación" abajo)
+│   ├── acceso/ · registro/        # login/registro públicos (Google + credentials admin)
+│   ├── app/                        # LA HERRAMIENTA (requiere sesión, ver layout.tsx)
+│   │   ├── layout.tsx              # requireSession + Providers + AdminShell
+│   │   ├── page.tsx                # dashboard general (acotado a los proyectos del usuario)
+│   │   ├── costes/                 # consumo de API (del usuario; global para el admin)
+│   │   ├── perfil/                 # cuenta: plan, consumo, Google propio, borrado
+│   │   ├── configuracion/          # claves de API y config global (plataforma)
+│   │   └── proyectos/              # Módulo 2 + resto de módulos anidados por [id]
+│   │       └── [id]/
+│   │           ├── layout.tsx      # CHOKE POINT: projectForSession → 404 si no es tuyo
+│   │           ├── perfil, tareas, notas, titulos-meta, schema, rank,
+│   │           │   google, competidores, backlinks, geogrid, informe
+│   │           ├── keywords/       # + keywords/arquitectura (pestaña por ruta)
+│   │           ├── contenido/      # + contenido/tfidf (pestaña por ruta)
+│   │           └── auditoria/      # + auditoria/enlaces y
+│   │                           #   auditoria/canibalizaciones (pestañas)
+│   │           (el nav de módulos vive en el sidebar global; las
+│   │            sub-herramientas fusionadas son pestañas por ruta —
+│   │            ver "Navegación" abajo)
+│   ├── (admin — Fase 2)           # panel de administración de cuentas
+│   ├── (marketing — Fase 4)       # web pública: home, precios, legales
 │   └── api/
 │       ├── auth/[...nextauth]/
-│       ├── proyectos/
-│       └── costes/                 # datos del panel /admin/costes
+│       ├── perfil/                 # DELETE cuenta (cascada)
+│       ├── proyectos/              # GET filtra por userId; POST asigna dueño + límite plan
+│       ├── configuracion/ · dataforseo/ · tareas-plantillas/  # gates de admin
+│       ├── google/oauth/           # conexión GSC/GA4 POR USUARIO
+│       └── costes/                 # agregado del usuario o global (admin)
 ├── components/
-│   └── admin/              # AdminShell, AdminSidebar, AdminHeader, ProjectSwitcher, ProjectForm
+│   ├── auth/               # AuthPanel (login/registro compartido)
+│   └── app/                # AdminShell, AdminSidebar, AdminHeader, ProjectSwitcher...
 └── lib/
     ├── db/prisma.ts        # cliente Prisma (adapter PrismaPg)
-    ├── auth.ts              # NextAuthOptions (credentials + JWT)
-    ├── crypto.ts            # AES-256-CBC, secretos (refresh token de Google)
+    ├── auth.ts              # NextAuthOptions: Google OAuth + credentials (admin)
+    ├── auth-guards.ts       # AISLAMIENTO: requireSession + projectForSession + isAdmin
+    ├── plans.ts             # planes del SaaS: topeUsdMes, maxProyectos, módulos por plan
+    ├── crypto.ts            # AES-256-CBC, secretos (refresh tokens, AppSetting)
     ├── rate-limit.ts        # limitador de intentos de login
     ├── utils.ts
     ├── seo/                 # Módulos 3/4/7: scraping, cliente OpenRouter, log de coste
-    ├── google/               # Módulo 6: OAuth2, Search Console, GA4
+    ├── google/               # Módulo 6: OAuth2 por usuario, Search Console, GA4
     ├── keywords/             # Módulo 1: cliente DataForSEO Labs, caché, orquestación, estructura
     ├── rank/                 # Módulo 5: cliente SERP DataForSEO, chequeo, job programado
     ├── geogrid/              # Módulo 9: rejilla de coordenadas, cliente Maps SERP, job
-    ├── dataforseo/           # cliente HTTP Basic + tope de gasto (spend.ts), compartido
-    │                         # por Módulo 1, 5, 9, TF-IDF y Competidores
+    ├── dataforseo/           # cliente HTTP Basic + tope de gasto (spend.ts, 3 niveles:
+    │                         # global → plan del usuario → proyecto), compartido por
+    │                         # Módulos 1, 5, 9, TF-IDF, Competidores y Backlinks
     ├── audit/                # Módulo 8: robots.txt, sitemap, crawler, PSI, scoring, cron,
     │                         # generación automática de tareas desde hallazgos
     ├── tfidf/                 # TF-IDF: SERP (vía SerpCache) + scraping + cálculo de términos
     ├── links/                 # PageRank interno sobre AuditRun.linkGraph, huérfanas, hubs
     ├── copilot/                # contexto de proyecto + chat vía OpenRouter (solo lectura)
     ├── competitors/            # DataForSEO Labs: visibilidad de dominio + content gap
-    └── notifications/          # avisos por email (nodemailer), dedupe por evento
+    └── notifications/          # avisos por email al dueño (nodemailer), dedupe por (userId, type, key)
 ```
 
 ## Navegación
@@ -98,9 +113,10 @@ El panel abandonó las pestañas horizontales por proyecto (el antiguo
 `ProjectSubNav.tsx` ya no existe en el repo) a favor de un único sidebar global
 (`AdminSidebar.tsx`):
 
-- **Nivel global**, siempre visible: Panel general (`/admin`), Proyectos
-  (`/admin/proyectos`), Costes (`/admin/costes`), Configuración (`/admin/configuracion`).
-- **Nivel de proyecto**: cuando la ruta cae bajo `/admin/proyectos/[id]/...`, aparece
+- **Nivel global**, siempre visible: Panel general (`/app`), Proyectos
+  (`/app/proyectos`), Costes (`/app/costes`), Mi perfil (`/app/perfil`),
+  Configuración (`/app/configuracion`).
+- **Nivel de proyecto**: cuando la ruta cae bajo `/app/proyectos/[id]/...`, aparece
   un segundo bloque bajo un divisor: `ProjectSwitcher.tsx` (combobox con buscador +
   sección "Recientes", últimos 5 vía `localStorage["seoCiro:recentProjects"]`) seguido
   de la lista vertical fija de módulos que devuelve `projectNav()` — Perfil, Tareas,
@@ -152,11 +168,12 @@ El panel abandonó las pestañas horizontales por proyecto (el antiguo
     verificarlo y arreglarlo igual.
 - **Tope de gasto (`src/lib/dataforseo/spend.ts`):** `assertWithinSpendLimit(projectId?)`
   se llama antes de cualquier llamada de pago a DataForSEO (rank, geogrid, keyword
-  suggestions, TF-IDF, competidores). Compara el gasto del mes en curso (sumado de
-  `ApiUsageLog`) contra un tope global (`DATAFORSEO_MONTHLY_LIMIT_USD`) y, si está
-  definido, contra `Project.spendLimitUsd`. Supera cualquiera de los dos → lanza y
-  bloquea la llamada. Complementa la estimación pre-confirmación (precios verificados
-  en `src/lib/dataforseo/pricing.ts`) que ya se muestra en la UI antes de gastar.
+  suggestions, TF-IDF, competidores). Tres niveles en orden: tope global
+  (`DATAFORSEO_MONTHLY_LIMIT_USD`), tope del plan del dueño (`src/lib/plans.ts`,
+  el admin no está limitado) y, si está definido, `Project.spendLimitUsd`.
+  Superar cualquiera → lanza y bloquea la llamada. Complementa la estimación
+  pre-confirmación (precios verificados en `src/lib/dataforseo/pricing.ts`) que ya
+  se muestra en la UI antes de gastar.
 - **`SerpCache` (caché cruzada entre módulos):** el top-10 orgánico de cada chequeo de
   Rank Tracking se guarda 7 días; TF-IDF lo reutiliza para no pagar una segunda llamada
   SERP por la misma keyword — relación productor/consumidor de un solo sentido (rank
@@ -174,6 +191,28 @@ El panel abandonó las pestañas horizontales por proyecto (el antiguo
   ahora") ya era fire-and-forget desde su propia ruta POST; esta excepción cubre el
   mismo caso para las auditorías mensuales programadas, que dependen del cron para
   procesarse.
+
+## Decisiones del SaaS (Fase 1, commit `49e26fb`)
+
+- **Aislamiento por where compuesto, no por capa ORM.** `projectForSession()` filtra
+  el `findUnique` con `{ id, userId }` (el admin sin el filtro): sin race conditions
+  ni "load-then-check". Las rutas de recursos hijos no re-verifican el hijo contra
+  el usuario, verifican el PROYECTO PADRE — el hijo solo es alcanzable si el padre
+  pasa el gate.
+- **Suspensión efectiva al instante:** el JWT no se invalida, pero `requireSession()`
+  relee `User.status` de BD en cada petición. Coste: un SELECT por PK y petición;
+  beneficio: suspender desde el panel (Fase 2) corta el acceso sin esperar expiración.
+- **Creación de cuenta en el callback `signIn`** (no en `jwt`): es el único punto que
+  puede rechazar un suspendido ANTES de emitir token.
+- **Cron hereda el tenant gratis:** los jobs procesan runs pendientes globales que
+  ya cuelgan de un `Project` con dueño; el guard de gasto del plan aplica dentro de
+  cada job sin cambios de query.
+- **Caches compartidas entre usuarios a propósito:** `KeywordDataCache`/`SerpCache`
+  son globales (el dato de SERP no depende de quién pregunta) — amortiguan el coste
+  de DataForSEO entre cuentas.
+- **Free sin límites de módulos de momento:** sin vía de pago no se bloquea a nadie;
+  el listado `modulos` del plan y su enforcement llegan con Stripe (Fase 3). Las
+  cifras de planes son placeholder en `src/lib/plans.ts`.
 
 ## Relación con Cirochat
 

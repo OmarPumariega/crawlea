@@ -184,6 +184,13 @@ solo con `NODE_ENV=production` — para probarlo de verdad hace falta
 
 ## Dónde mirar para más detalle
 
+- **[`docs/00-protocolo-trabajo.md`](./docs/00-protocolo-trabajo.md) — LEER PRIMERO
+  antes de tocar código**: invariantes no negociables (datos reales, aislamiento
+  multi-tenant, guard de gasto), recetas (añadir ruta API/página/migración),
+  checklist de verificación, gotchas y coordinación entre varios agentes/personas.
+- [`docs/06-roadmap-saas.md`](./docs/06-roadmap-saas.md) — decisiones de producto
+  aprobadas y estado de las 5 fases de la transición a SaaS (fuente de verdad del
+  estado; se actualiza en el mismo commit que el cambio)
 - [`CLAUDE.md`](./CLAUDE.md) — instrucciones completas del proyecto (mismo
   contenido de fondo que este archivo, con más detalle módulo a módulo)
 - [`docs/README.md`](./docs/README.md) — índice de toda la documentación

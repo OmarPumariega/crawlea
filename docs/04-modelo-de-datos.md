@@ -1,29 +1,40 @@
 # 04 — Modelo de datos
 
-Esquema actual en [`prisma/schema.prisma`](../prisma/schema.prisma), 22 modelos.
+Esquema actual en [`prisma/schema.prisma`](../prisma/schema.prisma).
 
 ## `User`
 
-Usuario de la agencia con acceso al panel. Un único usuario por ahora; `role` deja
-preparado el terreno para multi-usuario futuro (el spec no define roles todavía).
+Cuenta de la plataforma (SaaS multi-usuario). Dos orígenes: Google OAuth (registro
+público — `password` es null, sin gestión de contraseñas) y seed/manual (el admin de
+la plataforma, con password bcrypt). Campos clave:
+
+- `role`: `"admin"` (plataforma, ve todos los proyectos) | `"user"` (cliente).
+- `status`: `"active"` | `"suspended"` — la suspensión corta el acceso al instante
+  (`requireSession()` relee esto en cada petición).
+- `plan` / `planStatus` / `stripeCustomerId` / `stripeSubscriptionId` /
+  `currentPeriodEnd`: suscripción. `plan` responde a los ids de
+  `src/lib/plans.ts` (`"free"` por defecto); los campos stripe* los sincroniza el
+  webhook (Fase 3) y hoy son null.
+- `name` / `image` / `emailVerified`: perfil OAuth de Google.
 
 ## `Project`
 
-Entidad central: un cliente/dominio gestionado por la agencia. De aquí colgará el
-resto de módulos a medida que se construyan (keywords, rank tracking, auditorías...).
+Entidad central: un cliente/dominio gestionado. **Pertenece a un `User`**
+(`userId`, onDelete Cascade) — es la base del aislamiento multi-tenant: toda query
+de API pasa por `projectForSession()` (`src/lib/auth-guards.ts`). De aquí cuelga el
+resto de módulos (keywords, rank tracking, auditorías...).
 
 - `isLocalBusiness` + campos NAP (`businessName`, `address`, `phone`, `hours`): solo
   rellenos si el proyecto es un negocio local. El spec (Módulo 9) usa este flag para
   decidir si se muestra el check de seguimiento Geogrid en el listado de keywords.
-- `toneOfVoice` / `notes`: perfil de marca, lo consumirán el Módulo 3 (títulos/metas)
+- `toneOfVoice` / `notes`: perfil de marca, lo consumen el Módulo 3 (títulos/metas)
   y el Módulo 7 (generador de contenido).
 - `gscSiteUrl` / `ga4PropertyId` (Módulo 6): propiedad de Search Console / GA4
   seleccionada. Strings simples, no FK — son identificadores que vienen directos
   de la API de Google, no filas locales.
 - `spendLimitUsd` (`Float?`): tope de gasto mensual de DataForSEO específico de este
-  proyecto, opcional y adicional al tope global (env `DATAFORSEO_MONTHLY_LIMIT_USD`).
-  Lo comprueba `assertWithinSpendLimit()` (`src/lib/dataforseo/spend.ts`) antes de
-  cualquier llamada de pago con este proyecto de por medio.
+  proyecto, opcional. Es el TERCER nivel de `assertWithinSpendLimit()` — por encima
+  están el tope global de plataforma y el tope del plan del dueño.
 
 ## `TitleMetaGeneration` (Módulo 3)
 
@@ -53,14 +64,14 @@ aparte, cuando haga falta.
 
 ## `GoogleConnection` (Módulo 6)
 
-Conexión OAuth2 única de la agencia con Google (una cuenta para toda la agencia,
-no por proyecto). Usa un id fijo (`"singleton"`) en vez de `findFirst` + lógica de
-"borrar si existe" — reconectar es un simple `upsert` sobre ese id, sin hueco de
-condición de carrera ni ambigüedad de qué fila es la buena. `encryptedRefreshToken`
-usa `src/lib/crypto.ts` (su primer consumidor real). Sin tabla de "propiedad por
-API" separada: la propiedad elegida por proyecto vive directamente en `Project`
-(`gscSiteUrl`/`ga4PropertyId`), porque son identificadores opacos de Google, no
-entidades locales.
+Conexión OAuth2 de un USUARIO con Google (GSC/GA4) — **una fila por usuario**
+(`userId @unique`, onDelete Cascade). En el SaaS cada cliente conecta su propia
+cuenta; el upsert va contra `userId`, sin condición de carrera. La fila singleton
+original migró al admin de plataforma en la migración `20261016120000_multiusuario_saas`.
+`encryptedRefreshToken` usa `src/lib/crypto.ts`. `getGoogleClient(userId)` es la única
+vía de construir el cliente — nunca traer el token a mano. La propiedad elegida por
+proyecto vive directamente en `Project` (`gscSiteUrl`/`ga4PropertyId`), porque son
+identificadores opacos de Google, no entidades locales.
 
 ## `ContentGeneration` (Módulo 7)
 
@@ -183,12 +194,16 @@ manuales nunca se tocan.
 
 ## `NotificationLog` (avisos por email)
 
-Un registro por aviso enviado, con `@@unique([type, key])` como mecanismo de dedupe
-(un mismo evento nunca genera dos correos). `type`: `audit_completed`, `audit_failed`,
-`rank_drop` (caída de posición ≥10 en un chequeo), `spend_warning` (≥80% de un tope),
-`spend_exceeded` (≥100%). El envío usa `nodemailer` (`src/lib/notifications/email.ts`)
-y se degrada con elegancia: si no hay `SMTP_HOST`/`ALERT_TO` configurados
-(`isEmailConfigured()`), simplemente no se envía nada, sin error visible al usuario.
+Un registro por aviso enviado, con `@@unique([userId, type, key])` como mecanismo de
+dedupe (un mismo evento nunca genera dos correos — y el mismo evento de dos usuarios
+distintos son dos avisos legítimos). `userId` es el destinatario: el dueño del
+proyecto para avisos de proyecto (auditoría, caída de posición) o de plan (tope de
+gasto de su cuenta); los avisos de plataforma (tope global) se registran contra el
+primer admin. `type`: `audit_completed`, `audit_failed`, `rank_drop` (caída de
+posición ≥10 en un chequeo), `spend_warning` (≥80% de un tope), `spend_exceeded`
+(≥100%). El envío usa `nodemailer` (`src/lib/notifications/email.ts`) y se degrada
+con elegancia: si no hay `SMTP_HOST`/`ALERT_TO` configurados (`isEmailConfigured()`),
+simplemente no se envía nada, sin error visible al usuario.
 
 ## `CopilotThread` (Copilot SEO)
 

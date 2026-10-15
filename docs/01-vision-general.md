@@ -1,17 +1,24 @@
 # 01 — Visión general
 
 SEO Ciro sustituye herramientas SEO de terceros (Ahrefs, Semrush, LocalFalcon...) por
-un sistema propio de Agencia Ciro conectado a APIs reales. Cada cliente/dominio es un
-**proyecto** con su propio perfil, datos e historial. Ver [`spec-original.md`](./spec-original.md)
+un sistema propio conectado a APIs reales. Cada cliente/dominio es un **proyecto** con
+su propio perfil, datos e historial. Ver [`spec-original.md`](./spec-original.md)
 para la especificación funcional completa de los 9 módulos.
+
+**Desde 2026-10 el proyecto es un SaaS público multi-usuario en construcción**
+(registro con Google, suscripciones con Stripe, web pública): la Fase 1
+(multi-usuario + aislamiento por cuenta) ya está hecha. El estado de esa transición
+vive en [`06-roadmap-saas.md`](./06-roadmap-saas.md) — este documento describe el
+estado de los MÓDULOS de la herramienta.
 
 ## Estado actual
 
 Los 9 módulos del spec original están completos, más una capa amplia de
 funcionalidad añadida después (ver más abajo). No es un esqueleto: es la
-herramienta que usa la agencia a diario.
+herramienta que se usa a diario — ahora por múltiples cuentas.
 
-- ✅ Auth de agencia (login único, preparado para multi-usuario)
+- ✅ Auth multi-usuario (Google OAuth público + credentials para el admin, aislamiento
+  por cuenta en todas las rutas — ver [`05-autenticacion.md`](./05-autenticacion.md))
 - ✅ Módulo 2 (Gestión de Proyecto) — CRUD: perfil, NAP, tono de marca,
   coordenadas + **lista de To-do por proyecto** (tareas manuales + auto-generadas
   desde auditoría) + **Notas** (apuntes internos del negocio del cliente, texto
@@ -44,7 +51,7 @@ herramienta que usa la agencia a diario.
   El Módulo 9 debe reutilizar este mismo poller, no montar Redis
 - ✅ Control de costes de API — log por llamada (`ApiUsageLog`) + **tope de gasto
   mensual global** y **por proyecto** (bloquean nuevas llamadas al superarlo, la
-  UI avisa) + avisos por email + página `/admin/costes` con desglose y estimación
+  UI avisa) + avisos por email + página `/app/costes` con desglose y estimación
   pre-confirmación en todas las herramientas que gastan
 - ✅ Caché de resultados — `KeywordDataCache` (Módulo 1), 30 días de frescura por
   (keyword, idioma, ubicación), compartida entre proyectos
@@ -78,6 +85,10 @@ herramienta que usa la agencia a diario.
   nuevo, no reutiliza llamadas ya pagadas por el resto de la app.
 
 ## Roadmap pendiente (futuro, no olvidar)
+
+**Transición a SaaS:** el roadmap activo con sus 5 fases (multi-usuario ya hecha;
+panel de admin de cuentas, Stripe, web pública y lanzamiento pendientes) vive en
+[`06-roadmap-saas.md`](./06-roadmap-saas.md).
 
 Funcionalidades de la competencia aún NO construidas:
 
