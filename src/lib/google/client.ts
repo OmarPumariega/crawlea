@@ -13,9 +13,13 @@ export class GoogleNotConnectedError extends Error {
 // reflejar siempre el estado actual en BD. Si se desconecta o reconecta,
 // la siguiente llamada tiene que verlo al instante, no servir un cliente
 // construido con un refresh token que ya no es el vigente.
-export async function getGoogleClient(): Promise<GoogleOAuthClient> {
+//
+// En el SaaS cada usuario conecta SU cuenta de Google (una fila por usuario
+// en GoogleConnection); el userId es obligatorio y explícito para que ningún
+// caller herede por accidente la conexión de otro.
+export async function getGoogleClient(userId: string): Promise<GoogleOAuthClient> {
   const connection = await prisma.googleConnection.findUnique({
-    where: { id: "singleton" },
+    where: { userId },
   });
   if (!connection) throw new GoogleNotConnectedError();
 

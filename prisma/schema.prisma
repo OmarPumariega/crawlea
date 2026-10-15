@@ -6,20 +6,42 @@ datasource db {
   provider = "postgresql"
 }
 
-// Usuario de la agencia con acceso al panel. Un único usuario por ahora,
-// pero el campo `role` deja preparado el terreno para multi-usuario futuro.
+// Cuenta de la plataforma. El SaaS es multi-usuario: los clientes se registran
+// con Google OAuth (password = null, no gestionamos contraseñas) y el admin de
+// la plataforma conserva el login email+contraseña del single-tenant original.
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  role      String   @default("admin")
-  createdAt DateTime @default(now())
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String? // null para usuarios creados vía Google OAuth
+  name      String?
+  image     String? // avatar de Google
+  emailVerified DateTime? // fecha de verificación OAuth (Google ya verifica el email)
+  role      String    @default("user") // "admin" (plataforma) | "user" (cliente)
+  status    String    @default("active") // "active" | "suspended" — suspendido no puede entrar
+
+  // Suscripción. plan responde a los ids de src/lib/plans.ts ("free" por
+  // defecto). Los campos stripe* se sincronizan por webhook (Fase 3); hasta
+  // entonces planStatus null = sin suscripción de pago activa.
+  plan                 String    @default("free")
+  planStatus           String? // "active" | "trialing" | "past_due" | "canceled"
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  currentPeriodEnd     DateTime?
+
+  createdAt DateTime    @default(now())
+  projects  Project[]
+  googleConnection GoogleConnection?
+  notifications NotificationLog[]
 }
 
-// Un cliente/dominio gestionado por la agencia. Es la entidad central de la
-// que cuelgan el resto de módulos (keyword research, rank tracking, auditorías...).
+// Un cliente/dominio gestionado por un usuario de la plataforma. Es la
+// entidad central de la que cuelgan el resto de módulos (keyword research,
+// rank tracking, auditorías...). El aislamiento multi-tenant nace aquí:
+// toda consulta de API debe filtrar por userId (ver src/lib/auth-guards.ts).
 model Project {
   id     String  @id @default(cuid())
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   name   String
   slug   String  @unique
   domain String?
@@ -108,6 +130,8 @@ model Project {
   gscSnapshots         GscSnapshot[]
   ga4Snapshots         Ga4Snapshot[]
   tfidfResults         TfidfResult[]
+
+  @@index([userId])
 }
 
 // Módulo 3 — un registro por generación exitosa (URL por URL, sin modo
@@ -166,13 +190,14 @@ model ApiUsageLog {
   @@index([api, createdAt])
 }
 
-// Módulo 6 — conexión OAuth2 única de la agencia con Google (una cuenta
-// para toda la agencia, no por proyecto). Id fijo ("singleton") en vez de
-// findFirst + lógica de "borrar si existe" — reconectar es un upsert sobre
-// ese id, sin hueco de condición de carrera ni ambigüedad de qué fila es
-// la buena.
+// Módulo 6 — conexión OAuth2 de un usuario con Google (GSC/GA4). Antes era un
+// singleton de la agencia (una cuenta para todos los proyectos); en el SaaS
+// cada usuario conecta SU cuenta de Google: userId @unique = una conexión por
+// usuario, y reconectar es un upsert sobre esa clave, sin condición de carrera.
 model GoogleConnection {
-  id                    String   @id @default("singleton")
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   googleEmail           String
   encryptedRefreshToken String // cifrado con src/lib/crypto.ts
   scope                 String // scopes concedidos, tal cual los devuelve Google
@@ -576,17 +601,21 @@ model TodoTemplate {
   updatedAt DateTime @updatedAt
 }
 
-// Registro de avisos por email ya enviados, para NO espamear (cada avise se
+// Registro de avisos por email ya enviados, para NO espamear (cada aviso se
 // manda una sola vez por clave: p.ej. una auditoría por run, una caída de
 // posición por keyword y día, un aviso de tope por tipo y día). Clave
-// compuesta (type, key) → upsert idempotente.
+// compuesta (userId, type, key) → upsert idempotente. userId entra en la
+// clave porque en el SaaS los avisos van al email del dueño del proyecto:
+// la misma auditoría de dos usuarios distintos son dos avisos distintos.
 model NotificationLog {
   id     String   @id @default(cuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   type   String // "audit_completed" | "audit_failed" | "rank_drop" | "spend_warning" | "spend_exceeded"
   key    String // dedupe: runId, keywordId+fecha, tipo+fecha
   sentAt DateTime @default(now())
 
-  @@unique([type, key])
+  @@unique([userId, type, key])
   @@index([type])
 }
 

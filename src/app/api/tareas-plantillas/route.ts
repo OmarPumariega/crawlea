@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession, isAdmin } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { MAX_SHORT } from "@/lib/validation";
@@ -10,7 +9,7 @@ import { MAX_SHORT } from "@/lib/validation";
 const PRIORITIES = ["baja", "media", "alta"] as const;
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const templates = await prisma.todoTemplate.findMany({
@@ -20,8 +19,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!isAdmin(session)) return NextResponse.json({ error: "Prohibido" }, { status: 403 });
 
   let body: Record<string, unknown>;
   try {

@@ -1,8 +1,8 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession, isAdmin, projectForSession } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { getMonthlyLimitUsd } from "@/lib/dataforseo/spend";
+import { getPlan } from "@/lib/plans";
 
 // Panel de costes (sección 5 del spec): consumo acumulado del mes por API,
 // endpoint y proyecto. Cubre TODA la actividad de API de pago registrada en
@@ -15,7 +15,7 @@ import { getMonthlyLimitUsd } from "@/lib/dataforseo/spend";
 // real de ese mes comparado contra el tope ACTUAL a título informativo, sin
 // pintarlo como bloqueado.
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const projectId = req.nextUrl.searchParams.get("projectId");
@@ -32,9 +32,10 @@ export async function GET(req: NextRequest) {
   const monthLabel = startOfMonth.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
 
   if (projectId) {
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      select: { id: true, name: true, spendLimitUsd: true },
+    const project = await projectForSession(session, projectId, {
+      id: true,
+      name: true,
+      spendLimitUsd: true,
     });
     if (!project) return NextResponse.json({ error: "Proyecto no encontrado" }, { status: 404 });
 
@@ -88,7 +89,14 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const where = { createdAt: { gte: startOfMonth, lt: startOfNextMonth } };
+  // Agregado "global": para un usuario normal es SU consumo (solo sus
+  // proyectos) contra el tope de su plan; para el admin de la plataforma es
+  // el consumo real de toda la instalación contra el tope global.
+  const admin = isAdmin(session);
+  const where = {
+    ...(admin ? {} : { project: { userId: session.user.id } }),
+    createdAt: { gte: startOfMonth, lt: startOfNextMonth },
+  };
 
   const [byEndpointRows, byProjectRows, totalAgg, dataforseoAgg] = await Promise.all([
     prisma.apiUsageLog.groupBy({
@@ -121,7 +129,7 @@ export async function GET(req: NextRequest) {
   );
 
   const dataforseoSpent = dataforseoAgg._sum.costUsd ? Number(dataforseoAgg._sum.costUsd) : 0;
-  const limit = await getMonthlyLimitUsd();
+  const limit = admin ? await getMonthlyLimitUsd() : getPlan(session.user.plan).topeUsdMes;
 
   return NextResponse.json({
     monthLabel,

@@ -55,7 +55,7 @@ export async function runRankJob(): Promise<{ processed: number }> {
     const project = await prisma.project.update({
       where: { id: projectId },
       data: { rankLastDequeuedAt: new Date() },
-      select: { rankScanFrequency: true },
+      select: { rankScanFrequency: true, userId: true },
     });
 
     // Si el proyecto tiene programación explícita, se avanza YA al siguiente
@@ -95,10 +95,11 @@ export async function runRankJob(): Promise<{ processed: number }> {
           result.position >= prevPos + 10
         ) {
           await notify({
+            userId: project.userId,
             type: "rank_drop",
             key: `${rk.id}:${new Date().toISOString().slice(0, 10)}`,
             subject: `Caída de posición — «${rk.keyword}»`,
-            body: `La keyword «${rk.keyword}» ha caído de #${prevPos} a #${result.position} (Δ ${result.position - prevPos}) en el proyecto ${rk.projectId}. Detalle en el panel: /admin/proyectos/${rk.projectId}/rank`,
+            body: `La keyword «${rk.keyword}» ha caído de #${prevPos} a #${result.position} (Δ ${result.position - prevPos}) en el proyecto ${rk.projectId}. Detalle en el panel: /app/proyectos/${rk.projectId}/rank`,
           });
         }
         processed++;

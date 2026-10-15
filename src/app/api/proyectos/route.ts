@@ -1,15 +1,18 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession, isAdmin } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { slugify } from "@/lib/utils";
+import { getPlan } from "@/lib/plans";
 import { normalizeRequiredText, normalizeText, MAX_LONG } from "@/lib/validation";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
+  // Aislamiento multi-tenant: cada usuario ve solo sus proyectos. El admin
+  // de la plataforma ve todos (soporte desde el panel de administración).
   const projects = await prisma.project.findMany({
+    where: isAdmin(session) ? undefined : { userId: session.user.id },
     orderBy: { createdAt: "desc" },
   });
 
@@ -17,8 +20,27 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  // Límite de proyectos del plan (el admin de la plataforma no está limitado).
+  if (!isAdmin(session)) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { plan: true, _count: { select: { projects: true } } },
+    });
+    const maxProyectos = getPlan(user?.plan).maxProyectos;
+    if (maxProyectos !== null && (user?._count.projects ?? 0) >= maxProyectos) {
+      return NextResponse.json(
+        {
+          error: `Tu plan ${getPlan(user?.plan).nombre} permite hasta ${maxProyectos} ${
+            maxProyectos === 1 ? "proyecto" : "proyectos"
+          }. Sube de plan para crear más.`,
+        },
+        { status: 402 }
+      );
+    }
+  }
 
   let body: Record<string, unknown>;
   try {
@@ -54,6 +76,7 @@ export async function POST(req: NextRequest) {
 
   const project = await prisma.project.create({
     data: {
+      userId: session.user.id,
       name,
       slug,
       domain: normalizeText(body.domain)?.replace(/^https?:\/\//, "").replace(/\/$/, ""),

@@ -40,16 +40,19 @@ async function getTransport(): Promise<nodemailer.Transporter | null> {
 }
 
 // Envía un email. Devuelve true si se envió, false si no estaba configurado o
-// falló (nunca lanza — los avisos son best-effort).
+// falló (nunca lanza — los avisos son best-effort). `to` opcional: destinatario
+// explícito (avisos por usuario del SaaS); si no viene, ALERT_TO (plataforma).
 export async function sendEmail(params: {
+  to?: string;
   subject: string;
   text: string;
 }): Promise<boolean> {
-  const [to, from, host] = await Promise.all([
+  const [alertTo, from, host] = await Promise.all([
     getSetting("ALERT_TO"),
     getSetting("ALERT_FROM"),
     getSetting("SMTP_HOST"),
   ]);
+  const to = params.to ?? alertTo;
   if (!to) return false;
   const t = await getTransport();
   if (!t) return false;

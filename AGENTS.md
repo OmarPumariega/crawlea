@@ -10,13 +10,29 @@ cambias algo importante del proyecto, actualiza los dos.
 
 ## Qué es esto
 
-**SEO Ciro** es una herramienta SEO creada por **Omar Pumariega**. Está en uso por
-Agencia Ciro (de ahí el nombre y que esté alojada en su dominio), pero el proyecto
-es suyo, no de la agencia. Centraliza el trabajo SEO diario, sustituyendo
-herramientas de terceros (Ahrefs, Semrush, LocalFalcon) por un sistema propio
-conectado a APIs reales. Es de un solo inquilino: no hay multi-cliente por login —
-cada cliente/dominio gestionado es una fila `Project` dentro de la misma app, no
-una cuenta separada.
+**SEO Ciro** es una herramienta SEO creada por **Omar Pumariega**. Nació como panel
+interno de Agencia Ciro y está en plena transición a **SaaS público multi-usuario**
+(estilo Semrush/Dinorank): registro con Google, suscripciones con Stripe y web
+pública de marketing. Cada cliente/dominio gestionado sigue siendo una fila
+`Project`, pero ahora cada `Project` pertenece a un `User` (multi-tenant simple,
+sin organizaciones/equipos).
+
+Estado de la transición (fases aprobadas):
+
+- **Fase 1 — HECHA:** multi-usuario (registro Google + credentials para el admin),
+  aislamiento por usuario en TODAS las rutas API y páginas (`src/lib/auth-guards.ts`),
+  panel en `/app` (antes `/admin`, con redirects legacy), perfil `/app/perfil`,
+  planes con límites (`src/lib/plans.ts`: tope de gasto mensual por cuenta +
+  máximo de proyectos), conexión Google (GSC/GA4) por usuario, avisos por email
+  al dueño. El admin de la plataforma ve todos los proyectos y no tiene límites
+  de plan.
+- **Fase 2 — pendiente:** panel de administración de cuentas (`/admin`: usuarios,
+  suspensiones, planes manuales, métricas de margen).
+- **Fase 3 — pendiente:** Stripe (checkout, webhooks, portal) + gating de módulos
+  por plan (por ahora el plan free incluye todos los módulos: no hay vía de pago).
+- **Fase 4 — pendiente:** web pública en `/` (home, precios, contacto, legales).
+- **Fase 5 — pendiente:** dominio propio, OAuth de Google verificado, quitar
+  `NEXTAUTH_URL` horneado del Dockerfile.
 
 **Principio no negociable:** todos los datos que muestra la app vienen de una fuente
 real y verificable (DataForSEO, Google Search Console/GA4, scraping real, PageSpeed
@@ -60,7 +76,12 @@ terceros, no por trabajo pendiente — ver `docs/01-vision-general.md`.
 
 - **Next.js 16** (App Router) + TypeScript + Tailwind 4
 - **PostgreSQL + Prisma** (adapter `PrismaPg`, sin pgvector — esta app no usa embeddings)
-- **NextAuth (JWT)** — credentials + bcrypt, un único usuario de agencia por ahora
+- **NextAuth (JWT)** — dos vías: **Google OAuth** (registro público del SaaS,
+  `GOOGLE_AUTH_CLIENT_ID/SECRET`, sin esas env el botón no aparece) y
+  **credentials + bcrypt** solo para el admin de la plataforma. `requireSession()`
+  (`src/lib/auth-guards.ts`) verifica en BD que la cuenta siga activa en cada
+  petición (suspensión efectiva inmediata); `projectForSession()` aplica el
+  aislamiento multi-tenant
 - **OpenRouter** (`src/lib/seo/llm.ts`) — SDK `openai` apuntando a OpenRouter, modelo
   configurable por env var, no hardcodeado. Timeout de 90s + `maxRetries: 0` en el
   cliente (antes no tenía timeout propio y heredaba 10 min del SDK — causaba cuelgues
@@ -86,8 +107,10 @@ terceros, no por trabajo pendiente — ver `docs/01-vision-general.md`.
 Detalle completo en [`docs/02-arquitectura.md`](./docs/02-arquitectura.md). Lo que
 hay que saber antes de tocar código:
 
-- **Monolito, un solo inquilino.** No hay aislamiento multi-tenant por login; los
-  "clientes" son filas `Project`.
+- **Monolito multi-usuario.** Cada `Project` pertenece a un `User`; el aislamiento
+  vive en `src/lib/auth-guards.ts` (`requireSession` + `projectForSession`) y lo
+  usan todas las rutas API y el layout de proyecto. El admin de la plataforma ve
+  todos los proyectos.
 - **Trabajo en segundo plano sin colas externas.** Nada de BullMQ/Redis: un cron
   interno vía el hook de instrumentación de Next.js sondea tablas de Postgres
   (`AuditRun`, `RankKeyword`, `GeogridRun`, `BootstrapRun`) cada 60s, con
@@ -103,9 +126,11 @@ hay que saber antes de tocar código:
     `instrumentation.ts` en la raíz de `src/`. El sufijo `-node` en
     `instrumentation-node.ts` es solo el nombre de un módulo importado desde ahí, no
     algo que Next reconozca por sí solo.
-- **Control de gasto real.** `assertWithinSpendLimit()` se llama antes de cualquier
-  llamada de pago a DataForSEO y bloquea si se supera el tope (global o por
-  proyecto). Toda acción que gasta muestra una estimación antes de confirmar.
+- **Control de gasto real, tres niveles.** `assertWithinSpendLimit()` se llama antes
+  de cualquier llamada de pago a DataForSEO y bloquea al superarse, en orden: tope
+  global de plataforma → tope del plan del dueño (`src/lib/plans.ts`, el admin no
+  está limitado) → tope propio del proyecto. Toda acción que gasta muestra una
+  estimación antes de confirmar.
 - **Secrets cifrados en BD** (AES-256-CBC, `src/lib/crypto.ts`) para claves
   configurables desde la UI (`AppSetting`) y el refresh token de Google — nunca en
   texto plano, y el valor real nunca vuelve al cliente tras guardarse.

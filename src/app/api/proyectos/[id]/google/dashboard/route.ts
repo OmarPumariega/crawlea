@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession, projectForSession } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { getGoogleClient, GoogleNotConnectedError } from "@/lib/google/client";
@@ -23,11 +22,11 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const { id } = await params;
-  const project = await prisma.project.findUnique({ where: { id } });
+  const project = await projectForSession(session, id);
   if (!project) return NextResponse.json({ error: "Proyecto no encontrado" }, { status: 404 });
 
   if (!project.gscSiteUrl && !project.ga4PropertyId) {
@@ -38,7 +37,7 @@ export async function GET(
 
   let auth;
   try {
-    auth = await getGoogleClient();
+    auth = await getGoogleClient(project.userId);
   } catch (error) {
     if (error instanceof GoogleNotConnectedError) {
       const message = "No hay ninguna cuenta de Google conectada.";

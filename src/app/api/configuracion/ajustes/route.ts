@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession, isAdmin } from "@/lib/auth-guards";
 import { NextRequest, NextResponse } from "next/server";
 import { getSettingsStatus, setSetting, clearSetting, type SettingKey } from "@/lib/settings";
 import { SETTINGS_KEYS } from "@/lib/settings-catalog";
@@ -12,16 +11,18 @@ function isSettingKey(v: unknown): v is SettingKey {
 // de dónde viene (BD o variable de entorno). El propio texto del secreto no
 // vuelve a salir del servidor una vez guardado.
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!isAdmin(session)) return NextResponse.json({ error: "Prohibido" }, { status: 403 });
 
   const status = await getSettingsStatus();
   return NextResponse.json(status);
 }
 
 export async function PUT(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!isAdmin(session)) return NextResponse.json({ error: "Prohibido" }, { status: 403 });
 
   let body: Record<string, unknown>;
   try {
@@ -44,8 +45,9 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!isAdmin(session)) return NextResponse.json({ error: "Prohibido" }, { status: 403 });
 
   const key = req.nextUrl.searchParams.get("key");
   if (!isSettingKey(key)) {

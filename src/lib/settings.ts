@@ -4,7 +4,7 @@ import { SETTINGS_CATALOG, SETTINGS_KEYS, type SettingKey } from "@/lib/settings
 
 export { SETTINGS_CATALOG, type SettingKey, type SettingMeta } from "@/lib/settings-catalog";
 
-// Ajustes editables desde /admin/configuracion: claves de API de terceros y
+// Ajustes editables desde /app/configuracion: claves de API de terceros y
 // parámetros operativos, cifrados en reposo (AppSetting.value, AES-256-CBC).
 // Cada clave conocida cae en cascada: fila en BD (si se ha guardado desde la
 // UI) → variable de entorno del mismo nombre (.env) → sin configurar. Así un

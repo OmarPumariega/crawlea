@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession, isAdmin } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { MAX_SHORT } from "@/lib/validation";
@@ -10,8 +9,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ tplId: string }> }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!isAdmin(session)) return NextResponse.json({ error: "Prohibido" }, { status: 403 });
 
   const { tplId } = await params;
   let body: Record<string, unknown>;
@@ -45,8 +45,9 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ tplId: string }> }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!isAdmin(session)) return NextResponse.json({ error: "Prohibido" }, { status: 403 });
 
   const { tplId } = await params;
   await prisma.todoTemplate.delete({ where: { id: tplId } });

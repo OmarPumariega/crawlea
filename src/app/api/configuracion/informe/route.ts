@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession, isAdmin } from "@/lib/auth-guards";
 import { NextRequest, NextResponse } from "next/server";
 import {
   DEFAULT_SECTIONS,
@@ -20,8 +19,9 @@ import {
 // sensato desde el primer momento.
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!isAdmin(session)) return NextResponse.json({ error: "Prohibido" }, { status: 403 });
 
   const cfg = await loadGlobalReportConfig();
   // loadGlobalReportConfig devuelve null si no hay fila en BD — en ese caso
@@ -35,8 +35,9 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!isAdmin(session)) return NextResponse.json({ error: "Prohibido" }, { status: 403 });
 
   let body: Record<string, unknown>;
   try {
@@ -60,8 +61,9 @@ export async function PUT(req: NextRequest) {
 // DELETE borra la config global → los proyectos caen al default hardcoded.
 // Útil si el admin quiere "empezar de cero".
 export async function DELETE() {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!isAdmin(session)) return NextResponse.json({ error: "Prohibido" }, { status: 403 });
 
   await deleteGlobalReportConfig();
   return NextResponse.json({ sections: DEFAULT_SECTIONS, order: DEFAULT_ORDER, isCustom: false });

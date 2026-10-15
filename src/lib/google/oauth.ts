@@ -23,7 +23,7 @@ export class GoogleOAuthConfigError extends Error {
 }
 
 // Resuelve la configuración OAuth por la misma cascada que el resto de claves:
-// fila en BD (guardada desde /admin/configuracion) → variable de entorno → null.
+// fila en BD (guardada desde /app/configuracion) → variable de entorno → null.
 // Así se pueden cambiar sin tocar el .env ni reiniciar.
 async function getOAuthConfig() {
   const clientId = await getSetting("GOOGLE_CLIENT_ID");

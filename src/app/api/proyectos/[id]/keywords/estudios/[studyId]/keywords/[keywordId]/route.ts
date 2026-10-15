@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession, projectForSession } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { recomputeStudyPriorities } from "@/lib/keywords/study";
@@ -9,10 +8,13 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; studyId: string; keywordId: string }> }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const { id, studyId, keywordId } = await params;
+
+  if (!(await projectForSession(session, id, { id: true })))
+    return NextResponse.json({ error: "Proyecto no encontrado" }, { status: 404 });
   const kw = await prisma.keyword.findUnique({ where: { id: keywordId } });
   if (!kw || kw.studyId !== studyId) {
     return NextResponse.json({ error: "Keyword no encontrada" }, { status: 404 });

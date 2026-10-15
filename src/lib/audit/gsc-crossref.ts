@@ -9,14 +9,16 @@ function isoDate(d: Date): string {
 
 // Devuelve null si no hay conexión de Google o no hay gscSiteUrl configurado
 // para el proyecto — la auditoría sigue sin este dato (gscChecked=false),
-// nunca inventa un resultado de indexación.
+// nunca inventa un resultado de indexación. userId: dueño del proyecto, cuya
+// conexión de Google (una por usuario en el SaaS) es la que hay que usar.
 export async function crossReferenceGsc(
+  userId: string,
   gscSiteUrl: string | null
 ): Promise<Set<string> | null> {
   if (!gscSiteUrl) return null;
 
   try {
-    const auth = await getGoogleClient();
+    const auth = await getGoogleClient(userId);
     const end = new Date();
     const start = new Date();
     start.setDate(start.getDate() - LOOKBACK_DAYS);

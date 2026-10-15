@@ -25,30 +25,43 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Rutas legacy de la fusión de módulos (Arquitectura→Keywords, TF-IDF→
-  // Contenido, Enlaces/Canibalizaciones→Auditoría): bookmarks e historial
-  // siguen funcionando. Los query params (?estudio=, ?keyword=) se
-  // preservan automáticamente al no aparecer en el destination.
+  // Redirects legacy del paso a SaaS: el panel interno vivía en /admin/* y
+  // ahora es /app/* (en /admin vivirá el panel de administración de la
+  // plataforma, Fase 2). Además siguen vigentes los de la fusión de módulos
+  // (Arquitectura→Keywords, TF-IDF→Contenido, Enlaces/Canibalizaciones→
+  // Auditoría): bookmarks e historial siguen funcionando. Los query params
+  // (?estudio=, ?keyword=) se preservan automáticamente al no aparecer en el
+  // destination. Orden: los específicos antes del catch-all de /admin.
   async redirects() {
     return [
       {
-        source: "/admin/proyectos/:id/arquitectura",
-        destination: "/admin/proyectos/:id/keywords/arquitectura",
+        source: "/admin/acceso",
+        destination: "/acceso",
         permanent: false,
       },
       {
-        source: "/admin/proyectos/:id/tfidf",
-        destination: "/admin/proyectos/:id/contenido/tfidf",
+        source: "/app/proyectos/:id/arquitectura",
+        destination: "/app/proyectos/:id/keywords/arquitectura",
         permanent: false,
       },
       {
-        source: "/admin/proyectos/:id/enlaces",
-        destination: "/admin/proyectos/:id/auditoria/enlaces",
+        source: "/app/proyectos/:id/tfidf",
+        destination: "/app/proyectos/:id/contenido/tfidf",
         permanent: false,
       },
       {
-        source: "/admin/proyectos/:id/canibalizaciones",
-        destination: "/admin/proyectos/:id/auditoria/canibalizaciones",
+        source: "/app/proyectos/:id/enlaces",
+        destination: "/app/proyectos/:id/auditoria/enlaces",
+        permanent: false,
+      },
+      {
+        source: "/app/proyectos/:id/canibalizaciones",
+        destination: "/app/proyectos/:id/auditoria/canibalizaciones",
+        permanent: false,
+      },
+      {
+        source: "/admin/:path*",
+        destination: "/app/:path*",
         permanent: false,
       },
     ];

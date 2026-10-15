@@ -1,4 +1,4 @@
-// Catálogo de ajustes configurables desde /admin/configuracion — sin
+// Catálogo de ajustes configurables desde /app/configuracion — sin
 // dependencias de servidor (Prisma, crypto), para poder importarse tal cual
 // desde un componente cliente. La lógica de lectura/escritura cifrada vive en
 // src/lib/settings.ts, que reexporta este catálogo.

@@ -19,11 +19,18 @@ importante aquí, actualízalo también allí.
 
 ## Lo que estamos construyendo
 
-Un panel interno de un solo inquilino (la agencia, no multi-tenant como Cirochat) donde
-cada cliente/dominio es un **proyecto**. Alrededor de cada proyecto cuelgan, módulo a
-módulo: keyword research, títulos/metas, schema, rank tracking, integraciones Google,
-generación de contenido, auditoría técnica y geogrid local SEO — los 9 módulos del
-spec están completos.
+Un SaaS SEO multi-usuario (transición desde el panel interno de la agencia, en
+fases aprobadas) donde cada cliente/dominio es un **proyecto** que pertenece a
+un `User` (multi-tenant simple, sin organizaciones). La Fase 1 ya está hecha:
+registro con Google OAuth (credentials queda solo para el admin de la plataforma),
+aislamiento por usuario en todas las rutas y páginas (`src/lib/auth-guards.ts`),
+panel en `/app`, perfil `/app/perfil`, planes con límites (`src/lib/plans.ts`) y
+conexión Google por usuario. Pendiente: panel de administración de cuentas (F2),
+Stripe + gating de módulos (F3), web pública (F4) y dominio/OAuth verificado (F5).
+Alrededor de cada proyecto cuelgan, módulo a módulo: keyword research,
+títulos/metas, schema, rank tracking, integraciones Google, generación de
+contenido, auditoría técnica y geogrid local SEO — los 9 módulos del spec están
+completos.
 
 Sobre esa base, y siguiendo el mismo principio de "solo datos reales" pero fuera del
 alcance original de 9 módulos, se añadió un conjunto de funcionalidad orientada a
@@ -43,8 +50,12 @@ infraestructura (colas, caché, tablas de coste) para módulos que todavía no e
   hermano Cirochat (`../Cirochat/cirochat-app`), reutiliza patrones ya validados en
   producción (auth, cifrado, Docker/Traefik/Coolify)
 - **PostgreSQL + Prisma** (adapter `PrismaPg`) — sin pgvector, esta app no usa embeddings
-- **NextAuth (JWT)** — credentials + bcrypt, un único usuario por ahora, con `role`
-  preparado para multi-usuario futuro
+- **NextAuth (JWT)** — dos vías: Google OAuth (registro público del SaaS, env
+  `GOOGLE_AUTH_CLIENT_ID/SECRET`; sin ellas el botón de Google no aparece) y
+  credentials + bcrypt solo para el admin de la plataforma. El aislamiento
+  multi-tenant vive en `src/lib/auth-guards.ts`: `requireSession()` verifica en
+  BD que la cuenta siga activa (suspensión efectiva al instante) y
+  `projectForSession()` filtra por propietario (el admin ve todo)
 - **Cifrado AES-256-CBC** (`src/lib/crypto.ts`) — usado por el Módulo 6 para el refresh
   token de Google
 - **OpenRouter** (`src/lib/seo/llm.ts`) — SDK `openai` apuntando a `https://openrouter.ai/api/v1`,

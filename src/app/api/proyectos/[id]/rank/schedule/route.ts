@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession, projectForSession } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
@@ -14,10 +13,13 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const { id } = await params;
+
+  if (!(await projectForSession(session, id, { id: true })))
+    return NextResponse.json({ error: "Proyecto no encontrado" }, { status: 404 });
 
   let body: Record<string, unknown>;
   try {

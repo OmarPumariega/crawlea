@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession, projectForSession } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { NOTE_CONTENT_MAX_LENGTH, NOTE_TITLE_MAX_LENGTH } from "@/lib/notes/constants";
@@ -11,10 +10,13 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; noteId: string }> }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const { id, noteId } = await params;
+
+  if (!(await projectForSession(session, id, { id: true })))
+    return NextResponse.json({ error: "Proyecto no encontrado" }, { status: 404 });
 
   const note = await prisma.projectNote.findUnique({ where: { id: noteId } });
   // Verificación de propiedad: el apunte debe pertenecer al proyecto de la
@@ -65,10 +67,13 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; noteId: string }> }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const { id, noteId } = await params;
+
+  if (!(await projectForSession(session, id, { id: true })))
+    return NextResponse.json({ error: "Proyecto no encontrado" }, { status: 404 });
 
   const note = await prisma.projectNote.findUnique({ where: { id: noteId } });
   if (!note || note.projectId !== id) {

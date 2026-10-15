@@ -1,11 +1,16 @@
 import { prisma } from "@/lib/db/prisma";
 import { getSetting } from "@/lib/settings";
+import { getPlan } from "@/lib/plans";
 
-// Tope de gasto mensual global de DataForSEO (sección 5 del spec: "topes de
-// gasto configurables, con opción de bloquear nuevas llamadas al superarlo").
-// Se controla con la variable de entorno DATAFORSEO_MONTHLY_LIMIT_USD; si no
-// está definida, no hay tope (uso ilimitado). El cómputo suma el coste real
-// registrado en ApiUsageLog (api='dataforseo') del mes natural en curso.
+// Tope de gasto mensual de DataForSEO (sección 5 del spec: "topes de gasto
+// configurables, con opción de bloquear nuevas llamadas al superarlo").
+// Tres niveles, de fuera hacia dentro:
+//   1. Global de plataforma: DATAFORSEO_MONTHLY_LIMIT_USD (AppSetting/env).
+//   2. Por cuenta (SaaS): topeUsdMes del plan del dueño del proyecto. El
+//      admin de la plataforma no está limitado por plan.
+//   3. Por proyecto: Project.spendLimitUsd (ajuste fino manual).
+// El cómputo suma el coste real registrado en ApiUsageLog (api='dataforseo')
+// del mes natural en curso.
 
 export class DataForSeoSpendLimitError extends Error {
   readonly spentUsd: number;
@@ -15,7 +20,9 @@ export class DataForSeoSpendLimitError extends Error {
     super(
       scope === "global"
         ? `Tope mensual de DataForSEO alcanzado: ${spentUsd.toFixed(2)}$ de ${limitUsd.toFixed(2)}$ configurados. Sube DATAFORSEO_MONTHLY_LIMIT_USD o espera al próximo mes para nuevas llamadas.`
-        : `Tope de gasto del proyecto alcanzado: ${spentUsd.toFixed(2)}$ de ${limitUsd.toFixed(2)}$ este mes. Sube el tope del proyecto en su ficha o espera al próximo mes.`
+        : scope === "user"
+          ? `Tope de gasto de tu plan alcanzado: ${spentUsd.toFixed(2)}$ de ${limitUsd.toFixed(2)}$ este mes. Sube de plan o espera al próximo mes.`
+          : `Tope de gasto del proyecto alcanzado: ${spentUsd.toFixed(2)}$ de ${limitUsd.toFixed(2)}$ este mes. Sube el tope del proyecto en su ficha o espera al próximo mes.`
     );
     this.name = "DataForSeoSpendLimitError";
     this.spentUsd = spentUsd;
@@ -31,7 +38,8 @@ export async function getMonthlyLimitUsd(): Promise<number | null> {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-// Coste real acumulado en el mes natural en curso (día 1 hasta ahora).
+// Coste real acumulado en el mes natural en curso (día 1 hasta ahora), de
+// toda la instalación.
 export async function getMonthSpendUsd(): Promise<number> {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -53,27 +61,60 @@ export async function getProjectMonthSpendUsd(projectId: string): Promise<number
   return agg._sum.costUsd ? Number(agg._sum.costUsd) : 0;
 }
 
-// Comprueba AMBOS topes (global + proyecto si projectId y el proyecto tiene
-// tope propio). Llamar ANTES de cualquier llamada nueva a DataForSEO. Si no hay
-// topes configurados, no hace nada. Las lecturas de caché no gastan → no pasan
-// por aquí.
+// Coste del mes de una cuenta: la suma de todos sus proyectos (para el tope
+// del plan). Los registros sin proyecto (ApiUsageLog.projectId nullable) no
+// cuentan para ninguna cuenta.
+export async function getUserMonthSpendUsd(userId: string): Promise<number> {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const agg = await prisma.apiUsageLog.aggregate({
+    where: {
+      api: "dataforseo",
+      project: { userId },
+      createdAt: { gte: startOfMonth },
+    },
+    _sum: { costUsd: true },
+  });
+  return agg._sum.costUsd ? Number(agg._sum.costUsd) : 0;
+}
+
+// Comprueba los TRES topes (global → plan del usuario → proyecto si tiene
+// tope propio). Llamar ANTES de cualquier llamada nueva a DataForSEO. Si no
+// hay topes configurados, no hace nada. Las lecturas de caché no gastan → no
+// pasan por aquí.
 export async function assertWithinSpendLimit(projectId?: string): Promise<void> {
-  // Tope global.
+  // Tope global de la plataforma.
   const limit = await getMonthlyLimitUsd();
   if (limit !== null) {
     const spent = await getMonthSpendUsd();
     if (spent >= limit) throw new DataForSeoSpendLimitError(spent, limit, "global");
   }
-  // Tope del proyecto.
-  if (projectId) {
-    const p = await prisma.project.findUnique({
-      where: { id: projectId },
-      select: { spendLimitUsd: true },
-    });
-    const pLimit = p?.spendLimitUsd ?? null;
-    if (pLimit !== null && pLimit > 0) {
-      const pSpent = await getProjectMonthSpendUsd(projectId);
-      if (pSpent >= pLimit) throw new DataForSeoSpendLimitError(pSpent, pLimit, "project");
+
+  if (!projectId) return;
+
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: {
+      userId: true,
+      spendLimitUsd: true,
+      user: { select: { role: true, plan: true } },
+    },
+  });
+  if (!project) return;
+
+  // Tope del plan del dueño (el admin de la plataforma no está limitado).
+  if (project.user.role !== "admin") {
+    const userLimit = getPlan(project.user.plan).topeUsdMes;
+    if (userLimit !== null) {
+      const userSpent = await getUserMonthSpendUsd(project.userId);
+      if (userSpent >= userLimit) throw new DataForSeoSpendLimitError(userSpent, userLimit, "user");
     }
+  }
+
+  // Tope propio del proyecto.
+  const pLimit = project.spendLimitUsd ?? null;
+  if (pLimit !== null && pLimit > 0) {
+    const pSpent = await getProjectMonthSpendUsd(projectId);
+    if (pSpent >= pLimit) throw new DataForSeoSpendLimitError(pSpent, pLimit, "project");
   }
 }

@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession } from "@/lib/auth-guards";
 import { NextResponse } from "next/server";
 import { getGoogleClient, GoogleNotConnectedError } from "@/lib/google/client";
 import { listSites } from "@/lib/google/search-console";
@@ -7,12 +6,12 @@ import { listProperties } from "@/lib/google/analytics";
 import { classifyGoogleError } from "@/lib/google/errors";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   let auth;
   try {
-    auth = await getGoogleClient();
+    auth = await getGoogleClient(session.user.id);
   } catch (error) {
     if (error instanceof GoogleNotConnectedError) {
       return NextResponse.json(

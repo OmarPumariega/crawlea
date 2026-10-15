@@ -1,0 +1,616 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Loader2, Search, ChevronDown, ChevronUp, FileSearch,
+  ClipboardCopy, Check, Clock, List, ExternalLink, Send,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import LocationPicker, { type LocationValue } from "@/components/app/LocationPicker";
+import ImportSuccessNotice from "@/components/app/ImportSuccessNotice";
+import { normalizeKeyword } from "@/lib/keywords/normalize";
+import PageHeader from "@/components/app/PageHeader";
+
+type TfidfTerm = { term: string; tfidf: number; docs: number };
+type TopicGap = { text: string; coverage: number; urls: string[] };
+type HeadingByPage = { url: string; headings: string[] };
+type HeadingTerm = { term: string; count: number };
+// Top-10 orgánico tal cual lo devuelve Google para la keyword. El snippet
+// (description) es "cómo está posicionando la competencia hoy" — ejemplo de
+// copy accionable que llega gratis con el SERP que ya pagamos.
+type CompetitorSerp = {
+  url: string;
+  title: string;
+  position: number | null;
+  description: string | null;
+};
+
+type PeopleAlsoAskItem = { question: string };
+type FeaturedSnippetData = { title: string | null; url: string | null; description: string | null };
+
+type FullResult = {
+  terms: TfidfTerm[];
+  topics: TopicGap[];
+  headingsByPage: HeadingByPage[];
+  headingTerms: HeadingTerm[];
+  sources: string[];
+  competitors?: CompetitorSerp[];
+  costUsd?: number | null;
+  // Funcionalidades del SERP más allá de los orgánicos — misma respuesta ya
+  // pagada, antes se descartaban. Fuente de ideas de contenido directa.
+  peopleAlsoAsk?: PeopleAlsoAskItem[] | null;
+  relatedSearches?: string[] | null;
+  featuredSnippet?: FeaturedSnippetData | null;
+};
+
+type StoredResult = {
+  id: string;
+  keyword: string;
+  result: FullResult;
+  updatedAt: string;
+  // Cruce gratis con Rank Tracking / KeywordDataCache — para poder
+  // ordenar/filtrar cuando hay muchos resultados guardados.
+  position: number | null;
+  searchVolume: number | null;
+};
+
+type StoredSort = "alpha" | "best-position" | "worst-position" | "most-searches";
+
+export default function TfidfView({ projectId }: { projectId: string }) {
+  // Deep-link desde Keywords/Rank Tracking (?keyword=...): al llegar desde el
+  // badge "TF-IDF →" de otro módulo, se selecciona ese resultado ya calculado
+  // directamente, en vez de obligar a buscarlo en "Resultados disponibles".
+  const searchParams = useSearchParams();
+  const deepLinkKeyword = searchParams.get("keyword");
+  const router = useRouter();
+
+  const [keyword, setKeyword] = useState("");
+  const [languageCode, setLanguageCode] = useState("es");
+  const [location, setLocation] = useState<LocationValue>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<FullResult | null>(null);
+
+  const [stored, setStored] = useState<StoredResult[]>([]);
+  const [loadingStored, setLoadingStored] = useState(true);
+  const [storedSearch, setStoredSearch] = useState("");
+  const [storedSort, setStoredSort] = useState<StoredSort>("alpha");
+
+  const [copied, setCopied] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [expandedPage, setExpandedPage] = useState<string | null>(null);
+  const [addingToKeywords, setAddingToKeywords] = useState(false);
+  const [importedStudyId, setImportedStudyId] = useState<string | null>(null);
+
+  const loadStored = useCallback(() => {
+    fetch(`/api/proyectos/${projectId}/tfidf`)
+      .then((r) => r.json())
+      .then((d: StoredResult[]) => {
+        if (Array.isArray(d)) {
+          setStored(d);
+          if (d.length > 0 && !result) {
+            const deepLinkMatch = deepLinkKeyword
+              ? d.find((s) => s.keyword === normalizeKeyword(deepLinkKeyword))
+              : undefined;
+            const initial = deepLinkMatch ?? d[0];
+            setResult(initial.result);
+            setKeyword(initial.keyword);
+          }
+        }
+      })
+      .finally(() => setLoadingStored(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, deepLinkKeyword]);
+
+  useEffect(() => {
+    loadStored();
+  }, [loadStored]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    setResult(null);
+
+    const res = await fetch(`/api/proyectos/${projectId}/tfidf`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyword,
+        languageCode: languageCode || undefined,
+        locationCode: location?.code,
+      }),
+    });
+    const data = await res.json();
+    setLoading(false);
+
+    if (!res.ok) {
+      setError(data.error ?? "Error al analizar la keyword");
+      return;
+    }
+    setResult(data);
+    loadStored();
+  }
+
+  function selectStored(s: StoredResult) {
+    setResult(s.result);
+    setKeyword(s.keyword);
+    setError("");
+  }
+
+  const totalSources = result?.sources.length ?? 0;
+
+  function copyTopics() {
+    if (!result) return;
+    const text = result.topics.slice(0, 15).map((t) => t.text).join("\n");
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  // Lleva los temas/términos a la pestaña de Contenido sin copiar a mano: los
+  // guarda en sessionStorage (clave fija) y navega. ContentView los lee al
+  // montar y los inyecta en el prompt de generación como guía de cobertura.
+  // Reutiliza datos del SERP ya pagado → cero coste extra.
+  function sendToContent() {
+    if (!result) return;
+    const lines = [
+      ...result.topics.slice(0, 20).map((t) => t.text),
+      ...result.terms.slice(0, 10).map((t) => t.term),
+    ];
+    try {
+      sessionStorage.setItem(
+        "tfidf-for-content",
+        JSON.stringify({ keyword, terms: lines.join("\n") })
+      );
+    } catch {
+      /* sessionStorage puede fallar en modo privado; nada crítico */
+    }
+    router.push(`/app/proyectos/${projectId}/contenido`);
+  }
+
+  // Lleva los mismos temas/términos que ya se ofrecen a Contenido al estudio
+  // "General" único del proyecto. A diferencia de los términos de
+  // competidores (que ya traen volumen real), un término TF-IDF es un score
+  // de relevancia en el top-10, no demanda de búsqueda — así que aquí SÍ
+  // hace falta resolver volumen real (caché o llamada nueva a DataForSEO),
+  // igual que pegar cualquier otra lista nueva de keywords.
+  async function sendToKeywords() {
+    if (!result) return;
+    const lines = [
+      ...result.topics.slice(0, 20).map((t) => t.text),
+      ...result.terms.slice(0, 10).map((t) => t.term),
+    ];
+    setAddingToKeywords(true);
+    setError("");
+    const defaultRes = await fetch(`/api/proyectos/${projectId}/keywords/estudios/default`, { method: "POST" });
+    const defaultData = await defaultRes.json();
+    if (!defaultRes.ok) {
+      setAddingToKeywords(false);
+      setError(defaultData.error ?? "Error al obtener el estudio General");
+      return;
+    }
+    const res = await fetch(`/api/proyectos/${projectId}/keywords/estudios/${defaultData.studyId}/keywords/resolver`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ keywords: lines.join("\n"), source: `TF-IDF: ${keyword}` }),
+    });
+    const d = await res.json();
+    setAddingToKeywords(false);
+    if (!res.ok) {
+      setError(d.error ?? "Error al añadir las keywords al estudio General");
+      return;
+    }
+    setImportedStudyId(defaultData.studyId);
+  }
+
+  const maxHeadingTermCount = result?.headingTerms[0]?.count ?? 1;
+
+  // "Resultados disponibles" — buscador manual + orden, para que la lista
+  // siga siendo manejable con 50-100 keywords guardadas. Sin posición o
+  // volumen conocido, la keyword se manda al final del orden elegido (nunca
+  // se inventa un valor para poder ordenarla).
+  const visibleStored = stored
+    .filter((s) => s.keyword.toLowerCase().includes(storedSearch.trim().toLowerCase()))
+    .sort((a, b) => {
+      if (storedSort === "best-position") {
+        if (a.position == null && b.position == null) return 0;
+        if (a.position == null) return 1;
+        if (b.position == null) return -1;
+        return a.position - b.position;
+      }
+      if (storedSort === "worst-position") {
+        if (a.position == null && b.position == null) return 0;
+        if (a.position == null) return 1;
+        if (b.position == null) return -1;
+        return b.position - a.position;
+      }
+      if (storedSort === "most-searches") {
+        if (a.searchVolume == null && b.searchVolume == null) return 0;
+        if (a.searchVolume == null) return 1;
+        if (b.searchVolume == null) return -1;
+        return b.searchVolume - a.searchVolume;
+      }
+      return a.keyword.localeCompare(b.keyword);
+    });
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Módulo · Contenido"
+        title="TF-IDF / Cobertura de temas"
+        description="{Analiza el top-10 de Google para una keyword y descubre qué temas (H2/H3) y términos           comparten las páginas que ya posicionan. Los resultados se generan automáticamente al           chequear keywords en Rank Tracking.}"
+      />
+
+      {/* Resultados disponibles (auto-generados desde Rank Tracking) */}
+      {loadingStored && stored.length === 0 && (
+        <div className="flex items-center gap-2 text-xs text-gray-400">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Cargando resultados guardados…
+        </div>
+      )}
+      {stored.length > 0 && (
+        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 space-y-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-gray-400" />
+              <h3 className="text-sm font-semibold text-gray-900">
+                Resultados disponibles ({visibleStored.length}{visibleStored.length !== stored.length ? ` de ${stored.length}` : ""})
+              </h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={storedSearch}
+                onChange={(e) => setStoredSearch(e.target.value)}
+                placeholder="Buscar keyword…"
+                className="px-2.5 py-1 border border-line rounded-xl text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors w-40"
+              />
+              <select
+                value={storedSort}
+                onChange={(e) => setStoredSort(e.target.value as StoredSort)}
+                className="px-2 py-1 border border-line rounded-xl text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white text-gray-600"
+              >
+                <option value="alpha">Alfabético</option>
+                <option value="best-position">Mejor posición</option>
+                <option value="worst-position">Peor posición</option>
+                <option value="most-searches">Más búsquedas</option>
+              </select>
+            </div>
+          </div>
+          {visibleStored.length === 0 ? (
+            <p className="text-xs text-gray-400">Ninguna keyword coincide con la búsqueda.</p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {visibleStored.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => selectStored(s)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
+                    result === s.result
+                      ? "bg-gray-900 text-white border-gray-900"
+                      : "border-line text-gray-600 hover:bg-background"
+                  )}
+                  title={new Date(s.updatedAt).toLocaleDateString("es-ES")}
+                >
+                  {s.keyword}
+                  {(s.position != null || s.searchVolume != null) && (
+                    <span className={cn("ml-1.5 font-normal", result === s.result ? "text-gray-300" : "text-gray-400")}>
+                      {s.position != null && `· #${s.position}`}
+                      {s.searchVolume != null && ` · ${s.searchVolume.toLocaleString("es-ES")}/mes`}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Formulario de análisis manual */}
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">Keyword</label>
+            <input
+              type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)}
+              placeholder="ej. reformas cocina valencia" required
+              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
+              Ubicación <span className="text-gray-400 font-normal">(opcional)</span>
+            </label>
+            <LocationPicker value={location} onChange={setLocation} />
+          </div>
+        </div>
+        <div>
+          <button type="button" onClick={() => setShowAdvanced((v) => !v)}
+            className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-900">
+            {showAdvanced ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            Opciones avanzadas
+          </button>
+          {showAdvanced && (
+            <input type="text" value={languageCode} onChange={(e) => setLanguageCode(e.target.value)}
+              placeholder="es" className="mt-2 w-24 px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand" />
+          )}
+        </div>
+        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-gray-400">
+            Coste: ~0,002 $ (gratis si rank tracking ya consultó esa keyword).
+          </p>
+          <button type="submit" disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50">
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            Analizar
+          </button>
+        </div>
+      </form>
+
+      {/* Resultados */}
+      {result && (
+        <div className="space-y-4">
+          {/* Cómo lo muestran los competidores en Google (top-10 con snippet).
+              El snippet es el dato de copy más accionable: cómo vende Google a
+              quienes ya posicionan. Llega gratis con el SERP que paga el
+              rank tracking / este análisis. */}
+          {result.competitors && result.competitors.length > 0 && (
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+              <div className="flex items-center gap-2 mb-1">
+                <Search className="h-4 w-4 text-gray-400" />
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Cómo lo muestran tus competidores en Google (top-10)
+                </h3>
+              </div>
+              <p className="text-xs text-gray-400 mb-4">
+                El título y el snippet con el que Google muestra a cada resultado — tu mejor referencia de copy para titulo/meta.
+              </p>
+              <ol className="space-y-2">
+                {result.competitors.map((c, i) => (
+                  <li key={i} className="flex gap-2.5">
+                    <span className="shrink-0 mt-0.5 h-5 w-5 rounded bg-gray-100 text-gray-500 text-[11px] font-semibold inline-flex items-center justify-center tabular-nums">
+                      {c.position ?? i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <a
+                        href={c.url} target="_blank" rel="noopener noreferrer"
+                        className="text-sm text-indigo-700 hover:underline font-medium inline-flex items-start gap-1"
+                      >
+                        <span className="truncate">{c.title || c.url}</span>
+                        <ExternalLink className="h-3 w-3 shrink-0 mt-1 text-gray-400" />
+                      </a>
+                      {c.description && (
+                        <p className="text-xs text-gray-600 leading-relaxed mt-0.5">{c.description}</p>
+                      )}
+                      <p className="text-[11px] text-gray-400 truncate mt-0.5">
+                        {(() => {
+                          try {
+                            return new URL(c.url).hostname.replace(/^www\./, "");
+                          } catch {
+                            return c.url;
+                          }
+                        })()}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {/* Preguntas frecuentes (PAA) y búsquedas relacionadas — misma
+              respuesta de Google ya pagada, antes se descartaban. Fuente
+              directa de ideas de contenido/FAQ. */}
+          {((result.peopleAlsoAsk && result.peopleAlsoAsk.length > 0) ||
+            (result.relatedSearches && result.relatedSearches.length > 0) ||
+            result.featuredSnippet) && (
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+              <h3 className="text-sm font-semibold text-gray-900">Ideas de contenido desde el propio SERP</h3>
+              {result.featuredSnippet && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">Featured snippet actual</p>
+                  <div className="bg-background rounded-lg p-3">
+                    <p className="text-sm font-medium text-gray-900">{result.featuredSnippet.title ?? "(sin título)"}</p>
+                    {result.featuredSnippet.description && (
+                      <p className="text-xs text-gray-600 mt-0.5">{result.featuredSnippet.description}</p>
+                    )}
+                    {result.featuredSnippet.url && (
+                      <p className="text-[11px] text-gray-400 mt-0.5 truncate">{result.featuredSnippet.url}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+              {result.peopleAlsoAsk && result.peopleAlsoAsk.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">
+                    La gente también pregunta ({result.peopleAlsoAsk.length})
+                  </p>
+                  <ul className="space-y-1">
+                    {result.peopleAlsoAsk.map((q, i) => (
+                      <li key={i} className="text-sm text-gray-700">• {q.question}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {result.relatedSearches && result.relatedSearches.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">Búsquedas relacionadas</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {result.relatedSearches.map((s, i) => (
+                      <span key={i} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Temas del top-10 (H2/H3 con cobertura) */}
+          {result.topics.length > 0 && (
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <FileSearch className="h-4 w-4 text-gray-400" />
+                  <h3 className="text-sm font-semibold text-gray-900">Temas del top-10 ({result.topics.length})</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={copyTopics}
+                    className="flex items-center gap-1.5 px-2.5 py-1 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background">
+                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <ClipboardCopy className="h-3.5 w-3.5" />}
+                    {copied ? "Copiado" : "Copiar temas"}
+                  </button>
+                  <button onClick={sendToKeywords} disabled={addingToKeywords}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
+                    title="Añadir estos temas/términos al estudio General de Keywords (resuelve volumen real)">
+                    {addingToKeywords ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                    Añadir a Keywords
+                  </button>
+                  <button onClick={sendToContent}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800"
+                    title="Llevar estos temas/términos al generador de contenido como guía de cobertura">
+                    <Send className="h-3.5 w-3.5" />
+                    Usar en Contenido →
+                  </button>
+                </div>
+              </div>
+              {importedStudyId && (
+                <div className="mb-4">
+                  <ImportSuccessNotice
+                    message="Términos añadidos al estudio General (con volumen real resuelto)."
+                    projectId={projectId}
+                    studyId={importedStudyId}
+                    onDismiss={() => setImportedStudyId(null)}
+                  />
+                </div>
+              )}
+              <p className="text-xs text-gray-400 mb-4">
+                Encabezados H2/H3 de {totalSources} páginas. {result.costUsd != null && <>Coste: {result.costUsd.toFixed(4)} $.</>}
+              </p>
+              <ul className="space-y-1.5">
+                {result.topics.slice(0, 40).map((t, i) => {
+                  const pct = totalSources > 0 ? Math.round((t.coverage / totalSources) * 100) : 0;
+                  return (
+                    <li key={i} className="flex items-center justify-between gap-2 py-1.5 px-3 rounded-lg hover:bg-background">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-sm text-gray-900 truncate">{t.text}</span>
+                      </div>
+                      <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded tabular-nums shrink-0",
+                        pct >= 60 ? "bg-emerald-50 text-emerald-700" : pct >= 30 ? "bg-amber-50 text-amber-700" : "bg-gray-100 text-gray-500")}>
+                        {t.coverage}/{totalSources}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          {/* Palabras más frecuentes en encabezados */}
+          {result.headingTerms.length > 0 && (
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <List className="h-4 w-4 text-gray-400" />
+                <h3 className="text-sm font-semibold text-gray-900">Palabras frecuentes en encabezados</h3>
+              </div>
+              <div className="space-y-1.5">
+                {result.headingTerms.slice(0, 20).map((t, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-sm text-gray-700 w-32 truncate">{t.term}</span>
+                    <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                      <div className="h-full bg-brand rounded" style={{ width: `${(t.count / maxHeadingTermCount) * 100}%` }} />
+                    </div>
+                    <span className="text-xs text-gray-400 tabular-nums w-6 text-right">{t.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Encabezados completos por página */}
+          {result.headingsByPage.length > 0 && (
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Encabezados por página del top-10</h3>
+              <div className="space-y-1.5">
+                {result.headingsByPage.map((p, i) => (
+                  <div key={i} className="border border-line rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => setExpandedPage(expandedPage === p.url ? null : p.url)}
+                      className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-background"
+                    >
+                      <span className="text-gray-700 truncate flex-1 text-left">{p.url}</span>
+                      <span className="text-xs text-gray-400 shrink-0">{p.headings.length} H2/H3</span>
+                      {expandedPage === p.url
+                        ? <ChevronUp className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                        : <ChevronDown className="h-3.5 w-3.5 text-gray-400 shrink-0" />}
+                    </button>
+                    {expandedPage === p.url && (
+                      <ul className="px-4 py-2 space-y-1 bg-background">
+                        {p.headings.map((h, j) => (
+                          <li key={j} className="text-sm text-gray-600">• {h}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Términos TF-IDF (colapsable) */}
+          {result.terms.length > 0 && (
+            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+              <button onClick={() => setShowTerms((v) => !v)}
+                className="flex items-center gap-1 text-sm font-semibold text-gray-900">
+                {showTerms ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                Términos relevantes (TF-IDF) — {result.terms.length}
+              </button>
+              {showTerms && (
+                <div className="overflow-x-auto mt-3">
+                  <table className="w-full text-sm">
+                    <thead><tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                      <th className="py-2 pr-4 font-medium">Término</th>
+                      <th className="py-2 pr-4 font-medium">TF-IDF</th>
+                      <th className="py-2 font-medium">Nº docs</th>
+                    </tr></thead>
+                    <tbody>
+                      {result.terms.map((t) => (
+                        <tr key={t.term} className="border-b border-gray-50 last:border-0">
+                          <td className="py-2 pr-4 text-gray-900 font-medium">{t.term}</td>
+                          <td className="py-2 pr-4 text-gray-500 font-mono text-xs">{t.tfidf}</td>
+                          <td className="py-2 text-gray-500">{t.docs}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Corpus */}
+          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Corpus ({result.sources.length} páginas)</h3>
+            {result.sources.length === 0 ? (
+              <p className="text-sm text-gray-500">No se pudo scrapear ninguna página.</p>
+            ) : (
+              <ul className="space-y-1">
+                {result.sources.map((url) => (
+                  <li key={url}>
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline truncate block">
+                      {url}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

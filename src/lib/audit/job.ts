@@ -129,7 +129,7 @@ export async function runAuditJob(): Promise<{ processed: number }> {
     // sumar su latencia (PSI solo: 5-15s) al final del job. Si robots bloquea
     // el rastreo, el resultado de PSI simplemente se descarta.
     const psiPromise = getPsiMetrics(run.startUrl).catch(() => null);
-    const gscPromise = crossReferenceGsc(run.project.gscSiteUrl).catch(() => null);
+    const gscPromise = crossReferenceGsc(run.project.userId, run.project.gscSiteUrl).catch(() => null);
 
     const crawl = await crawlSite(run.startUrl);
 
@@ -145,6 +145,7 @@ export async function runAuditJob(): Promise<{ processed: number }> {
         },
       });
       await notify({
+      userId: run.project.userId,
         type: "audit_completed",
         key: run.id,
         subject: `Auditoría completada — ${run.project.name}`,
@@ -248,10 +249,11 @@ export async function runAuditJob(): Promise<{ processed: number }> {
     await generateAuditTasks(run.projectId, crawl.pages, gscChecked, impressedUrls, titleCounts, metaCounts);
 
     await notify({
+      userId: run.project.userId,
       type: "audit_completed",
       key: run.id,
       subject: `Auditoría completada — ${run.project.name} (${overallScore}/100)`,
-      body: `La auditoría de ${run.project.name} (${run.project.domain ?? "sin dominio"}) ha terminado con una puntuación de ${overallScore}/100 sobre ${crawl.pages.length} páginas rastreadas. Detalle en el panel: /admin/proyectos/${run.projectId}/auditoria`,
+      body: `La auditoría de ${run.project.name} (${run.project.domain ?? "sin dominio"}) ha terminado con una puntuación de ${overallScore}/100 sobre ${crawl.pages.length} páginas rastreadas. Detalle en el panel: /app/proyectos/${run.projectId}/auditoria`,
     });
 
     return { processed: 1 };
@@ -262,10 +264,11 @@ export async function runAuditJob(): Promise<{ processed: number }> {
       data: { status: "failed", completedAt: new Date(), errorMessage: message },
     });
     await notify({
+      userId: run.project.userId,
       type: "audit_failed",
       key: run.id,
       subject: `Auditoría fallida — ${run.project.name}`,
-      body: `La auditoría de ${run.project.name} ha fallado: ${message}. Revísalo en el panel: /admin/proyectos/${run.projectId}/auditoria`,
+      body: `La auditoría de ${run.project.name} ha fallado: ${message}. Revísalo en el panel: /app/proyectos/${run.projectId}/auditoria`,
     });
     return { processed: 1 };
   }
