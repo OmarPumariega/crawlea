@@ -336,7 +336,7 @@ function LabsVisibilityPanel({
           <h3 className="text-sm font-semibold text-ink">Visibilidad orgánica estimada</h3>
         </div>
         <span className="text-[10px] uppercase tracking-wide text-ink-faint">
-          {snapshot ? `DataForSEO Labs · ${new Date(snapshot.fetchedAt).toLocaleDateString("es-ES")}` : "DataForSEO Labs"}
+          {snapshot ? `Datos de mercado · ${new Date(snapshot.fetchedAt).toLocaleDateString("es-ES")}` : "Datos de mercado"}
         </span>
       </div>
       {!snapshot ? (

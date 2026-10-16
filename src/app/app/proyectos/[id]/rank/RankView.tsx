@@ -705,7 +705,7 @@ export default function RankView({ projectId }: { projectId: string }) {
       <PageHeader
         eyebrow="Módulo · Rank tracking"
         title="Rank Tracking"
-        description="Seguimiento de posiciones orgánicas vía DataForSEO SERP. &laquo;Comprobar ahora&raquo; es instantáneo; las frecuencias programadas las revisa el cron en segundo plano."
+        description="Seguimiento de tus posiciones orgánicas en Google. &laquo;Comprobar ahora&raquo; es instantáneo; las frecuencias programadas las revisa el cron en segundo plano."
       />
 
       {/* Tabla tipo calendario */}

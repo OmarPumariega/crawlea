@@ -210,13 +210,13 @@ export default async function DashboardPage() {
     alerts.push({
       tone: "danger",
       text: admin ? `Tope mensual de DataForSEO superado: ${dfsSpent.toFixed(2)}$ de ${dfsLimit.toFixed(2)}$.` : `Has gastado todos tus créditos de este mes (${money(dfsSpent)} de ${money(dfsLimit)}).`,
-      href: "/app/costes",
+      href: admin ? "/app/costes" : "/app/perfil",
     });
   } else if (dfsLimit !== null && dfsSpent >= dfsLimit * 0.8) {
     alerts.push({
       tone: "warning",
       text: admin ? `Cerca del tope mensual de DataForSEO: ${dfsPct!.toFixed(0)}% (${dfsSpent.toFixed(2)}$ de ${dfsLimit.toFixed(2)}$).` : `Te quedan pocos créditos: has usado el ${dfsPct!.toFixed(0)}% (${money(dfsSpent)} de ${money(dfsLimit)}).`,
-      href: "/app/costes",
+      href: admin ? "/app/costes" : "/app/perfil",
     });
   }
 
@@ -324,12 +324,14 @@ export default async function DashboardPage() {
           icon={<FolderKanban className="h-4 w-4" />}
         />
 
-        <StatHero
-          label={admin ? "Coste total del mes" : "Créditos usados este mes"}
-          value={admin ? `${monthTotal.toFixed(2)}$` : money(dfsSpent)}
-          sub={monthLabel}
-          icon={<Wallet className="h-4 w-4" />}
-        />
+        {admin && (
+          <StatHero
+            label="Coste total del mes"
+            value={`${monthTotal.toFixed(2)}$`}
+            sub={monthLabel}
+            icon={<Wallet className="h-4 w-4" />}
+          />
+        )}
 
         <StatHero
           label="Keywords en seguimiento"
@@ -349,7 +351,7 @@ export default async function DashboardPage() {
         <StatHero
           label="Estudios de keywords"
           value={String(studyCount)}
-          sub="DataForSEO Labs"
+          sub="Investigación de palabras clave"
           icon={<ListChecks className="h-4 w-4" />}
         />
 
@@ -410,7 +412,7 @@ export default async function DashboardPage() {
                   <th className="py-2.5 px-3 font-medium">Nota auditoría</th>
                   <th className="py-2.5 px-3 font-medium">Tendencia rank</th>
                   <th className="py-2.5 px-3 font-medium">Último geogrid</th>
-                  <th className="py-2.5 pl-3 pr-4 font-medium text-right rounded-tr-lg">Coste mes</th>
+                  {admin && <th className="py-2.5 pl-3 pr-4 font-medium text-right rounded-tr-lg">Coste mes</th>}
                 </tr>
               </thead>
               <tbody>
@@ -475,9 +477,11 @@ export default async function DashboardPage() {
                           <span className="text-ink-faint">—</span>
                         )}
                       </td>
-                      <td className="py-2.5 pl-3 pr-4 text-right font-semibold text-ink tabular-nums">
-                        {cost > 0 ? (admin ? `${cost.toFixed(2)}$` : money(cost)) : <span className="text-ink-faint">—</span>}
-                      </td>
+                      {admin && (
+                        <td className="py-2.5 pl-3 pr-4 text-right font-semibold text-ink tabular-nums">
+                          {cost > 0 ? `${cost.toFixed(2)}$` : <span className="text-ink-faint">—</span>}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -487,41 +491,43 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* Costes del mes — barras horizontales proporcionales */}
+      {/* Costes del mes — solo admin: el cliente no ve de dónde sale el gasto */}
+      {admin && (
       <div className="bg-surface rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold tracking-tight text-ink">{admin ? "¿A dónde va el gasto?" : "¿En qué se gastan tus créditos?"}</h2>
-          <Link
-            href="/app/costes"
-            className="text-[13px] font-medium text-ink-faint hover:text-brand transition-colors"
-          >
-            Ver detalle →
-          </Link>
-        </div>
-        {topEndpoints.length === 0 ? (
-          <p className="text-sm text-ink-faint">Sin consumo este mes.</p>
-        ) : (
-          <div className="space-y-3">
-            {topEndpoints.map((r) => (
-              <div key={r.endpoint} className="flex items-center gap-3">
-                <span className="w-56 shrink-0 text-[13px] text-ink-soft truncate">
-                  {ENDPOINT_LABELS[r.endpoint] ?? r.endpoint}
-                  <span className="text-ink-faint"> · {r.count}</span>
-                </span>
-                <div className="flex-1 h-2.5 rounded-full bg-black/[0.05] overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-brand/70"
-                    style={{ width: `${Math.max(4, (r.cost / topEndpointsMax) * 100)}%` }}
-                  />
-                </div>
-                <span className="w-20 shrink-0 text-right text-[13px] font-semibold text-ink tabular-nums">
-                  {admin ? `${r.cost.toFixed(3)}$` : `${money(r.cost)} cr.`}
-                </span>
-              </div>
-            ))}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold tracking-tight text-ink">{admin ? "¿A dónde va el gasto?" : "¿En qué se gastan tus créditos?"}</h2>
+            <Link
+              href="/app/costes"
+              className="text-[13px] font-medium text-ink-faint hover:text-brand transition-colors"
+            >
+              Ver detalle →
+            </Link>
           </div>
-        )}
-      </div>
+          {topEndpoints.length === 0 ? (
+            <p className="text-sm text-ink-faint">Sin consumo este mes.</p>
+          ) : (
+            <div className="space-y-3">
+              {topEndpoints.map((r) => (
+                <div key={r.endpoint} className="flex items-center gap-3">
+                  <span className="w-56 shrink-0 text-[13px] text-ink-soft truncate">
+                    {ENDPOINT_LABELS[r.endpoint] ?? r.endpoint}
+                    <span className="text-ink-faint"> · {r.count}</span>
+                  </span>
+                  <div className="flex-1 h-2.5 rounded-full bg-black/[0.05] overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-brand/70"
+                      style={{ width: `${Math.max(4, (r.cost / topEndpointsMax) * 100)}%` }}
+                    />
+                  </div>
+                  <span className="w-20 shrink-0 text-right text-[13px] font-semibold text-ink tabular-nums">
+                    {admin ? `${r.cost.toFixed(3)}$` : `${money(r.cost)} cr.`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -525,7 +525,7 @@ export default function ProjectWizard({ initialDomain = "" }: { initialDomain?: 
               />
               <p className="text-xs text-ink-faint">
                 Si dejas vacío, se crea un estudio en blanco (gratis) que rellenarás después. Con
-                semillas se resuelve volumen e intención vía DataForSEO.
+                semillas se resuelve el volumen y la intención de búsqueda.
               </p>
               <p className="text-xs text-ink-soft">
                 Al lanzar el proyecto, estas keywords se importarán automáticamente al Rank Tracking

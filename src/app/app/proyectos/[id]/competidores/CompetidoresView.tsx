@@ -113,7 +113,7 @@ function OnPageReportDetail({ analysis }: { analysis: OnPageAnalysisData }) {
           <p className="text-ink-faint">Caracteres</p>
           <p className="font-semibold text-ink">{analysis.characterCount ?? "—"}</p>
         </div>
-        <div className="bg-background rounded-lg p-2" title="DataForSEO no da recuento de frases; se estima sobre un fragmento del texto (primeros ~3000 caracteres), no la página completa — por eso puede parecer bajo frente al recuento de palabras.">
+        <div className="bg-background rounded-lg p-2" title="No hay recuento exacto de frases; se estima sobre un fragmento del texto (primeros ~3000 caracteres), no la página completa — por eso puede parecer bajo frente al recuento de palabras.">
           <p className="text-ink-faint">Frases (muestra)</p>
           <p className="font-semibold text-ink">{analysis.sentenceCount ?? "—"}</p>
         </div>
@@ -888,7 +888,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       <PageHeader
         eyebrow="Módulo · Competidores"
         title="Competidores"
-        description="{Espía el tráfico orgánico estimado y las keywords de cualquier dominio (DataForSEO Labs), y           descubre el content gap: keywords por las que ranquean y tú no, con CPC, dificultad y el           snippet con el que posicionan.}"
+        description="{Espía el tráfico orgánico estimado y las keywords de cualquier dominio, y           descubre el content gap: keywords por las que ranquean y tú no, con CPC, dificultad y el           snippet con el que posicionan.}"
       />
 
       {/* Ubicación de todos los análisis de esta sesión (propio dominio,
@@ -1074,7 +1074,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                 {c.snapshot && !hasUsefulSnapshot(c.snapshot) && (
                   <p className="text-[11px] text-accent-ink bg-accent-tint border border-brand-100 rounded-lg px-2 py-1 mt-2">
                     Analizado el {new Date(c.snapshot.fetchedAt).toLocaleDateString("es-ES")}, pero
-                    DataForSEO no encontró presencia orgánica medible para este dominio (puede ser
+                    no encontramos presencia orgánica medible para este dominio (puede ser
                     normal en dominios muy pequeños o nuevos). Cuenta como pendiente en
                     <strong> Analizar todos</strong> por si cambia con el tiempo.
                   </p>

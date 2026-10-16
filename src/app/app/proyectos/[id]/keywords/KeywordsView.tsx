@@ -1035,7 +1035,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               Columnas: keyword (obligatoria) y, si las tienes, volumen / competencia / cpc / intención.
               También acepta la exportación tal cual de Google Ads Keyword Planner (&laquo;Historial de
               estadísticas de palabras clave&raquo;). Se usan tal cual vengan en el archivo — no se
-              completan con DataForSEO.
+              completan con otros datos.
             </p>
           </div>
           <label

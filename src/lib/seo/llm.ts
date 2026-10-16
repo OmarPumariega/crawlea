@@ -9,7 +9,8 @@ import { getSetting } from "@/lib/settings";
 export async function getOpenRouterClient(): Promise<OpenAI> {
   const apiKey = await getSetting("OPENROUTER_API_KEY");
   if (!apiKey) {
-    throw new Error("Falta la clave de OpenRouter — configúrala en Configuración o en OPENROUTER_API_KEY");
+    console.error("[llm] falta la clave de OpenRouter (Configuración u OPENROUTER_API_KEY)");
+    throw new Error("La IA no está disponible ahora mismo. Inténtalo de nuevo más tarde.");
   }
   // timeout explícito: el default del SDK son 10 min (con hasta 2 reintentos
   // sobre timeouts, hasta 30 min reales) — eso es lo que hacía que Título/Meta
@@ -48,19 +49,20 @@ export async function getCopilotSystemPrompt(): Promise<string> {
 // rota" en vez de "falta configurar la clave de OpenRouter".
 export function friendlyLlmErrorMessage(error: unknown): string {
   if (error instanceof OpenAI.APIConnectionTimeoutError) {
-    return "La IA está tardando más de lo normal en responder (más de 90s). Puede que OpenRouter esté saturado — inténtalo de nuevo en unos minutos.";
+    return "La IA está tardando más de lo normal en responder (más de 90s). Puede que el servicio esté saturado — inténtalo de nuevo en unos minutos.";
   }
   if (error instanceof OpenAI.APIError) {
     if (error.status === 401) {
-      return "OpenRouter ha rechazado la clave configurada. Revísala en Configuración.";
+      return "La IA no está disponible ahora mismo. Inténtalo de nuevo más tarde.";
     }
     if (error.status === 429) {
-      return "OpenRouter ha devuelto un límite de peticiones superado. Inténtalo de nuevo en unos segundos.";
+      return "La IA está recibiendo muchas peticiones. Inténtalo de nuevo en unos segundos.";
     }
     if (error.status && error.status >= 500) {
-      return "OpenRouter no está disponible ahora mismo. Inténtalo de nuevo en unos minutos.";
+      return "La IA no está disponible ahora mismo. Inténtalo de nuevo en unos minutos.";
     }
-    return `OpenRouter devolvió un error: ${error.message}`;
+    console.error("[llm]", error.status, error.message);
+    return "La IA no ha podido responder. Inténtalo de nuevo en unos minutos.";
   }
   return error instanceof Error ? error.message : "Error al generar con IA";
 }

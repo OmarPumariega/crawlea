@@ -16,6 +16,7 @@ import { getMonthlyLimitUsd, getUserLimitUsd } from "@/lib/dataforseo/spend";
 export async function GET(req: NextRequest) {
   const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!isAdmin(session)) return NextResponse.json({ error: "No autorizado" }, { status: 403 });
 
   const projectId = req.nextUrl.searchParams.get("projectId");
 

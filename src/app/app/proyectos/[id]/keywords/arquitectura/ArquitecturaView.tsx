@@ -199,7 +199,7 @@ export default function ArquitecturaView({
         )}
         {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
         <p className="text-xs text-ink-faint">
-          La agrupación en páginas y su jerarquía las genera un modelo de IA (OpenRouter) a partir de
+          La agrupación en páginas y su jerarquía las genera un modelo de IA a partir de
           las keywords reales del estudio (volumen, intención, prioridad) — el volumen mostrado en el
           árbol es siempre el real acumulado, no una estimación de la IA.
         </p>

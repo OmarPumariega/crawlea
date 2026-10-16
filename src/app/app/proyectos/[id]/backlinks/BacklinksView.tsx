@@ -579,7 +579,7 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
       <PageHeader
         eyebrow="Módulo · Backlinks"
         title="Backlinks"
-        description="{Enlazado externo: qué dominios enlazan a tu sitio (y a los de tus competidores ya trackeados           en Competidores), cuánta autoridad tienen y desde dónde. A diferencia del resto de la           herramienta, esto usa un producto de DataForSEO nuevo — cada análisis tiene coste real.}"
+        description="{Enlazado externo: qué dominios enlazan a tu sitio (y a los de tus competidores ya trackeados           en Competidores), cuánta autoridad tienen y desde dónde. Cada análisis gasta créditos; ves cuántos antes de lanzarlo.}"
       />
 
       {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}

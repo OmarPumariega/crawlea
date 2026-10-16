@@ -31,7 +31,7 @@ export async function authHeader(): Promise<string> {
   ]);
   if (!login || !password) {
     throw new DataForSeoError(
-      "Faltan las credenciales de DataForSEO (configúralas en Configuración o en DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD)"
+      "El servicio de datos no está disponible ahora mismo. Inténtalo de nuevo más tarde."
     );
   }
   const token = Buffer.from(`${login}:${password}`).toString("base64");
@@ -125,16 +125,11 @@ export function extractTask(json: unknown, endpoint: string): TaskEnvelope {
 // causa y la acción a seguir — el "error HTTP 402" críptico era incomprensible
 // para el usuario (significa saldo agotado, no un fallo de la herramienta).
 function httpErrorMessage(endpoint: string, status: number): string {
-  switch (status) {
-    case 401:
-      return `DataForSEO ${endpoint}: credenciales no válidas (HTTP 401). Revisa DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD en Configuración.`;
-    case 402:
-      return `DataForSEO ${endpoint}: saldo insuficiente (HTTP 402). Recarga créditos en tu cuenta de DataForSEO (dataforseo.com → Balance) e inténtalo de nuevo.`;
-    case 429:
-      return `DataForSEO ${endpoint}: has superado el límite de peticiones (HTTP 429). Inténtalo de nuevo en unos minutos.`;
-    default:
-      return `DataForSEO ${endpoint}: error HTTP ${status}`;
-  }
+  // El detalle técnico (credenciales, saldo, límites) va solo al log del
+  // servidor: el cliente no debe ver el nombre del proveedor ni su estado.
+  console.error(`[dataforseo] ${endpoint}: HTTP ${status}`);
+  if (status === 429) return "Hay muchas consultas a la vez. Inténtalo de nuevo en unos minutos.";
+  return "No hemos podido obtener los datos ahora mismo. Inténtalo de nuevo en unos minutos.";
 }
 
 // POST de una tarea a un endpoint Live de DataForSEO. Devuelve la task ya
@@ -171,7 +166,8 @@ export async function postTask(
         body: JSON.stringify([body]),
       });
     } catch {
-      throw new DataForSeoError(`DataForSEO ${endpoint}: no se pudo conectar con la API`);
+      console.error(`[dataforseo] ${endpoint}: no se pudo conectar`);
+      throw new DataForSeoError("No hemos podido obtener los datos ahora mismo. Inténtalo de nuevo en unos minutos.");
     }
 
     if (!res.ok) {
@@ -191,5 +187,5 @@ export async function postTask(
     }
   }
   // Agotados los reintentos: lanzamos el último error transient recibido.
-  throw lastError ?? new DataForSeoError(`DataForSEO ${endpoint}: error desconocido tras reintentos`);
+  throw lastError ?? new DataForSeoError("No hemos podido obtener los datos ahora mismo. Inténtalo de nuevo en unos minutos.");
 }

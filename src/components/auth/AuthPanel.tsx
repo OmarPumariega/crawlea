@@ -54,7 +54,7 @@ export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: 
 
   const highlights = [
     "Auditoría técnica, rank tracking y SEO local en un solo panel",
-    "Datos reales de Search Console, Analytics y DataForSEO",
+    "Datos reales de Search Console, Analytics y Google",
     "Copilot con IA y generación de títulos, metas, schema y contenido",
   ];
 
