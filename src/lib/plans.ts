@@ -40,9 +40,12 @@ export interface PlanDef {
   // DataForSEO de la cuenta (USD/mes, mes natural) se DERIVA de ella:
   // topeUsdMes = creditosMes × USD_PER_CREDIT. Se suma al tope global de la
   // plataforma y al tope por proyecto si lo hay. null = sin tope de cuenta.
-  creditosMes: number;
+  creditosMes: number | null;
   topeUsdMes: number | null;
   maxProyectos: number | null;
+  // Plan interno (cuentas del propietario): no sale en precios ni en los textos
+  // legales; solo lo asigna el admin desde el panel.
+  oculto?: boolean;
   // Módulos habilitados por el plan. El admin de la plataforma no está
   // limitado por su plan.
   modulos: readonly ModuleId[];
@@ -81,7 +84,21 @@ export const PLANS: Record<string, PlanDef> = {
     maxProyectos: 10,
     modulos: MODULE_IDS,
   },
+  owner: {
+    id: "owner",
+    nombre: "Propietario",
+    descripcion: "Cuenta del propietario de la plataforma: sin límites.",
+    precioEurMes: 0,
+    creditosMes: null,
+    topeUsdMes: null,
+    maxProyectos: null,
+    modulos: MODULE_IDS,
+    oculto: true,
+  },
 };
+
+// Planes a la venta (sin los internos).
+export const PUBLIC_PLANS: PlanDef[] = Object.values(PLANS).filter((p) => !p.oculto);
 
 export const DEFAULT_PLAN_ID = "free";
 

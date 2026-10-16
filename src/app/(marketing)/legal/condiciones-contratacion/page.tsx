@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import LegalDoc from "@/components/marketing/LegalDoc";
 import { COMPANY } from "@/lib/legal/company";
-import { PLANS } from "@/lib/plans";
+import { PUBLIC_PLANS } from "@/lib/plans";
 
 export const metadata: Metadata = {
   title: "Condiciones de contratación · Crawlea",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  const plans = Object.values(PLANS);
+  const plans = PUBLIC_PLANS;
   return (
     <LegalDoc
       title="Condiciones de contratación"

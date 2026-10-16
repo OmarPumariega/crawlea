@@ -3,7 +3,7 @@ import { Check } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
-import { PLANS } from "@/lib/plans";
+import { PUBLIC_PLANS } from "@/lib/plans";
 import { stripeReady } from "@/lib/stripe/client";
 import CheckoutButton from "@/components/marketing/CheckoutButton";
 
@@ -11,7 +11,7 @@ import CheckoutButton from "@/components/marketing/CheckoutButton";
 // (plans.ts) y un solo diseño. Cuando haya precios y límites definitivos se
 // cambia aquí y se actualizan las dos páginas.
 export default async function PricingCards({ className = "", autoPlan }: { className?: string; autoPlan?: string }) {
-  const plans = Object.values(PLANS);
+  const plans = PUBLIC_PLANS;
   const [session, payReady] = await Promise.all([getServerSession(authOptions), stripeReady()]);
   const loggedIn = !!session?.user?.id;
   // Plan y suscripción actuales: evita ofrecer comprar lo que ya tienes.
@@ -34,7 +34,7 @@ export default async function PricingCards({ className = "", autoPlan }: { class
               {[
                 p.maxProyectos === null ? "Proyectos sin límite" : `${p.maxProyectos} ${p.maxProyectos === 1 ? "proyecto" : "proyectos"}`,
                 gratis ? "Sin Backlinks, Competidores ni Geogrid" : "Todas las funciones",
-                `${p.creditosMes.toLocaleString("es-ES")} créditos al mes para consultas de pago`,
+                `${(p.creditosMes ?? 0).toLocaleString("es-ES")} créditos al mes para consultas de pago`,
                 "Conexión con Search Console y Analytics",
               ].map((t) => (
                 <li key={t} className="flex gap-2.5">
