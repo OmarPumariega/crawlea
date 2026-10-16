@@ -41,3 +41,4 @@ APIs reales.
 - **Secrets:** nunca se incluyen valores reales, solo placeholders
 - **El roadmap manda:** el estado de las fases vive en `06-roadmap-saas.md` y se
   actualiza en el mismo commit que el cambio
+- [`07-analitica-y-legal.md`](./07-analitica-y-legal.md) — GTM/GA4, consentimiento de cookies, verificaciones y textos legales.
