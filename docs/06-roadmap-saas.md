@@ -150,7 +150,7 @@ por ID → 404, config de plataforma → 403, 2º proyecto → 402. `tsc` y `bui
   contenido y Copilot (IA) no gastan créditos. Las estimaciones previas a cada acción, el
   perfil, el dashboard, `/app/costes` y el informe muestran créditos al cliente; el admin
   sigue viendo USD reales (`/admin`, `/app/costes`). Ajustar valores = tocar `plans.ts` /
-  `USD_PER_CREDIT`. Al cliente le basta: «posiciones, palabras clave… gastan créditos».
+  `USD_PER_CREDIT`. Ya no existe tope de gasto por proyecto (`Project.spendLimitUsd` queda sin uso en el esquema): la bolsa es solo de la cuenta. Los avisos por email, el Copilot y toda la UI del cliente hablan en créditos; solo el admin ve USD. Al cliente le basta: «posiciones, palabras clave… gastan créditos».
 - **Gating**: Gratis excluye `backlinks`, `competidores` y `geogrid` (`PAID_MODULES`). Servidor:
   `moduleGate(session, módulo)` en `src/lib/auth-guards.ts` (402 `plan_required`, lee el plan
   de BD, el admin está exento) en las 13 rutas API de esos módulos; las 3 páginas muestran

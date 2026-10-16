@@ -5,12 +5,12 @@ import { usdToCredits, creditsLabel } from "@/lib/credits";
 
 // Tope de gasto mensual de DataForSEO (sección 5 del spec: "topes de gasto
 // configurables, con opción de bloquear nuevas llamadas al superarlo").
-// Tres niveles, de fuera hacia dentro:
+// Dos niveles, de fuera hacia dentro:
 //   1. Global de plataforma: DATAFORSEO_MONTHLY_LIMIT_USD (AppSetting/env).
 //   2. Por cuenta (SaaS): topeUsdMes del plan del dueño del proyecto (o el
 //      override manual del admin, que lo sustituye). El
 //      admin de la plataforma no está limitado por plan.
-//   3. Por proyecto: Project.spendLimitUsd (ajuste fino manual).
+// (Ya no hay tope por proyecto: la bolsa de créditos es de la cuenta.)
 // El cómputo suma el coste real registrado en ApiUsageLog (api='dataforseo')
 // del mes natural en curso.
 
@@ -92,8 +92,7 @@ export async function getUserLimitUsd(userId: string): Promise<number | null> {
   return user ? effectiveUserLimitUsd(user.plan, user.spendLimitOverrideUsd) : null;
 }
 
-// Comprueba los TRES topes (global → plan del usuario → proyecto si tiene
-// tope propio). Llamar ANTES de cualquier llamada nueva a DataForSEO. Si no
+// Comprueba los DOS topes (global → bolsa de créditos de la cuenta). Llamar ANTES de cualquier llamada nueva a DataForSEO. Si no
 // hay topes configurados, no hace nada. Las lecturas de caché no gastan → no
 // pasan por aquí.
 //
@@ -115,7 +114,6 @@ export async function assertWithinSpendLimit(projectId?: string, estimatedUsd = 
     where: { id: projectId },
     select: {
       userId: true,
-      spendLimitUsd: true,
       user: { select: { role: true, plan: true, spendLimitOverrideUsd: true } },
     },
   });
@@ -130,12 +128,5 @@ export async function assertWithinSpendLimit(projectId?: string, estimatedUsd = 
         throw new DataForSeoSpendLimitError(userSpent, userLimit, "user", estimatedUsd);
       }
     }
-  }
-
-  // Tope propio del proyecto.
-  const pLimit = project.spendLimitUsd ?? null;
-  if (pLimit !== null && pLimit > 0) {
-    const pSpent = await getProjectMonthSpendUsd(projectId);
-    if (pSpent >= pLimit || pSpent + estimatedUsd > pLimit) throw new DataForSeoSpendLimitError(pSpent, pLimit, "project");
   }
 }

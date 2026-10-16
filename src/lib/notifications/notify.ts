@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { usdToCredits } from "@/lib/credits";
 import { isEmailConfigured, sendEmail } from "@/lib/notifications/email";
 import { getMonthSpendUsd, getMonthlyLimitUsd, getUserMonthSpendUsd } from "@/lib/dataforseo/spend";
 import { effectiveUserLimitUsd } from "@/lib/plans";
@@ -107,16 +108,16 @@ export async function checkSpendNotifications(): Promise<void> {
         userId: user.id,
         type: "spend_exceeded",
         key: `plan:${today}`,
-        subject: "⚠️ Has agotado el gasto de tu plan este mes",
-        body: `Tu consumo de DataForSEO de este mes (${spent.toFixed(2)}$) ha alcanzado el tope de tu plan (${userLimit.toFixed(2)}$). Las nuevas llamadas de pago están bloqueadas hasta el próximo mes — o sube de plan para continuar.`,
+        subject: "⚠️ Has agotado tus créditos de este mes",
+        body: `Has gastado los ${usdToCredits(userLimit).toLocaleString("es-ES")} créditos de este mes. Las consultas de pago quedan bloqueadas hasta que se renueven, el día 1 del mes que viene, o hasta que subas de plan.`,
       });
     } else if (spent >= userLimit * 0.8) {
       await notify({
         userId: user.id,
         type: "spend_warning",
         key: `plan:${today}`,
-        subject: "Estás cerca del tope de gasto de tu plan",
-        body: `Llevas ${spent.toFixed(2)}$ de ${userLimit.toFixed(2)}$ (80%) del gasto mensual incluido en tu plan. Revisa el panel de costes para ajustar frecuencia/depth de tus seguimientos o valora subir de plan.`,
+        subject: "Te quedan pocos créditos este mes",
+        body: `Has usado ${usdToCredits(spent).toLocaleString("es-ES")} de ${usdToCredits(userLimit).toLocaleString("es-ES")} créditos (80%) de este mes. Revisa tus seguimientos de posiciones para ajustar la frecuencia o valora subir de plan.`,
       });
     }
   }

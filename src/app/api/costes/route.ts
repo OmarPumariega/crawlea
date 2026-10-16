@@ -34,7 +34,6 @@ export async function GET(req: NextRequest) {
     const project = await projectForSession(session, projectId, {
       id: true,
       name: true,
-      spendLimitUsd: true,
     });
     if (!project) return NextResponse.json({ error: "Proyecto no encontrado" }, { status: 404 });
 
@@ -56,7 +55,7 @@ export async function GET(req: NextRequest) {
     ]);
 
     const projectDfsSpent = dataforseoAgg._sum.costUsd ? Number(dataforseoAgg._sum.costUsd) : 0;
-    const limit = project.spendLimitUsd ?? null;
+    const limit: number | null = null; // ya no hay tope por proyecto: la bolsa es de la cuenta
 
     return NextResponse.json({
       monthLabel,
@@ -124,12 +123,9 @@ export async function GET(req: NextRequest) {
     .filter((id): id is string => id !== null);
   const projects = await prisma.project.findMany({
     where: { id: { in: projectIds } },
-    select: { id: true, name: true, spendLimitUsd: true },
+    select: { id: true, name: true },
   });
   const projectName = new Map(projects.map((p) => [p.id, p.name]));
-  const projectLimit = new Map(
-    projects.map((p) => [p.id, p.spendLimitUsd ?? null])
-  );
 
   const dataforseoSpent = dataforseoAgg._sum.costUsd ? Number(dataforseoAgg._sum.costUsd) : 0;
   const limit = admin ? await getMonthlyLimitUsd() : await getUserLimitUsd(session.user.id);
@@ -161,7 +157,7 @@ export async function GET(req: NextRequest) {
         projectId: r.projectId,
         name: r.projectId ? (projectName.get(r.projectId) ?? "Proyecto eliminado") : "Sin proyecto",
         cost: r._sum.costUsd ? Number(r._sum.costUsd) : 0,
-        limit: r.projectId ? (projectLimit.get(r.projectId) ?? null) : null,
+        limit: null,
       }))
       .sort((a, b) => b.cost - a.cost),
     recentCalls: [],

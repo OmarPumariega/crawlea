@@ -220,7 +220,7 @@ export default function CostesPage() {
           {dfs.limitUsd !== null ? (
             <span className="text-sm text-ink-faint">/ {usd(dfs.limitUsd, 2)} {admin ? "configurados" : "incluidos en tu plan"}</span>
           ) : (
-            <span className="text-xs text-ink-faint">(sin tope — define DATAFORSEO_MONTHLY_LIMIT_USD)</span>
+            <span className="text-xs text-ink-faint">{admin ? "(sin tope — define DATAFORSEO_MONTHLY_LIMIT_USD)" : "(sin tope)"}</span>
           )}
         </div>
         {dfs.limitUsd !== null && (
@@ -287,11 +287,6 @@ export default function CostesPage() {
                     <td className="py-2 text-ink-soft truncate">{r.name}</td>
                     <td className="py-2 text-right text-ink tabular-nums">
                       {usd(r.cost, 3)}
-                      {r.limit !== null && (
-                        <span className={cn("text-xs ml-1", r.cost >= r.limit ? "text-alert-ink" : r.cost >= r.limit * 0.8 ? "text-accent-ink" : "text-ink-faint")}>
-                          / {usd(r.limit, 2)}
-                        </span>
-                      )}
                     </td>
                   </tr>
                 ))}

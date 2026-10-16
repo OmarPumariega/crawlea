@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { usdToCredits } from "@/lib/credits";
 
 // Construye un resumen en texto plano de los datos REALES del proyecto para
 // inyectarlo como contexto del system prompt del Copilot. Conciso (datos, no
@@ -30,7 +31,7 @@ export async function buildProjectContext(projectId: string): Promise<string> {
     }),
     prisma.keywordStudy.count({ where: { projectId } }),
     prisma.apiUsageLog.aggregate({
-      where: { projectId, createdAt: { gte: startOfMonth } },
+      where: { projectId, api: "dataforseo", createdAt: { gte: startOfMonth } },
       _sum: { costUsd: true },
     }),
     prisma.gscSnapshot.findFirst({
@@ -94,7 +95,8 @@ export async function buildProjectContext(projectId: string): Promise<string> {
   }
 
   lines.push(`Estudios de keywords: ${studyCount}.`);
-  lines.push(`Coste del mes (APIs): ${monthCost.toFixed(2)} USD.`);
+  // El cliente ve créditos, nunca dólares: el Copilot habla en créditos.
+  lines.push(`Créditos gastados este mes en este proyecto: ${usdToCredits(monthCost)}.`);
 
   // Rendimiento real de Search Console (del snapshot persistido al abrir el
   // panel de GSC). Datos reales de tráfico, no estimados.

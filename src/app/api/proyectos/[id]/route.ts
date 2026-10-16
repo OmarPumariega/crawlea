@@ -60,13 +60,6 @@ export async function PATCH(
   }
   const lat = parseCoord("lat", -90, 90);
   const lng = parseCoord("lng", -180, 180);
-  // Tope de proyecto: si la key viene en el body, número >=0 o null (vaciar).
-  let spendLimitUsd: number | null | undefined = undefined;
-  if ("spendLimitUsd" in body) {
-    const raw = body.spendLimitUsd;
-    const n = Number(raw);
-    spendLimitUsd = raw === "" || !Number.isFinite(n) || n < 0 ? null : n;
-  }
 
   try {
     const project = await prisma.project.update({
@@ -96,7 +89,6 @@ export async function PATCH(
         lng,
         gbpName: "gbpName" in body ? normalizeText(body.gbpName) : undefined,
         gbpPlaceId: "gbpPlaceId" in body ? normalizeText(body.gbpPlaceId) : undefined,
-        spendLimitUsd,
         // Solo la pestaña "Google" envía estas claves (incluso como null al
         // limpiar una selección); la pestaña Perfil no las toca.
         gscSiteUrl: "gscSiteUrl" in body ? normalizeText(body.gscSiteUrl) : undefined,

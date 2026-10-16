@@ -55,7 +55,6 @@ export default function ProjectWizard({ initialDomain = "" }: { initialDomain?: 
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [domain, setDomain] = useState(initialDomain);
-  const [spendLimit, setSpendLimit] = useState("");
 
   // --- Paso 2: negocio local ---
   const [isLocalBusiness, setIsLocalBusiness] = useState(false);
@@ -152,7 +151,6 @@ export default function ProjectWizard({ initialDomain = "" }: { initialDomain?: 
           name,
           slug: effectiveSlug,
           domain,
-          spendLimitUsd: spendLimit,
         };
         if (projectId) {
           await patchProject(body);
@@ -341,16 +339,6 @@ export default function ProjectWizard({ initialDomain = "" }: { initialDomain?: 
                 Necesario para rastrear el sitio (auditoría, geogrid, etc.). Puedes omitirlo y
                 añadirlo luego, pero sin él la auditoría no puede lanzarse.
               </p>
-            </div>
-            <div className="space-y-1">
-              <label className={LABEL}>Tope de gasto mensual (USD, opcional)</label>
-              <input
-                className={INPUT}
-                value={spendLimit}
-                onChange={(e) => setSpendLimit(e.target.value)}
-                placeholder="Vacío = sin tope"
-                inputMode="decimal"
-              />
             </div>
           </div>
         )}
