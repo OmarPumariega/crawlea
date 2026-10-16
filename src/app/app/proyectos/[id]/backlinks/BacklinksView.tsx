@@ -179,7 +179,7 @@ function BacklinkGapCard({
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+              <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
                 <th className="py-1.5 pr-2 font-medium">Dominio</th>
                 <th className="py-1.5 pr-2 font-medium text-right">Autoridad</th>
                 <th className="py-1.5 pr-2 font-medium text-right">Backlinks encontrados</th>
@@ -386,7 +386,7 @@ function DomainDetail({
             onClick={handleAnalyzeClick}
             disabled={analyzing}
             title={estimatedCost ? `Coste estimado ${fmtCredits(estimatedCost)}` : "Coste según cantidad real"}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-xs font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
           >
             {analyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
             Analizar {estimatedCost != null && <span className="opacity-70">{fmtCredits(estimatedCost)}</span>}
@@ -503,7 +503,7 @@ function DomainDetail({
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+                        <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
                           <th className="py-1.5 pr-2 font-medium">Origen</th>
                           <th className="py-1.5 pr-2 font-medium text-right">Autoridad dominio</th>
                           <th className="py-1.5 pr-2 font-medium text-right">Autoridad página</th>
@@ -590,7 +590,7 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+                <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
                   <th className="py-1.5 pr-2 font-medium">Dominio</th>
                   <th className="py-1.5 px-2 font-medium text-right">Autoridad</th>
                   <th className="py-1.5 px-2 font-medium text-right">Backlinks</th>

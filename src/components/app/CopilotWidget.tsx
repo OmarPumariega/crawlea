@@ -274,12 +274,12 @@ export default function CopilotWidget() {
           }}
           rows={1}
           placeholder="Escribe tu pregunta…"
-          className="flex-1 resize-none rounded-lg border border-line px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-brand-900 focus:border-transparent max-h-24"
+          className="flex-1 resize-none rounded-lg border border-line px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-brand focus:border-transparent max-h-24"
         />
         <button
           type="submit"
           disabled={!input.trim() || sending}
-          className="shrink-0 flex items-center justify-center rounded-lg bg-brand-900 text-white px-2.5 py-1.5 text-sm hover:bg-brand-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="shrink-0 flex items-center justify-center rounded-full bg-brand text-white px-2.5 py-1.5 text-sm hover:bg-brand-strong transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </button>

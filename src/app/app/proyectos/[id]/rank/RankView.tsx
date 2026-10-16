@@ -157,21 +157,21 @@ function SortableTh({
 }) {
   const isActive = active === sortKey;
   return (
-    <th className={cn("py-2.5 font-medium whitespace-nowrap", className)}>
+    <th className={cn("py-2.5 font-semibold whitespace-nowrap", className)}>
       <button
         type="button"
         onClick={() => onClick(sortKey)}
         className={cn(
-          "flex items-center gap-1 transition-colors hover:text-white",
+          "flex items-center gap-1 transition-colors hover:text-ink",
           align === "right" && "ml-auto flex-row-reverse",
-          isActive ? "text-white" : "text-white/60"
+          isActive ? "text-ink" : "text-ink-faint"
         )}
       >
         {label}
         {isActive ? (
           dir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
         ) : (
-          <ChevronsUpDown className="h-3 w-3 text-white/30" />
+          <ChevronsUpDown className="h-3 w-3 text-ink-faint/60" />
         )}
       </button>
     </th>
@@ -871,8 +871,8 @@ export default function RankView({ projectId }: { projectId: string }) {
           <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
-                  <SortableTh label="Keyword" sortKey="keyword" active={sortKey} dir={sortDir} onClick={toggleSort} className="pl-4 pr-3 sticky left-0 bg-brand-900 rounded-tl-lg" />
+                <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
+                  <SortableTh label="Keyword" sortKey="keyword" active={sortKey} dir={sortDir} onClick={toggleSort} className="pl-4 pr-3 sticky left-0 bg-surface-muted rounded-tl-lg" />
                   <SortableTh label="Volumen" sortKey="volume" active={sortKey} dir={sortDir} onClick={toggleSort} align="right" className="px-3" />
                   {dateColumns.map((d) => (
                     <SortableTh
@@ -1223,7 +1223,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                                             className={cn("border-b border-line/60", hasCopy && "cursor-pointer hover:bg-background")}
                                             onClick={() => hasCopy && setCopyExpanded(open ? null : key)}
                                           >
-                                            <td className="py-1 text-ink-soft font-mono">
+                                            <td className="py-1 text-ink-soft">
                                               {c.domain}
                                               {hasCopy && (
                                                 <span className="ml-1 text-ink-faint align-middle">
@@ -1397,7 +1397,7 @@ export default function RankView({ projectId }: { projectId: string }) {
         <button
           type="submit"
           disabled={adding}
-          className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-full px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
         >
           {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           Añadir a seguimiento

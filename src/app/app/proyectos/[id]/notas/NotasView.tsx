@@ -210,7 +210,7 @@ function NoteCard({
                 type="button"
                 onClick={handleSave}
                 disabled={busy || uploading}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-xs font-medium rounded-lg hover:bg-brand-strong transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-xs font-medium rounded-full hover:bg-brand-strong transition-colors disabled:opacity-50"
               >
                 {busy || uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                 Guardar
@@ -240,7 +240,7 @@ function NoteCard({
             />
             <ImageGrid projectId={projectId} noteId={note.id} images={note.images} />
             <div className="flex items-center justify-between gap-2">
-              <p className="font-mono text-[11px] text-ink-faint">
+              <p className=" text-[11px] text-ink-faint">
                 {new Date(note.createdAt).toLocaleDateString("es-ES", {
                   day: "2-digit",
                   month: "short",
@@ -404,7 +404,7 @@ export default function NotasView({ projectId }: { projectId: string }) {
         <button
           type="submit"
           disabled={creating || !content.replace(/<[^>]*>/g, "").trim()}
-          className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong transition-colors disabled:opacity-50"
         >
           {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           Añadir apunte

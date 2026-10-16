@@ -106,7 +106,7 @@ export default function ProjectSwitcher({
               {/* Recientes (últimos 5 visitados) — solo si hay y no se filtra */}
               {recentProjects.length > 0 && (
                 <>
-                  <p className="flex items-center gap-1 px-3 py-1 font-mono text-[10px] uppercase tracking-wide text-ink-faint">
+                  <p className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-ink-faint">
                     <Clock className="h-3 w-3" /> Recientes
                   </p>
                   {recentProjects.map((p) => (
@@ -117,7 +117,7 @@ export default function ProjectSwitcher({
               )}
 
               {/* Todos (o filtrados por búsqueda) */}
-              {!q && <p className="px-3 py-1 font-mono text-[10px] uppercase tracking-wide text-ink-faint">Todos</p>}
+              {!q && <p className="px-3 py-1 text-xs font-semibold text-ink-faint">Todos</p>}
               {(q ? filtered : projects.filter((p) => !recentProjects.includes(p))).map((p) => (
                 <Row key={p.id} name={p.name} active={p.id === currentId} onClick={() => pick(p.id)} />
               ))}

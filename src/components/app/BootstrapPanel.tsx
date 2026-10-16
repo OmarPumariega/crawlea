@@ -144,7 +144,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
   return (
     <div className="bg-surface border border-line rounded-xl p-5 space-y-3">
       <div className="flex items-start gap-3">
-        <div className="h-9 w-9 rounded-lg bg-brand-900 text-white flex items-center justify-center shrink-0">
+        <div className="h-9 w-9 rounded-lg bg-brand text-white flex items-center justify-center shrink-0">
           <Rocket className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
@@ -254,7 +254,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
             !!estimate?.missingDomain ||
             (!!estimate && nothingToDo && result === null)
           }
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-xs font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
         >
           {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
           Lanzar análisis
@@ -296,7 +296,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
               <button
                 onClick={launch}
                 disabled={launching}
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-brand-900 rounded-lg hover:bg-brand-700 disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-brand rounded-full hover:bg-brand-strong disabled:opacity-50"
               >
                 {launching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
                 Lanzar

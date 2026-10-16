@@ -146,7 +146,7 @@ export default function AuditTechnicalDetails({
                       Ver URLs
                     </button>
                     {showSitemapUrls && (
-                      <ul className="mt-2 space-y-1 text-xs font-mono">
+                      <ul className="mt-2 space-y-1 text-xs">
                         {sitemapUrlSample.map((u) => (
                           <li key={u}>
                             <UrlLink url={u} className="text-xs" />
@@ -184,7 +184,7 @@ export default function AuditTechnicalDetails({
             {topDomains.length > 0 ? (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-white/80 border-b border-line">
+                  <tr className="text-left text-xs font-semibold text-ink-faint border-b border-line">
                     <th className="py-1.5 pr-3 font-medium">Dominio</th>
                     <th className="py-1.5 pl-3 font-medium text-right">Páginas que enlazan</th>
                   </tr>
@@ -192,7 +192,7 @@ export default function AuditTechnicalDetails({
                 <tbody>
                   {topDomains.map(([domain, count]) => (
                     <tr key={domain} className="border-b border-line last:border-0">
-                      <td className="py-1.5 pr-3 font-mono text-xs break-all">
+                      <td className="py-1.5 pr-3 text-xs break-all">
                         <a
                           href={`https://${domain}`}
                           target="_blank"

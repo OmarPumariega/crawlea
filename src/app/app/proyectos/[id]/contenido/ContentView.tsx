@@ -561,7 +561,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
           Generar
@@ -682,7 +682,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
                     className={cn(
                       "flex items-center gap-1 px-2 py-1 rounded-md text-xs",
                       compareTarget?.id === v.id
-                        ? "bg-brand-900 text-white"
+                        ? "bg-brand text-white"
                         : "text-ink-soft hover:bg-surface-muted"
                     )}
                   >
@@ -719,7 +719,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
                 }}
                 className={cn(
                   "w-full text-left bg-surface rounded-lg border p-3 hover:bg-background transition-colors",
-                  current?.id === gen.id ? "border-brand-900" : "border-line"
+                  current?.id === gen.id ? "border-brand" : "border-line"
                 )}
               >
                 <div className="flex items-center justify-between">

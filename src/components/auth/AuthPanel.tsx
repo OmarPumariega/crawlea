@@ -98,7 +98,7 @@ export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: 
 
         <div className="relative">
           <Logo tone="light" textClassName="text-white text-lg" />
-          <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.2em] text-signal/90">
+          <p className="mt-2 text-xs font-semibold text-signal/90">
             {esRegistro ? "Crear cuenta" : "Acceso"}
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: 
           </ul>
         </div>
 
-        <p className="relative font-mono text-[11px] uppercase tracking-[0.18em] text-white/50">
+        <p className="relative text-xs font-semibold text-white/50">
           © {new Date().getFullYear()} Crawlea
         </p>
       </aside>
@@ -141,7 +141,7 @@ export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: 
 
           <div className="rounded-2xl border border-line bg-surface p-8 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_16px_40px_-24px_rgba(17,20,43,0.25)]">
             <div className="mb-6">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
+              <p className="text-xs font-semibold text-ink-faint">
                 {esRegistro ? "Registro" : "Acceso"}
               </p>
               <h2 className="text-xl font-semibold text-ink mt-1">
@@ -190,11 +190,11 @@ export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: 
             <div className="mt-6 pt-5 border-t border-line">
               {showInternal ? (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.12em] font-medium text-ink-soft">
+                  <p className="text-xs font-semibold font-medium text-ink-soft">
                     Acceso interno (email y contraseña)
                   </p>
                   <div>
-                    <label htmlFor="login-email" className="block font-mono text-[11px] uppercase tracking-[0.12em] font-medium text-ink-soft mb-1.5">
+                    <label htmlFor="login-email" className="block text-xs font-semibold font-medium text-ink-soft mb-1.5">
                       Email
                     </label>
                     <input
@@ -209,7 +209,7 @@ export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: 
                   </div>
 
                   <div>
-                    <label htmlFor="login-password" className="block font-mono text-[11px] uppercase tracking-[0.12em] font-medium text-ink-soft mb-1.5">
+                    <label htmlFor="login-password" className="block text-xs font-semibold font-medium text-ink-soft mb-1.5">
                       Contraseña
                     </label>
                     <input
@@ -232,7 +232,7 @@ export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-2.5 px-4 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-[background-color,transform] active:scale-[0.99]"
+                    className="w-full py-2.5 px-4 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-[background-color,transform] active:scale-[0.99]"
                   >
                     {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                     Entrar
@@ -258,7 +258,7 @@ export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: 
             </p>
           )}
 
-          <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
+          <p className="mt-6 text-center text-xs font-semibold text-ink-faint">
             Solo datos reales
           </p>
         </div>

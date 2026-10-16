@@ -48,7 +48,7 @@ export default function UpgradeWall({ modulo }: { modulo: string }) {
           <Lock className="h-5 w-5" />
         </span>
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Incluido en Basic y Pro</p>
+          <p className="text-xs font-semibold text-ink-faint">Incluido en Basic y Pro</p>
           <h1 className="text-xl font-semibold text-ink">{modulo}</h1>
         </div>
       </div>

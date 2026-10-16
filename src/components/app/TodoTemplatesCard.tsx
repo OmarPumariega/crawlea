@@ -140,7 +140,7 @@ export default function TodoTemplatesCard() {
           <button
             type="submit"
             disabled={creating || !title.trim()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong transition-colors disabled:opacity-50"
           >
             {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
             Guardar plantilla
@@ -162,7 +162,7 @@ export default function TodoTemplatesCard() {
         <div className="space-y-4">
           {groups.map((g) => (
             <div key={g} className="space-y-2">
-              <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">{g}</h3>
+              <h3 className="text-xs font-semibold text-ink-faint">{g}</h3>
               <ul className="space-y-1.5">
                 {templates
                   .filter((t) => (t.category ?? "Sin categoría") === g)
@@ -181,7 +181,7 @@ export default function TodoTemplatesCard() {
                             </select>
                           </div>
                           <div className="flex gap-2">
-                            <button onClick={() => saveEdit(t.id)} className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand text-white text-xs font-medium rounded-lg hover:bg-brand-strong transition-colors">
+                            <button onClick={() => saveEdit(t.id)} className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand text-white text-xs font-medium rounded-full hover:bg-brand-strong transition-colors">
                               <Check className="h-3.5 w-3.5" /> Guardar
                             </button>
                             <button onClick={() => setEditId(null)} className="inline-flex items-center gap-1 px-2.5 py-1 text-ink-soft text-xs hover:text-ink">

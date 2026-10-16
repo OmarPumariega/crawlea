@@ -147,7 +147,7 @@ export default function SchemaView({ projectId }: { projectId: string }) {
         <button
           type="submit"
           disabled={analyzing}
-          className="flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-full px-4 py-2 hover:bg-brand-strong disabled:opacity-50 transition-colors"
         >
           {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
           Analizar
@@ -186,7 +186,7 @@ export default function SchemaView({ projectId }: { projectId: string }) {
               type="button"
               onClick={handleGenerate}
               disabled={generating}
-              className="flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-full px-4 py-2 hover:bg-brand-strong disabled:opacity-50 transition-colors"
             >
               {generating && <Loader2 className="h-4 w-4 animate-spin" />}
               Generar JSON-LD
@@ -211,7 +211,7 @@ export default function SchemaView({ projectId }: { projectId: string }) {
             </ul>
           )}
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">JSON-LD</span>
+            <span className="text-xs font-semibold text-ink-faint">JSON-LD</span>
             <button onClick={copyJsonLd} className="text-ink-faint hover:text-ink" aria-label="Copiar JSON-LD">
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </button>

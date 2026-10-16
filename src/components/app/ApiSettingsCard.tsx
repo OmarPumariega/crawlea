@@ -105,7 +105,7 @@ function SettingField({
           type="button"
           onClick={handleSave}
           disabled={saving || !value.trim()}
-          className="px-3 py-2 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 shrink-0"
+          className="px-3 py-2 bg-brand text-white text-xs font-medium rounded-full hover:bg-brand-strong disabled:opacity-50 shrink-0"
         >
           {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Guardar"}
         </button>

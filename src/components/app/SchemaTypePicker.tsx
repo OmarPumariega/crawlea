@@ -91,7 +91,7 @@ export default function SchemaTypePicker({
             <div className="overflow-y-auto py-1">
               {grouped.map((g) => (
                 <div key={g.category}>
-                  <p className="px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
+                  <p className="px-3 py-1 text-xs font-semibold text-ink-faint">
                     {g.category}
                   </p>
                   {g.entries.map((e) => (

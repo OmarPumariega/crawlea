@@ -149,7 +149,7 @@ function AutoTaskCard({
               ))}
             </ul>
           )}
-          <p className="font-mono text-[11px] text-ink-faint">
+          <p className=" text-[11px] text-ink-faint">
             Detectado el {new Date(todo.createdAt).toLocaleDateString("es-ES")}
             {todo.done && todo.completedAt
               ? ` · resuelta o superada por una auditoría más reciente el ${new Date(todo.completedAt).toLocaleDateString("es-ES")}`
@@ -222,7 +222,7 @@ function ManualTaskCard({
           <p className={cn("text-sm whitespace-pre-line", todo.done ? "text-ink-faint" : "text-ink-soft")}>
             {detail}
           </p>
-          <p className="font-mono text-[11px] text-ink-faint">
+          <p className=" text-[11px] text-ink-faint">
             Creada el {new Date(todo.createdAt).toLocaleDateString("es-ES")}
           </p>
         </div>
@@ -445,7 +445,7 @@ export default function TareasView({ projectId }: { projectId: string }) {
               <button
                 type="submit"
                 disabled={creating || !title.trim()}
-                className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong transition-colors disabled:opacity-50"
               >
                 {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                 Añadir tarea
@@ -566,7 +566,7 @@ export default function TareasView({ projectId }: { projectId: string }) {
                 type="button"
                 onClick={applyTemplates}
                 disabled={applying || selectedTpls.size === 0}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong transition-colors disabled:opacity-50"
               >
                 {applying && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 Añadir {selectedTpls.size > 0 ? `(${selectedTpls.size})` : ""}
@@ -645,7 +645,7 @@ export default function TareasView({ projectId }: { projectId: string }) {
         <>
           {autoTodos.length > 0 && (
             <div className="space-y-2">
-              <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
+              <h3 className="text-xs font-semibold text-ink-faint">
                 Hallazgos de auditoría ({autoTodos.length})
               </h3>
               <div className="space-y-2">
@@ -665,7 +665,7 @@ export default function TareasView({ projectId }: { projectId: string }) {
           {manualTodos.length > 0 && (
             <div className="space-y-2">
               {autoTodos.length > 0 && (
-                <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Tareas manuales</h3>
+                <h3 className="text-xs font-semibold text-ink-faint">Tareas manuales</h3>
               )}
               <div className="space-y-2">
                 {manualTodos.map((todo) => {

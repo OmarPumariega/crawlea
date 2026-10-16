@@ -405,7 +405,7 @@ export default async function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+                <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
                   <th className="py-2.5 pl-4 pr-3 font-medium rounded-tl-lg">Proyecto</th>
                   <th className="py-2.5 px-3 font-medium">Nota auditoría</th>
                   <th className="py-2.5 px-3 font-medium">Tendencia rank</th>

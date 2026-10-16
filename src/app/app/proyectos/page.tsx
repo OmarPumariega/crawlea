@@ -36,7 +36,7 @@ export default function ProjectsPage() {
         actions={
           <Link
             href="/app/proyectos/nuevo"
-            className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-xl hover:bg-brand-strong transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong transition-colors"
           >
             <Plus className="h-4 w-4" />
             Nuevo proyecto

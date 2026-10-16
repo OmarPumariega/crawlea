@@ -229,7 +229,7 @@ export default function RankVisibilityChart({ projectId, group }: { projectId: s
               <span className="inline-block h-0.5 w-4 border-t border-dashed" style={{ borderColor: POS_COLOR }} />
               Posición media
             </span>
-            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">· eje izq: nº keywords · eje der: posición</span>
+            <span className="text-xs font-semibold text-ink-faint">· eje izq: nº keywords · eje der: posición</span>
           </div>
         </>
       )}

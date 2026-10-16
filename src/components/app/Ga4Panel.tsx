@@ -223,7 +223,7 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+              <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
                 <th className="py-1.5 pr-3 font-medium">Página</th>
                 <th className="py-1.5 pr-3 font-medium text-right">Sesiones</th>
                 <th className="py-1.5 pr-3 font-medium text-right">Conv.</th>

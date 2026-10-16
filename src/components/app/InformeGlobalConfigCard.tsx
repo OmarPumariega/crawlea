@@ -158,7 +158,7 @@ export default function InformeGlobalConfigCard() {
                 type="button"
                 onClick={save}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-xs font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
               >
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
                 Guardar

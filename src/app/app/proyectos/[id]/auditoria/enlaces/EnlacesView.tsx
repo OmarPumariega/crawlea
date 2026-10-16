@@ -63,7 +63,7 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
         </p>
         <Link
           href={`/app/proyectos/${projectId}/auditoria`}
-          className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700"
+          className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong"
         >
           Ir a la pestaña Auditoría
         </Link>
@@ -86,7 +86,7 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
         title="Enlazado interno"
         description="PageRank interno calculado sobre el grafo de enlaces de la última auditoría — identifica qué URLs reciben más fuerza, cuáles están huérfanas y cuáles son hubs distribuidores."
       />
-      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
+      <p className="text-xs font-semibold text-ink-faint">
         {all.length} URLs analizadas · {data.totalExternalLinks} enlaces externos · auditoría del{" "}
         {new Date(data.auditDate).toLocaleDateString("es-ES")}
       </p>
@@ -154,7 +154,7 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
                     <td className="py-1.5 pl-2">
                       <div className="h-2 w-full bg-surface-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-brand-900 rounded-full"
+                          className="h-full bg-brand rounded-full"
                           style={{ width: `${widthPct}%` }}
                         />
                       </div>

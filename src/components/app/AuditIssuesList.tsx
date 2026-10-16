@@ -124,7 +124,7 @@ function IssueRow({ issue, pages }: { issue: string; pages: AuditPage[] }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-white/80 border-b border-line">
+                <tr className="text-left text-xs font-semibold text-ink-faint border-b border-line">
                   <th className="py-1.5 pr-3 font-medium">Página</th>
                   <th className="py-1.5 px-3 font-medium">Detalle</th>
                   <th className="py-1.5 pl-3 font-medium w-8" />
@@ -135,7 +135,7 @@ function IssueRow({ issue, pages }: { issue: string; pages: AuditPage[] }) {
                   const detail = issueDetail(issue, page);
                   return (
                     <tr key={page.id} className="border-b border-line last:border-0">
-                      <td className="py-1.5 pr-3 font-mono text-xs break-all max-w-xs">
+                      <td className="py-1.5 pr-3 text-xs break-all max-w-xs">
                         <UrlLink url={page.url} />
                       </td>
                       <td className="py-1.5 px-3 text-xs text-ink-soft break-all">{detail ?? "—"}</td>

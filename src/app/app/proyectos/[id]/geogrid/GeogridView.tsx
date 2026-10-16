@@ -690,7 +690,7 @@ export default function GeogridView({
                   onClick={() => setGridSize(n)}
                   className={cn(
                     "px-3 py-2 rounded-lg text-sm font-medium border",
-                    gridSize === n ? "bg-brand-900 text-white border-brand-900" : "border-line text-ink-soft hover:bg-background"
+                    gridSize === n ? "bg-brand text-white border-brand" : "border-line text-ink-soft hover:bg-background"
                   )}
                 >
                   {n}×{n}
@@ -720,7 +720,7 @@ export default function GeogridView({
         <button
           type="submit"
           disabled={triggering || current?.status === "pending" || current?.status === "running"}
-          className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
         >
           {triggering ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
           Ejecutar geogrid
@@ -815,7 +815,7 @@ export default function GeogridView({
               }}
               className={cn(
                 "flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg border",
-                compareMode ? "bg-brand-900 text-white border-brand-900" : "text-ink-soft border-line hover:bg-background"
+                compareMode ? "bg-brand text-white border-brand" : "text-ink-soft border-line hover:bg-background"
               )}
             >
               <GitCompareArrows className="h-3.5 w-3.5" />
@@ -839,8 +839,8 @@ export default function GeogridView({
                   key={run.id}
                   className={cn(
                     "bg-surface rounded-lg border p-3 flex items-center gap-3",
-                    current?.id === run.id ? "border-brand-900" : "border-line",
-                    selected && compareMode && "ring-1 ring-brand-900"
+                    current?.id === run.id ? "border-brand" : "border-line",
+                    selected && compareMode && "ring-1 ring-brand"
                   )}
                 >
                   {compareMode && completed && (
@@ -848,7 +848,7 @@ export default function GeogridView({
                       onClick={() => toggleCompare(run.id)}
                       className={cn(
                         "h-5 w-5 rounded border flex items-center justify-center shrink-0",
-                        selected ? "bg-brand-900 border-brand-900 text-white" : "border-line"
+                        selected ? "bg-brand border-brand text-white" : "border-line"
                       )}
                       aria-label="Seleccionar para comparar"
                     >

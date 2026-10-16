@@ -581,7 +581,7 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
               disabled={scheduleBusy}
               className={cn(
                 "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors disabled:opacity-50",
-                auditFrequency === "monthly" ? "bg-brand-900" : "bg-surface-muted"
+                auditFrequency === "monthly" ? "bg-brand" : "bg-surface-muted"
               )}
             >
               {scheduleBusy ? (
@@ -599,7 +599,7 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
           <button
             onClick={handleTrigger}
             disabled={triggering || current?.status === "pending" || current?.status === "running"}
-            className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 shrink-0"
+            className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50 shrink-0"
           >
             {triggering ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             Ejecutar auditoría ahora
@@ -806,7 +806,7 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
                 onClick={() => loadDetail(run.id)}
                 className={cn(
                   "w-full text-left bg-surface rounded-lg border p-3 hover:bg-background transition-colors",
-                  current?.id === run.id ? "border-brand-900" : "border-line"
+                  current?.id === run.id ? "border-brand" : "border-line"
                 )}
               >
                 <div className="flex items-center justify-between">

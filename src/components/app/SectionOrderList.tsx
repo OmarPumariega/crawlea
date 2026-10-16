@@ -48,7 +48,7 @@ export default function SectionOrderList({
     if (keys.length === 0) return null;
     return (
       <div className="space-y-1.5">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint px-1">
+        <p className="text-xs font-semibold text-ink-faint px-1">
           {title} ({keys.length})
         </p>
         <ul className="space-y-1">

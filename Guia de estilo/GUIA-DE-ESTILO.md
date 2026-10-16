@@ -143,6 +143,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 - **Tarjeta destacada:** una por pantalla como máximo, fondo `brand-500` a `brand-700`, texto blanco.
 - **Tooltip:** fondo `brand-900`, texto blanco, radio 12 px.
 
+### Tablas y reglas que se rompen con facilidad
+- **Cabecera de tabla:** `bg-surface-muted`, texto `text-xs font-semibold text-ink-faint`, sin mayúsculas forzadas. Nunca `brand-900` ni texto blanco.
+- **Un solo azul para acciones:** botones primarios y estados activos en `brand-500` (`bg-brand`, hover `brand-strong`). `brand-900` solo para tooltips y la tarjeta oscura destacada.
+- **Una sola tipografía:** Manrope en todo. El monoespaciado (`font-mono`) queda solo para código real (JSON-LD, diffs, claves y slugs); nunca para etiquetas, fechas o cifras.
+
 ## 6. Gráficos
 
 | Tipo | Regla |

@@ -173,7 +173,7 @@ function StructureTree({ nodes, depth }: { nodes: TreeNode[]; depth: number }) {
     <ul className={cn(depth > 0 && "pl-4 border-l border-line ml-1.5")}>
       {nodes.map((node) => (
         <li key={node.path} className="space-y-1.5">
-          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">{node.segment}</div>
+          <div className="text-xs font-semibold text-ink-faint">{node.segment}</div>
           {node.page && (
             <div className="ml-5 bg-surface border border-line rounded-xl p-3.5 space-y-2 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
               <p className="text-sm font-medium text-ink">{node.page.h1}</p>
@@ -185,9 +185,9 @@ function StructureTree({ nodes, depth }: { nodes: TreeNode[]; depth: number }) {
                 </ul>
               )}
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-mono text-[10px] uppercase tracking-wide text-ink-faint">{node.page.navLabel}</span>
+                <span className="text-xs font-semibold text-ink-faint">{node.page.navLabel}</span>
                 {node.page.keywords.map((k, i) => (
-                  <span key={i} className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-background text-ink-soft">{k}</span>
+                  <span key={i} className=" text-[10px] px-1.5 py-0.5 rounded-md bg-background text-ink-soft">{k}</span>
                 ))}
               </div>
             </div>
@@ -488,7 +488,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div>
               <h2 className="text-xl font-semibold tracking-tight text-ink">{current.name}</h2>
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint mt-2 tabular-nums">
+              <p className="text-xs font-semibold text-ink-faint mt-2 tabular-nums">
                 {current.keywords.length} keywords · {current.languageCode.toUpperCase()}/{current.locationCode} · {new Date(current.createdAt).toLocaleDateString("es-ES")}
               </p>
             </div>
@@ -520,7 +520,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         {editing && (
           <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
             <div className="space-y-1.5">
-              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Nombre del estudio</label>
+              <label className="block text-xs font-semibold text-ink-faint">Nombre del estudio</label>
               <input
                 type="text"
                 value={editName}
@@ -530,7 +530,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Notas</label>
+              <label className="block text-xs font-semibold text-ink-faint">Notas</label>
               <textarea
                 value={editNotes}
                 onChange={(e) => setEditNotes(e.target.value)}
@@ -541,7 +541,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Ubicación de la búsqueda</label>
+              <label className="block text-xs font-semibold text-ink-faint">Ubicación de la búsqueda</label>
               <div className="max-w-sm">
                 <LocationPicker value={editLocation} onChange={setEditLocation} />
               </div>
@@ -555,7 +555,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               <button
                 onClick={handleSaveStudy}
                 disabled={savingStudy}
-                className="flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-full px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
               >
                 {savingStudy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 Guardar
@@ -576,7 +576,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
           <h3 className="text-lg font-bold tracking-tight text-ink">Buscar keywords relacionadas</h3>
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[200px] space-y-1.5">
-              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Keyword semilla</label>
+              <label className="block text-xs font-semibold text-ink-faint">Keyword semilla</label>
               <input
                 type="text"
                 value={seed}
@@ -587,7 +587,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Nº resultados</label>
+              <label className="block text-xs font-semibold text-ink-faint">Nº resultados</label>
               <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
                 {LIMITS.map((n) => (
                   <button
@@ -609,7 +609,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
             <button
               onClick={handleSearch}
               disabled={searching}
-              className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-full px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
             >
               {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
               Buscar
@@ -624,7 +624,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
           {suggestions.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">{suggestions.length} sugerencias</p>
+                <p className="text-xs font-semibold text-ink-faint">{suggestions.length} sugerencias</p>
                 <button
                   onClick={() => addItems(suggestions)}
                   className="flex items-center gap-1 text-xs font-medium text-brand hover:text-brand-strong"
@@ -635,7 +635,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               <div className="max-h-80 overflow-auto rounded-xl border border-line">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+                    <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
                       <th className="py-2.5 px-3 pl-4 font-medium rounded-tl-lg">Keyword</th>
                       <th className="py-2.5 px-3 font-medium w-20">Volumen</th>
                       <th className="py-2.5 px-3 font-medium w-14">Tend.</th>
@@ -717,7 +717,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                 onChange={(e) => setPasteText(e.target.value)}
                 rows={5}
                 placeholder={"una keyword por línea"}
-                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors font-mono"
+                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
               <button
                 onClick={handleResolve}
@@ -757,7 +757,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
             <div className="overflow-x-auto rounded-xl border border-line">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+                  <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
                     <th className="py-2.5 px-3 pl-4 font-medium rounded-tl-lg">Keyword</th>
                     <th className="py-2.5 px-3 font-medium">Volumen</th>
                     <th className="py-2.5 px-3 font-medium">Tend.</th>
@@ -854,7 +854,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
             <button
               onClick={handleGenerateStructure}
               disabled={generatingStructure || current.keywords.length === 0}
-              className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50 shrink-0"
+              className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-full px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50 shrink-0"
             >
               {generatingStructure ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {current.structure ? "Regenerar estructura" : "Generar estructura de URLs"}
@@ -870,7 +870,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
 
           {tree.length > 0 ? (
             <div className="pt-2">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint mb-3">
+              <p className="text-xs font-semibold text-ink-faint mb-3">
                 Generada con {current.structureModel} · {new Date(current.updatedAt).toLocaleString("es-ES")}
               </p>
               <StructureTree nodes={tree} depth={0} />
@@ -933,7 +933,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                       <button
                         onClick={handleListSave}
                         disabled={listSaving}
-                        className="inline-flex items-center gap-1.5 bg-brand text-white text-xs font-medium rounded-xl px-3 py-1.5 hover:bg-brand-strong transition-colors disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 bg-brand text-white text-xs font-medium rounded-full px-3 py-1.5 hover:bg-brand-strong transition-colors disabled:opacity-50"
                       >
                         {listSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Guardar"}
                       </button>
@@ -1020,7 +1020,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         <button
           type="submit"
           disabled={creating}
-          className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-full px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50"
         >
           {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           Crear

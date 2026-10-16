@@ -100,7 +100,7 @@ export default function GoogleConnectionCard({
           </p>
           <a
             href="/api/google/oauth/authorize"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong"
           >
             Conectar con Google
           </a>

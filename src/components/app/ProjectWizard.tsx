@@ -657,7 +657,7 @@ export default function ProjectWizard({ initialDomain = "" }: { initialDomain?: 
                 type="button"
                 onClick={goNext}
                 disabled={saving || (step === 0 && !canContinueStep0)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
               >
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 Continuar <ArrowRight className="h-4 w-4" />
@@ -667,7 +667,7 @@ export default function ProjectWizard({ initialDomain = "" }: { initialDomain?: 
                 type="button"
                 onClick={finish}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                 Crear y lanzar

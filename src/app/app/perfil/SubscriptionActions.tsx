@@ -50,7 +50,7 @@ export default function SubscriptionActions({ hasCustomer, paid, pagoOk = false,
           href="/precios"
           data-track="upgrade_click"
           data-track-location="perfil"
-          className="rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong"
+          className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong"
         >
           Mejorar plan
         </Link>

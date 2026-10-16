@@ -291,7 +291,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                   className={cn(
                     "px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
                     result === s.result
-                      ? "bg-brand-900 text-white border-brand-900"
+                      ? "bg-brand text-white border-brand"
                       : "border-line text-ink-soft hover:bg-background"
                   )}
                   title={new Date(s.updatedAt).toLocaleDateString("es-ES")}
@@ -345,7 +345,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
             Coste: ~0,002 $ (gratis si rank tracking ya consultó esa keyword).
           </p>
           <button type="submit" disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50">
+            className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             Analizar
           </button>
@@ -471,7 +471,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                     Añadir a Keywords
                   </button>
                   <button onClick={sendToContent}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand text-white text-xs font-medium rounded-full hover:bg-brand-strong"
                     title="Llevar estos temas/términos al generador de contenido como guía de cobertura">
                     <Send className="h-3.5 w-3.5" />
                     Usar en Contenido →
@@ -572,7 +572,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
               {showTerms && (
                 <div className="overflow-x-auto mt-3">
                   <table className="w-full text-sm">
-                    <thead><tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+                    <thead><tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
                       <th className="py-2 pr-4 font-medium">Término</th>
                       <th className="py-2 pr-4 font-medium">TF-IDF</th>
                       <th className="py-2 font-medium">Nº docs</th>
@@ -581,7 +581,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                       {result.terms.map((t) => (
                         <tr key={t.term} className="border-b border-line last:border-0">
                           <td className="py-2 pr-4 text-ink font-medium">{t.term}</td>
-                          <td className="py-2 pr-4 text-ink-soft font-mono text-xs">{t.tfidf}</td>
+                          <td className="py-2 pr-4 text-ink-soft text-xs">{t.tfidf}</td>
                           <td className="py-2 text-ink-soft">{t.docs}</td>
                         </tr>
                       ))}

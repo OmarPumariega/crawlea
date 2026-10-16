@@ -83,7 +83,7 @@ function SortTh({
   const active = sort.key === col;
   return (
     <th
-      className={cn("py-2.5 px-3 font-medium text-right cursor-pointer select-none whitespace-nowrap", active ? "text-white" : "text-white/60 hover:text-white", className)}
+      className={cn("py-2.5 px-3 font-semibold text-right cursor-pointer select-none whitespace-nowrap", active ? "text-ink" : "text-ink-faint hover:text-ink", className)}
       onClick={() => onSort(col)}
     >
       <span className="inline-flex items-center gap-0.5">
@@ -311,7 +311,7 @@ export default function GscPanel({ projectId }: { projectId: string }) {
       </div>
 
       <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
-        <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint mb-3">Evolución (12 meses)</h4>
+        <h4 className="text-xs font-semibold text-ink-faint mb-3">Evolución (12 meses)</h4>
         <MonthlyChart points={data.timeseries} />
       </div>
 
@@ -320,7 +320,7 @@ export default function GscPanel({ projectId }: { projectId: string }) {
         <div className="grid md:grid-cols-2 gap-4">
           {data.byDevice.length > 0 && (
             <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
-              <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Por dispositivo</h4>
+              <h4 className="text-xs font-semibold text-ink-faint">Por dispositivo</h4>
               <div className="space-y-1.5">
                 {data.byDevice.map((d) => (
                   <div key={d.key} className="flex items-center justify-between gap-2 text-sm">
@@ -335,7 +335,7 @@ export default function GscPanel({ projectId }: { projectId: string }) {
           )}
           {data.byCountry.length > 0 && (
             <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
-              <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Por país (top 10)</h4>
+              <h4 className="text-xs font-semibold text-ink-faint">Por país (top 10)</h4>
               <div className="space-y-1.5">
                 {data.byCountry.slice(0, 10).map((c) => (
                   <div key={c.key} className="flex items-center justify-between gap-2 text-sm">
@@ -355,14 +355,14 @@ export default function GscPanel({ projectId }: { projectId: string }) {
         {/* Top queries */}
         <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
+            <h4 className="text-xs font-semibold text-ink-faint">
               Queries que traen tráfico ({data.topQueries.length})
             </h4>
             <button
               type="button"
               onClick={handleImport}
               disabled={importing || data.topQueries.length === 0}
-              className="inline-flex items-center gap-1 bg-brand text-white text-xs font-medium rounded-lg px-2.5 py-1 hover:bg-brand-strong disabled:opacity-50 transition-colors"
+              className="inline-flex items-center gap-1 bg-brand text-white text-xs font-medium rounded-full px-2.5 py-1 hover:bg-brand-strong disabled:opacity-50 transition-colors"
               title="Crea un estudio del Módulo 1 con las top queries reales"
             >
               {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
@@ -381,7 +381,7 @@ export default function GscPanel({ projectId }: { projectId: string }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+                <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
                   <th className="py-1.5 pr-3 font-medium">Query</th>
                   <SortTh col="clicks" sort={qSort} onSort={toggleQSort} />
                   <SortTh col="impressions" sort={qSort} onSort={toggleQSort} />
@@ -421,13 +421,13 @@ export default function GscPanel({ projectId }: { projectId: string }) {
 
         {/* Top pages */}
         <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
-          <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
+          <h4 className="text-xs font-semibold text-ink-faint">
             Páginas que más trafican ({data.topPages.length})
           </h4>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+                <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
                   <th className="py-1.5 pr-3 font-medium">Página</th>
                   <SortTh col="clicks" sort={pSort} onSort={togglePSort} />
                   <SortTh col="impressions" sort={pSort} onSort={togglePSort} />

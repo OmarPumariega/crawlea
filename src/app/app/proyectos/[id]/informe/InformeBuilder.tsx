@@ -424,7 +424,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
         {node.page ? (
           <>
             <span className="text-ink">{node.page.h1 || node.page.navLabel}</span>
-            <span className="text-ink-faint font-mono text-xs ml-2">/{node.path}</span>
+            <span className="text-ink-faint text-xs ml-2">/{node.path}</span>
             {node.volume > 0 && <span className="text-ink-faint text-xs ml-2">· vol. {node.volume}</span>}
           </>
         ) : (
@@ -1013,7 +1013,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
         <div className="bg-surface rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
           <div className="flex items-center justify-between gap-3 mb-3">
             <h3 className="text-lg font-bold tracking-tight text-ink">Secciones del informe</h3>
-            <button type="button" onClick={save} disabled={saving} className="shrink-0 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50">
+            <button type="button" onClick={save} disabled={saving} className="shrink-0 bg-brand text-white text-sm font-medium rounded-full px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50">
               {saving ? "Guardando…" : "Guardar configuración"}
             </button>
           </div>

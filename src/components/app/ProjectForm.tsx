@@ -256,7 +256,7 @@ export default function ProjectForm({
       <button
         type="submit"
         disabled={submitting}
-        className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
       >
         {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
         {submitLabel}

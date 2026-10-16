@@ -140,7 +140,7 @@ function OnPageReportDetail({ analysis }: { analysis: OnPageAnalysisData }) {
           <ul className="space-y-0.5">
             {htagLevels.map((level) => (
               <li key={level} className="flex items-start gap-1.5">
-                <span className="text-[10px] font-mono px-1 rounded bg-surface-muted text-ink-soft shrink-0 mt-0.5 uppercase">{level}</span>
+                <span className="text-[10px] px-1 rounded bg-surface-muted text-ink-soft shrink-0 mt-0.5 uppercase">{level}</span>
                 <span className="text-ink-soft">
                   {(htags[level] ?? []).join("  ·  ") || <span className="text-ink-faint">—</span>}
                 </span>
@@ -931,7 +931,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+                <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
                   <th className="py-1.5 pr-2 font-medium">Dominio</th>
                   <th className="py-1.5 px-2 font-medium text-right">Tráfico</th>
                   <th className="py-1.5 px-2 font-medium text-right">Keywords</th>
@@ -979,7 +979,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
           <button
             onClick={() => data?.projectDomain && handleAnalyze(data.projectDomain)}
             disabled={!data?.projectDomain || analyzingDomain === data?.projectDomain}
-            className="flex items-center gap-2 px-3 py-1.5 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-1.5 bg-brand text-white text-xs font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
             title={`Coste estimado ${fmtCredits(analyzeCost)}`}
           >
             {analyzingDomain === data?.projectDomain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
@@ -1014,7 +1014,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
             className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
         </div>
-        <button type="submit" className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700">
+        <button type="submit" className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong">
           <Plus className="h-4 w-4" /> Añadir
         </button>
       </form>

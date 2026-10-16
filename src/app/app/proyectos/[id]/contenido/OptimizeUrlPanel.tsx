@@ -191,7 +191,7 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
         <button
           type="submit"
           disabled={loading || !url.trim()}
-          className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
           Optimizar
@@ -286,7 +286,7 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
                   onClick={() => setRun(h)}
                   className={cn(
                     "w-full text-left bg-surface rounded-lg border p-3 hover:bg-background transition-colors",
-                    run?.id === h.id ? "border-brand-900" : "border-line"
+                    run?.id === h.id ? "border-brand" : "border-line"
                   )}
                 >
                   <div className="flex items-center justify-between">
