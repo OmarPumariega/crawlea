@@ -27,8 +27,12 @@ export default function RootLayout({
   return (
     // suppressHydrationWarning: next-themes muta el atributo data-theme de
     // <html> antes del primer pintado para evitar el flash de tema equivocado.
-    <html lang="es" suppressHydrationWarning>
-      <body className={manrope.variable}>
+    // La variable de la fuente va en <html> (no en <body>): crawlea.css resuelve
+    // --font-sans → var(--font-manrope) en :root, y las variables CSS no suben
+    // de hijos a padres — en <body> la resolución en raíz falla y toda la app
+    // caería a la fuente por defecto del navegador en vez de a Manrope.
+    <html lang="es" className={manrope.variable} suppressHydrationWarning>
+      <body>
         <ThemeProvider
           attribute="data-theme"
           defaultTheme="system"
