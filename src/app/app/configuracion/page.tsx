@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
-import { requireSession } from "@/lib/auth-guards";
+import { requireSession, isAdmin } from "@/lib/auth-guards";
 import GoogleConnectionCard from "@/components/app/GoogleConnectionCard";
 import ApiSettingsCard from "@/components/app/ApiSettingsCard";
 import InformeGlobalConfigCard from "@/components/app/InformeGlobalConfigCard";
@@ -25,6 +25,8 @@ export default async function ConfiguracionPage({
   const params = await searchParams;
   const session = await requireSession();
   if (!session) notFound();
+  // Claves de API de la plataforma: solo admin. El cliente gestiona Google en su perfil.
+  if (!isAdmin(session)) redirect("/app/perfil");
   // La conexión de Google es por usuario: aquí se muestra la del usuario
   // autenticado (esta página queda como config de plataforma en Fase 2; el
   // flujo de conexión vive en /app/perfil).

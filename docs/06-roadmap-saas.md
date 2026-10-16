@@ -137,6 +137,7 @@ por ID → 404, config de plataforma → 403, 2º proyecto → 402. `tsc` y `bui
 
 - **Planes** (`src/lib/plans.ts`): Gratis 0 € (1 proyecto), **Basic 9 €** (3 proyectos),
   **Pro 25 €** (10 proyectos), IVA incluido. Se eliminó el plan Business.
+- **Plan interno `owner`** (`oculto`, sin límites ni créditos): cuenta personal del propietario; no sale en precios (`PUBLIC_PLANS`) y lo asigna el admin (marca `planOverride`). La cuenta admin queda solo para administrar.
 - **Créditos** (`src/lib/credits.ts`): el cliente nunca ve céntimos ni coste por llamada,
   solo una bolsa mensual de créditos: **Gratis 100, Basic 600, Pro 2000** (`creditosMes`
   en `plans.ts`). 1 crédito = 0,002 $ de coste real de DataForSEO (`USD_PER_CREDIT`), así que

@@ -192,9 +192,15 @@ export default function AdminSidebar({
   const q = query.trim().toLowerCase();
   const filterModules = (mods: NavModule[]) =>
     q ? mods.filter((m) => m.label.toLowerCase().includes(q)) : mods;
+  // Configuración (claves de API de la plataforma) es solo del admin; al
+  // cliente, el consumo se le muestra como créditos, no como costes.
+  const isPlatformAdmin = session?.user?.role === "admin";
+  const baseItems = NAV_ITEMS.filter((i) => isPlatformAdmin || i.href !== "/app/configuracion").map((i) =>
+    !isPlatformAdmin && i.href === "/app/costes" ? { ...i, label: "Créditos" } : i
+  );
   const navItemsFiltered = q
-    ? NAV_ITEMS.filter((i) => i.label.toLowerCase().includes(q))
-    : NAV_ITEMS;
+    ? baseItems.filter((i) => i.label.toLowerCase().includes(q))
+    : baseItems;
   const navFiltered = nav
     ? {
         top: filterModules(nav.top),

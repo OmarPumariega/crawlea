@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 // props/contexto — ambos lo deducen de la URL.
 export function useProjectIdFromPath(): string | null {
   const pathname = usePathname();
-  const m = pathname?.match(/^\/admin\/proyectos\/([^/]+)(?:\/|$)/);
-  return m ? m[1] : null;
+  const m = pathname?.match(/^\/app\/proyectos\/([^/]+)(?:\/|$)/);
+  // /app/proyectos/nuevo no es un proyecto.
+  return m && m[1] !== "nuevo" ? m[1] : null;
 }
