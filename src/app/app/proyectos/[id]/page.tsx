@@ -13,8 +13,29 @@ export default async function ProjectDetailPage({
 
   const hours = project.hours as { text?: string } | null;
 
+  // Resumen del proyecto: datos ya guardados (sin coste), para ver su estado de un vistazo.
+  const [lastAudit, rankCount, studyCount, competitorCount, openTasks] = await Promise.all([
+    prisma.auditRun.findFirst({
+      where: { projectId: id, status: "completed", overallScore: { not: null } },
+      orderBy: { triggeredAt: "desc" },
+      select: { overallScore: true, triggeredAt: true },
+    }),
+    prisma.rankKeyword.count({ where: { projectId: id } }),
+    prisma.keyword.count({ where: { study: { projectId: id } } }),
+    prisma.competitor.count({ where: { projectId: id } }),
+    prisma.todoItem.count({ where: { projectId: id, done: false } }),
+  ]);
+
   return (
     <ProjectEditView
+      summary={{
+        auditScore: lastAudit?.overallScore ?? null,
+        auditDate: lastAudit?.triggeredAt.toISOString() ?? null,
+        rankCount,
+        studyCount,
+        competitorCount,
+        openTasks,
+      }}
       project={{
         id: project.id,
         name: project.name,

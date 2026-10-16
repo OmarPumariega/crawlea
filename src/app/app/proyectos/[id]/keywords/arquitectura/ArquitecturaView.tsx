@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import * as Select from "@radix-ui/react-select";
-import { Loader2, ChevronDown, Sparkles, GitFork, RefreshCw } from "lucide-react";
+import { Loader2, ChevronDown, GitFork, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/app/PageHeader";
 import { normalizeKeyword } from "@/lib/keywords/normalize";
 import { buildStructureTree, type StructureTreeNode } from "@/lib/keywords/structure-tree";
@@ -184,9 +184,7 @@ export default function ArquitecturaView({
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : study.structure ? (
                 <RefreshCw className="h-4 w-4" />
-              ) : (
-                <Sparkles className="h-4 w-4" />
-              )}
+              ) : null}
               {study.structure ? "Regenerar estructura" : "Generar estructura"}
             </button>
           )}

@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Sparkles, XCircle, GitCompareArrows, Check, MapPin, Star, MousePointerClick, Trash2, Search, Send, Trophy } from "lucide-react";
+import { Loader2, XCircle, GitCompareArrows, Check, MapPin, Star, MousePointerClick, Trash2, Search, Send, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import StatTile from "@/components/ui/StatTile";
+import Modal from "@/components/app/Modal";
+import { RadialGauge } from "@/components/ui/charts";
 import { geogridCostUsd, geogridBusinessKeywordsCostUsd } from "@/lib/dataforseo/pricing";
 import { fmtCredits } from "@/lib/credits";
 import { importKeywordsToDefaultStudy } from "@/lib/keywords/client-import";
@@ -406,6 +409,7 @@ export default function GeogridView({
   const [businessName, setBusinessName] = useState(initialBusinessName);
   const [gbpName, setGbpName] = useState(initialGbpName);
   const [gbpPlaceId, setGbpPlaceId] = useState(initialGbpPlaceId);
+  const [fichaOpen, setFichaOpen] = useState(false);
 
   const [keyword, setKeyword] = useState("");
   const [gridSize, setGridSize] = useState(5);
@@ -594,16 +598,131 @@ export default function GeogridView({
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Módulo · SEO Local"
-        title="Geogrid Local SEO"
-        description="{Mapa de calor del posicionamiento del negocio en Google Maps. Cada geogrid se guarda como           una instantánea independiente — lanza uno hoy y otro dentro de un mes para ver la evolución           (y compararlos lado a lado). Una rejilla 5×5 son 25 consultas a Maps SERP (~75s).}"
+        eyebrow="SEO local · Geogrid"
+        title="Geogrid"
+        description="Mapa de calor de tu posición en Google Maps, punto a punto alrededor del negocio. Cada escaneo se guarda: lanza uno hoy y otro en un mes para ver la evolución y compararlos."
       />
 
+      {/* Nuevo escaneo: todo lo que hace falta para lanzarlo, arriba y en una línea */}
+      <form onSubmit={handleTrigger} className="rounded-[20px] border border-line bg-surface p-4 shadow-card">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setFichaOpen(true)}
+            className="flex min-w-0 max-w-[260px] items-center gap-2 rounded-full border border-line bg-surface-muted px-3.5 py-2 text-left text-sm hover:border-brand-100"
+            title="Ficha de Google del negocio que se busca en cada punto"
+          >
+            <MapPin className="h-4 w-4 shrink-0 text-brand" />
+            <span className="min-w-0">
+              <span className="block truncate font-semibold text-ink">{gbpName || businessName || "Elige la ficha"}</span>
+              <span className="block text-[11px] text-ink-faint">{gbpPlaceId ? "Ficha verificada · cambiar" : "Ficha del negocio · elegir"}</span>
+            </span>
+          </button>
+          <input
+            type="text"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="Keyword a medir, p. ej. «dentista oviedo»"
+            required
+            className="min-w-[220px] flex-1 rounded-full border border-line bg-surface px-4 py-2 text-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15"
+          />
+          <div className="inline-flex rounded-full bg-surface-muted p-1" title="Tamaño de la rejilla">
+            {GRID_OPTIONS.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setGridSize(n)}
+                className={cn("rounded-full px-3 py-1 text-sm font-semibold", gridSize === n ? "bg-surface text-ink shadow-sm" : "text-ink-soft")}
+              >
+                {n}×{n}
+              </button>
+            ))}
+          </div>
+          <label className="flex items-center gap-2 text-sm text-ink-soft" title="Radio de la rejilla alrededor del negocio">
+            Radio
+            <input
+              type="number"
+              min={0.5}
+              max={50}
+              step={0.5}
+              value={radiusKm}
+              onChange={(e) => setRadiusKm(Number(e.target.value))}
+              className="w-20 rounded-full border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15"
+            />
+            km
+          </label>
+          <button
+            type="submit"
+            disabled={triggering || current?.status === "pending" || current?.status === "running"}
+            className="ml-auto flex items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
+          >
+            {triggering && <Loader2 className="h-4 w-4 animate-spin" />}
+            Ejecutar geogrid <span className="font-normal text-white/70">{fmtCredits(geogridCostUsd(gridSize))}</span>
+          </button>
+        </div>
+        {error && <p className="mt-3 rounded-lg bg-alert-tint px-3 py-2 text-sm text-alert-ink">{error}</p>}
+      </form>
+
+      {(current?.status === "pending" || current?.status === "running") && (
+        <div className="flex items-center gap-2 text-sm bg-background text-ink-soft px-3 py-2 rounded-lg">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          {current.status === "pending"
+            ? "En cola, empezará en breve (el cron lo procesa cada 60s)..."
+            : `Rastreando rejilla ${current.gridSize}×${current.gridSize} (${current.keyword})...`}
+        </div>
+      )}
+
+      {current?.status === "failed" && (
+        <div className="flex items-center gap-2 text-sm bg-alert-tint text-alert-ink px-3 py-2 rounded-lg">
+          <XCircle className="h-4 w-4 shrink-0" />
+          {current.errorMessage ?? "El geogrid ha fallado."}
+        </div>
+      )}
+
+
+      <Modal open={fichaOpen} title="Ficha de Google del negocio" onClose={() => setFichaOpen(false)}>
+        <GbpPicker
+          projectId={projectId}
+          currentGbpName={gbpName}
+          currentPlaceId={gbpPlaceId}
+          onApplied={(c) => {
+            handleGbpApplied(c);
+            setFichaOpen(false);
+          }}
+        />
+      </Modal>
+
+      {/* Resumen del escaneo que estás viendo */}
+      {current?.status === "completed" && current.points && (() => {
+        const total = current.gridSize * current.gridSize;
+        const found = current.foundCount ?? 0;
+        const top3 = current.points.filter((pt) => pt.position !== null && pt.position <= 3).length;
+        return (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatTile highlight label="Posición media" value={current.averagePosition !== null ? `#${current.averagePosition}` : "—"} hint={`«${current.keyword}»`} />
+            <div className="flex items-center justify-between gap-3 rounded-[20px] border border-line bg-surface p-5 shadow-card">
+              <div>
+                <p className="text-[13px] font-semibold text-ink-soft">Puntos donde apareces</p>
+                <p className="mt-2 text-[34px] font-extrabold leading-none tracking-[-0.03em] tabular-nums text-ink">
+                  {found}<span className="text-xl font-bold text-ink-faint"> / {total}</span>
+                </p>
+                <p className="mt-2 text-xs text-ink-faint">en la rejilla {current.gridSize}×{current.gridSize}</p>
+              </div>
+              <RadialGauge value={(found / Math.max(1, total)) * 100} size={72} />
+            </div>
+            <StatTile label="Puntos en top 3" value={top3} hint="donde sales en el pack local" />
+            <StatTile label="Escaneo" value={<span className="text-2xl">{new Date(current.triggeredAt).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</span>} hint={`radio ${current.radiusKm} km`} />
+          </div>
+        );
+      })()}
+
+      <div className="grid items-start gap-4 xl:grid-cols-3">
+        <div className="space-y-4 xl:col-span-2">
       {/* Mapa real (Leaflet/OSM), siempre visible desde el centro del negocio
           aunque todavía no haya ningún geogrid ejecutado, con un círculo
           numerado por punto (mismo lenguaje visual que LocalFalcon/DinoRank)
           y un panel lateral con el pack local real del punto seleccionado. */}
-      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
+      <div className="space-y-3 rounded-[20px] border border-line bg-surface p-5 shadow-card">
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-ink-soft" />
           <div>
@@ -639,7 +758,7 @@ export default function GeogridView({
                 onSelectPoint={(p) => setSelectedPoint({ row: p.row, col: p.col })}
               />
             </div>
-            <div className="lg:w-72 shrink-0 lg:border-l lg:border-line lg:pl-4">
+            <div className="lg:w-72 shrink-0 lg:border-l lg:border-line lg:pl-4 lg:max-h-[440px] lg:overflow-y-auto">
               <PointRankingPanel point={selectedPointData} projectId={projectId} runId={current?.id ?? null} />
             </div>
           </div>
@@ -658,89 +777,6 @@ export default function GeogridView({
 
       {current?.status === "completed" && current.points && !canCompare && (
         <GridWinnersSummary points={current.points} gridSize={current.gridSize} />
-      )}
-
-      <form onSubmit={handleTrigger} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
-        <GbpPicker
-          projectId={projectId}
-          currentGbpName={gbpName}
-          currentPlaceId={gbpPlaceId}
-          onApplied={handleGbpApplied}
-        />
-
-        <div className="space-y-1">
-          <label className="block text-sm font-medium text-ink-soft">Keyword</label>
-          <input
-            type="text"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            placeholder="dentista madrid"
-            required
-            className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-ink-soft">Rejilla</label>
-            <div className="flex gap-2">
-              {GRID_OPTIONS.map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setGridSize(n)}
-                  className={cn(
-                    "px-3 py-2 rounded-lg text-sm font-medium border",
-                    gridSize === n ? "bg-brand text-white border-brand" : "border-line text-ink-soft hover:bg-background"
-                  )}
-                >
-                  {n}×{n}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-ink-soft">Radio (km)</label>
-            <input
-              type="number"
-              min={0.5}
-              max={50}
-              step={0.5}
-              value={radiusKm}
-              onChange={(e) => setRadiusKm(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-            />
-          </div>
-        </div>
-        <p className="text-xs text-ink-faint">
-          {gridSize * gridSize} consultas · coste estimado {fmtCredits(geogridCostUsd(gridSize))} por escaneo
-        </p>
-
-        {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={triggering || current?.status === "pending" || current?.status === "running"}
-          className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
-        >
-          {triggering ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          Ejecutar geogrid
-        </button>
-      </form>
-
-      {(current?.status === "pending" || current?.status === "running") && (
-        <div className="flex items-center gap-2 text-sm bg-background text-ink-soft px-3 py-2 rounded-lg">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          {current.status === "pending"
-            ? "En cola, empezará en breve (el cron lo procesa cada 60s)..."
-            : `Rastreando rejilla ${current.gridSize}×${current.gridSize} (${current.keyword})...`}
-        </div>
-      )}
-
-      {current?.status === "failed" && (
-        <div className="flex items-center gap-2 text-sm bg-alert-tint text-alert-ink px-3 py-2 rounded-lg">
-          <XCircle className="h-4 w-4 shrink-0" />
-          {current.errorMessage ?? "El geogrid ha fallado."}
-        </div>
       )}
 
       {canCompare && runBefore && runAfter && (
@@ -804,9 +840,11 @@ export default function GeogridView({
         </div>
       )}
 
-      <div className="space-y-3">
+        </div>
+        <div className="space-y-4">
+      <div className="space-y-3 rounded-[20px] border border-line bg-surface p-5 shadow-card">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-ink">Histórico</h3>
+          <h3 className="text-base font-bold text-ink">Histórico</h3>
           {history.filter((r) => r.status === "completed").length >= 2 && (
             <button
               onClick={() => {
@@ -829,7 +867,7 @@ export default function GeogridView({
         ) : history.length === 0 ? (
           <p className="text-sm text-ink-soft">Todavía no se ha ejecutado ningún geogrid.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
             {history.map((run) => {
               const delta = avgDelta(run);
               const selected = compareIds.includes(run.id);
@@ -860,7 +898,7 @@ export default function GeogridView({
                       <span className="text-sm text-ink truncate">{run.keyword}</span>
                       {delta && (
                         <span className={cn("text-[11px] font-medium", delta.improved ? "text-accent-ink" : delta.worsened ? "text-alert-ink" : "text-ink-faint")}>
-                          {delta.improved ? "▼" : delta.worsened ? "▲" : "="}{delta.diff}
+                          {delta.improved ? "▼" : delta.worsened ? "▲" : "="}{Number(delta.diff.toFixed(1))}
                         </span>
                       )}
                     </div>
@@ -912,6 +950,8 @@ export default function GeogridView({
         {compareMode && compareIds.length < 2 && (
           <p className="text-xs text-ink-faint">Selecciona 2 geogrids de la misma keyword y rejilla para compararlos.</p>
         )}
+      </div>
+        </div>
       </div>
     </div>
   );

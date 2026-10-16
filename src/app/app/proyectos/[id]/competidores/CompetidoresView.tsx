@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useState } from "react";
 import {
-  Loader2, Sparkles, Plus, Trash2, Target, TrendingUp, AlertTriangle,
+  Loader2, Plus, Trash2, Target, TrendingUp, AlertTriangle,
   ExternalLink, ChevronDown, ChevronUp, ArrowDownToLine, Crosshair, FileSearch,
   ChevronRight,
 } from "lucide-react";
@@ -621,6 +621,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   // Detalle completo de un dominio: id de competidor o "__own" para el propio.
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
   const [removing, setRemoving] = useState(false);
   // Series de tendencia agrupadas por dominio (proyecto + competidores). Una
   // sola llamada a /tendencia (sin ?domain) alimenta TODOS los sparklines en
@@ -693,6 +694,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       return;
     }
     setAddDomain("");
+    setAddOpen(false);
     load();
   }
 
@@ -950,6 +952,14 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
         eyebrow="Módulo · Competidores"
         title="Competidores"
         description="Espía el tráfico orgánico estimado y las keywords de cualquier dominio, y descubre el content gap: keywords por las que ranquean y tú no, con CPC, dificultad y el snippet con el que posicionan."
+        actions={
+          <button
+            onClick={() => setAddOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-strong"
+          >
+            <Plus className="h-4 w-4" /> Añadir competidor
+          </button>
+        }
       />
 
       {/* Ajustes de la sesión en una sola barra: la ubicación se aplica a
@@ -959,7 +969,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
         aside={
           <>
             <span>Cada acción gasta:</span>
-            <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-ink-faint" /> Analizar <strong className="text-ink">{fmtCredits(analyzeCost)}</strong></span>
+            <span className="inline-flex items-center gap-1.5">Analizar <strong className="text-ink">{fmtCredits(analyzeCost)}</strong></span>
             <span className="inline-flex items-center gap-1.5"><Target className="h-3.5 w-3.5 text-ink-faint" /> Content gap <strong className="text-ink">{fmtCredits(gapCost)}</strong></span>
           </>
         }
@@ -1009,7 +1019,39 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       </div>
 
       {comparisonRows.length > 1 && (
-        <Section title="Comparativa frente a la competencia" description="Tráfico orgánico estimado y fuerza de cada dominio." flush>
+        <Section
+          title="Comparativa frente a la competencia"
+          description="Tráfico orgánico estimado y fuerza de cada dominio."
+          flush
+          actions={
+            <>
+          {data && data.competitors.length > 0 && (() => {
+              const pendingAnalyze = data.competitors.filter((c) => !hasUsefulSnapshot(c.snapshot)).length;
+              const pendingGap = data.competitors.filter((c) => !c.contentGap || c.contentGap.length === 0).length;
+              return (
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={handleAnalyzeAll}
+                    disabled={pendingAnalyze === 0 || bulkAnalyzing}
+                    className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs font-semibold text-ink-soft hover:bg-surface-muted disabled:opacity-50"
+                  >
+                    {bulkAnalyzing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                    {bulkAnalyzeProgress ? `Analizando ${bulkAnalyzeProgress.done}/${bulkAnalyzeProgress.total}…` : `Analizar todos${pendingAnalyze > 0 ? ` (${pendingAnalyze})` : ""}`}
+                  </button>
+                  <button
+                    onClick={handleGapAll}
+                    disabled={pendingGap === 0 || bulkGapping}
+                    className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs font-semibold text-ink-soft hover:bg-surface-muted disabled:opacity-50"
+                  >
+                    {bulkGapping ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
+                    {bulkGapProgress ? `Content gap ${bulkGapProgress.done}/${bulkGapProgress.total}…` : `Gap todos${pendingGap > 0 ? ` (${pendingGap})` : ""}`}
+                  </button>
+                </div>
+              );
+            })()}
+              </>
+          }
+        >
           <div className="overflow-x-auto">
             <table className="data-table">
               <thead>
@@ -1068,9 +1110,8 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       )}
 
       {/* Tu visibilidad + alta de competidores, lado a lado */}
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className="grid gap-4">
         <Section
-          className="xl:col-span-2"
           title={`Tu visibilidad${data?.projectDomain ? ` · ${data.projectDomain}` : ""}`}
           actions={
             <>
@@ -1085,7 +1126,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
               className="flex items-center gap-2 rounded-full bg-brand px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
               title={`Coste estimado ${fmtCredits(analyzeCost)}`}
             >
-              {analyzingDomain === data?.projectDomain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              {analyzingDomain === data?.projectDomain && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               Analizar <span className="font-normal text-white/70">{fmtCredits(analyzeCost)}</span>
             </button>
             </>
@@ -1137,45 +1178,6 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
           )}
         </Section>
 
-        <Section title="Añadir competidor" description="Espía a un dominio y compárate con él.">
-          <form onSubmit={handleAdd} className="flex items-center gap-2">
-            <input
-              type="text"
-              value={addDomain}
-              onChange={(e) => setAddDomain(e.target.value)}
-              placeholder="competidor.com"
-              required
-              className="min-w-0 flex-1 rounded-full border border-line bg-surface px-4 py-2 text-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15"
-            />
-            <button type="submit" className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong">
-              <Plus className="h-4 w-4" /> Añadir
-            </button>
-          </form>
-          {data && data.competitors.length > 0 && (() => {
-            const pendingAnalyze = data.competitors.filter((c) => !hasUsefulSnapshot(c.snapshot)).length;
-            const pendingGap = data.competitors.filter((c) => !c.contentGap || c.contentGap.length === 0).length;
-            return (
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  onClick={handleAnalyzeAll}
-                  disabled={pendingAnalyze === 0 || bulkAnalyzing}
-                  className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs font-semibold text-ink-soft hover:bg-surface-muted disabled:opacity-50"
-                >
-                  {bulkAnalyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                  {bulkAnalyzeProgress ? `Analizando ${bulkAnalyzeProgress.done}/${bulkAnalyzeProgress.total}…` : `Analizar todos${pendingAnalyze > 0 ? ` (${pendingAnalyze})` : ""}`}
-                </button>
-                <button
-                  onClick={handleGapAll}
-                  disabled={pendingGap === 0 || bulkGapping}
-                  className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs font-semibold text-ink-soft hover:bg-surface-muted disabled:opacity-50"
-                >
-                  {bulkGapping ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
-                  {bulkGapProgress ? `Content gap ${bulkGapProgress.done}/${bulkGapProgress.total}…` : `Gap todos${pendingGap > 0 ? ` (${pendingGap})` : ""}`}
-                </button>
-              </div>
-            );
-          })()}
-        </Section>
       </div>
 
       {/* Competidores: tarjetas compactas en rejilla */}
@@ -1262,7 +1264,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                   className="flex items-center gap-1.5 rounded-full bg-brand px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
                   title={`Analizar visibilidad · ${fmtCredits(analyzeCost)}`}
                 >
-                  {analyzingDomain === c.domain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  {analyzingDomain === c.domain && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                   Analizar
                 </button>
                 {gapCount > 0 ? (
@@ -1428,6 +1430,25 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
           </Modal>
         );
       })()}
+
+      <Modal open={addOpen} title="Añadir competidor" onClose={() => setAddOpen(false)}>
+        <div className="space-y-1">
+          <p className="text-sm text-ink-soft">Escribe el dominio de un competidor para seguirlo y compararte con él.</p>
+          <form onSubmit={handleAdd} className="flex items-center gap-2">
+            <input
+              type="text"
+              value={addDomain}
+              onChange={(e) => setAddDomain(e.target.value)}
+              placeholder="competidor.com"
+              required
+              className="min-w-0 flex-1 rounded-full border border-line bg-surface px-4 py-2 text-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15"
+            />
+            <button type="submit" className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong">
+              <Plus className="h-4 w-4" /> Añadir
+            </button>
+          </form>
+        </div>
+      </Modal>
 
       <ConfirmDialog
         open={confirmRemoveId !== null}

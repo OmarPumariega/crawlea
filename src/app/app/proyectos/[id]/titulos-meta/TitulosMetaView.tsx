@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Copy, Check, Sparkles, FileText } from "lucide-react";
+import { Loader2, Copy, Check, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import UrlLink from "@/components/app/UrlLink";
 import PageHeader from "@/components/app/PageHeader";
@@ -207,7 +207,7 @@ export default function TitulosMetaView({ projectId }: { projectId: string }) {
           disabled={loading}
           className="flex items-center justify-center gap-2 bg-brand text-white text-sm font-semibold rounded-full px-6 py-2.5 hover:bg-brand-strong disabled:opacity-50 transition-colors shrink-0"
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           Generar
         </button>
       </form>

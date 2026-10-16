@@ -28,6 +28,7 @@ import { rankMonthlyCostUsd } from "@/lib/dataforseo/pricing";
 import { downloadCsv } from "@/lib/csv";
 import RankVisibilityChart from "@/components/app/RankVisibilityChart";
 import { RadialGauge } from "@/components/ui/charts";
+import Modal from "@/components/app/Modal";
 import PageHeader from "@/components/app/PageHeader";
 import Pill from "@/components/app/Pill";
 import LocationPicker, { type LocationValue } from "@/components/app/LocationPicker";
@@ -197,6 +198,8 @@ function TrendIcon({ kw }: { kw: RankKeyword }) {
 }
 
 export default function RankView({ projectId }: { projectId: string }) {
+  const [addOpen, setAddOpen] = useState(false);
+  const [addTab, setAddTab] = useState<"escribir" | "estudio" | "programar">("escribir");
   const [keywords, setKeywords] = useState<RankKeyword[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -370,6 +373,7 @@ export default function RankView({ projectId }: { projectId: string }) {
     }
     setErrorFor("add", parts.join(" · "));
     setNewKeyword("");
+    setAddOpen(false);
     await loadKeywords();
   }
 
@@ -705,7 +709,19 @@ export default function RankView({ projectId }: { projectId: string }) {
       <PageHeader
         eyebrow="Módulo · Rank tracking"
         title="Rank Tracking"
-        description="Seguimiento de tus posiciones orgánicas en Google. &laquo;Comprobar ahora&raquo; es instantáneo; las frecuencias programadas las revisa el cron en segundo plano."
+        description="Seguimiento de tus posiciones orgánicas en Google, keyword a keyword y día a día."
+        actions={
+          <button
+            type="button"
+            onClick={() => {
+              setAddTab("escribir");
+              setAddOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-strong"
+          >
+            <Plus className="h-4 w-4" /> Añadir keywords
+          </button>
+        }
       />
 
       {/* Tabla tipo calendario */}
@@ -885,6 +901,16 @@ export default function RankView({ projectId }: { projectId: string }) {
               <Search className="h-5 w-5" />
             </span>
             <p className="text-sm text-ink-soft">Aún no sigues ninguna keyword para este proyecto.</p>
+            <button
+              type="button"
+              onClick={() => {
+                setAddTab("escribir");
+                setAddOpen(true);
+              }}
+              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-strong"
+            >
+              <Plus className="h-4 w-4" /> Añadir keywords
+            </button>
           </div>
         ) : filteredKeywords.length === 0 ? (
           <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] py-12 text-center">
@@ -1335,12 +1361,34 @@ export default function RankView({ projectId }: { projectId: string }) {
           <RankVisibilityChart projectId={projectId} group={visibilityGroup === "__all__" ? undefined : visibilityGroup} />
         </div>
       )}
-      {/* Alta de keywords (2/3) y ajustes de escaneo e importación (1/3), lado a lado */}
-      <div className="grid items-start gap-4 xl:grid-cols-3">
-      <div className="xl:col-span-2">
+      {/* Añadir keywords: escribirlas, traerlas de un estudio o programar el
+          escaneo, todo en un mismo sitio que se abre desde arriba. */}
+      <Modal open={addOpen} title="Añadir keywords al seguimiento" onClose={() => setAddOpen(false)} wide>
+        <div className="space-y-5">
+          <div className="inline-flex items-center gap-1 rounded-full bg-surface-muted p-1">
+            {([
+              ["escribir", "Escribir keywords"],
+              ["estudio", "Desde un estudio"],
+              ["programar", "Escaneo programado"],
+            ] as const).map(([k, label]) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setAddTab(k)}
+                className={cn(
+                  "rounded-full px-4 py-1.5 text-sm font-semibold transition-colors",
+                  addTab === k ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]" : "text-ink-soft hover:text-ink"
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {addTab === "escribir" && (
+            <>
       {/* Añadir keyword */}
-      <form onSubmit={handleAdd} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <form onSubmit={handleAdd} className="space-y-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className="space-y-1">
             <label className="block text-sm font-medium text-ink-soft">Keywords a seguir (una por línea)</label>
             <textarea
@@ -1439,14 +1487,67 @@ export default function RankView({ projectId }: { projectId: string }) {
         </p>
       </form>
 
-      </div>
-      <div className="space-y-4">
+            </>
+          )}
+          {addTab === "estudio" && (
+            studies.length > 0 ? (
+              <>
+      {/* Importar desde estudio */}
+      {studies.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-ink">Importar desde un estudio</h3>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[200px] space-y-1">
+              <label className="block text-xs font-medium text-ink-soft">Estudio (Módulo 1)</label>
+              <Select.Root value={importStudyId} onValueChange={setImportStudyId}>
+                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                  <Select.Value placeholder="Selecciona un estudio" />
+                  <Select.Icon><ChevronDown className="h-4 w-4 text-ink-faint" /></Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50 max-h-60">
+                    <Select.Viewport>
+                      {studies.map((s) => (
+                        <Select.Item key={s.id} value={s.id} className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-background">
+                          <Select.ItemText>{s.name} ({s._count.keywords})</Select.ItemText>
+                        </Select.Item>
+                      ))}
+                    </Select.Viewport>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
+            </div>
+            <button
+              type="button"
+              onClick={handleImport}
+              disabled={importing}
+              className="inline-flex items-center gap-2 border border-line bg-surface text-ink-soft text-sm rounded-xl px-3 py-2 hover:bg-background transition-colors disabled:opacity-50"
+            >
+              {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowDownToLine className="h-4 w-4" />}
+              Importar
+            </button>
+          </div>
+          {importStudy && (
+            <p className="text-xs text-ink-faint">
+              Importar {importStudy._count.keywords} keywords costará{" "}
+              <strong className="text-ink-soft">{fmtCredits(importBatchMonthly)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).
+            </p>
+          )}
+        </div>
+      )}
+              </>
+            ) : (
+              <p className="text-sm text-ink-soft">Aún no tienes estudios de keywords en este proyecto. Créalos en Investigación → Keywords.</p>
+            )
+          )}
+          {addTab === "programar" && (
+            <>
       {/* Escaneo programado del proyecto — antes vivía escondido dentro del
           formulario de alta; tarjeta propia para que sea fácil de encontrar
           y quede claro que es la palanca que sincroniza al mismo día TODAS
           las keywords con frecuencia automática del proyecto (ver
           src/lib/rank/job.ts). */}
-      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-ink-faint" />
           <h3 className="text-sm font-semibold text-ink">Escaneo programado del proyecto</h3>
@@ -1504,53 +1605,10 @@ export default function RankView({ projectId }: { projectId: string }) {
         )}
       </div>
 
-      {/* Importar desde estudio */}
-      {studies.length > 0 && (
-        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
-          <h3 className="text-sm font-semibold text-ink">Importar desde un estudio</h3>
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex-1 min-w-[200px] space-y-1">
-              <label className="block text-xs font-medium text-ink-soft">Estudio (Módulo 1)</label>
-              <Select.Root value={importStudyId} onValueChange={setImportStudyId}>
-                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
-                  <Select.Value placeholder="Selecciona un estudio" />
-                  <Select.Icon><ChevronDown className="h-4 w-4 text-ink-faint" /></Select.Icon>
-                </Select.Trigger>
-                <Select.Portal>
-                  <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50 max-h-60">
-                    <Select.Viewport>
-                      {studies.map((s) => (
-                        <Select.Item key={s.id} value={s.id} className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-background">
-                          <Select.ItemText>{s.name} ({s._count.keywords})</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-                  </Select.Content>
-                </Select.Portal>
-              </Select.Root>
-            </div>
-            <button
-              type="button"
-              onClick={handleImport}
-              disabled={importing}
-              className="inline-flex items-center gap-2 border border-line bg-surface text-ink-soft text-sm rounded-xl px-3 py-2 hover:bg-background transition-colors disabled:opacity-50"
-            >
-              {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowDownToLine className="h-4 w-4" />}
-              Importar
-            </button>
-          </div>
-          {importStudy && (
-            <p className="text-xs text-ink-faint">
-              Importar {importStudy._count.keywords} keywords costará{" "}
-              <strong className="text-ink-soft">{fmtCredits(importBatchMonthly)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).
-            </p>
+            </>
           )}
         </div>
-      )}
-
-
-      </div>
-      </div>
+      </Modal>
     </div>
   );
 }

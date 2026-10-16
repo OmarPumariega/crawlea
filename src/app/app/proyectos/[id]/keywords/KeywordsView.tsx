@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Loader2,
-  Sparkles,
   ChevronDown,
   Search,
   Plus,
@@ -25,6 +24,9 @@ import { downloadCsv } from "@/lib/csv";
 import LocationPicker, { type LocationValue } from "@/components/app/LocationPicker";
 import { resolveLocationName } from "@/lib/rank/locations";
 import { fmtCredits } from "@/lib/credits";
+import StatTile from "@/components/ui/StatTile";
+import Modal from "@/components/app/Modal";
+import { RadialGauge } from "@/components/ui/charts";
 
 type Keyword = {
   id: string;
@@ -202,6 +204,10 @@ function StructureTree({ nodes, depth }: { nodes: TreeNode[]; depth: number }) {
 export default function KeywordsView({ projectId }: { projectId: string }) {
   const [studies, setStudies] = useState<StudyListItem[]>([]);
   const [current, setCurrent] = useState<Study | null>(null);
+  // Tabla del estudio: búsqueda y paginación (los estudios importados tienen cientos de filas).
+  const [kwSearch, setKwSearch] = useState("");
+  const [kwShown, setKwShown] = useState(50);
+  const [newOpen, setNewOpen] = useState(false);
   const [loadingStudies, setLoadingStudies] = useState(true);
 
   // Nuevo estudio
@@ -361,6 +367,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
     if (!res.ok) return;
     setNewName("");
     setCurrent(data);
+    setNewOpen(false);
     loadStudies();
   }
 
@@ -380,6 +387,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
       return;
     }
     setCurrent(data);
+    setNewOpen(false);
     loadStudies();
   }
 
@@ -515,6 +523,53 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
             <p className="text-sm text-ink-soft mt-2 whitespace-pre-wrap">{current.notes}</p>
           )}
         </div>
+
+        {/* Resumen del estudio */}
+        {current.keywords.length > 0 && (() => {
+          const kws = current.keywords;
+          const totalVolume = kws.reduce((sum, k) => sum + (k.searchVolume ?? 0), 0);
+          const ranked = kws.filter((k) => k.rankPosition != null).length;
+          const intents = ["informacional", "transaccional", "mixta", "navegacional"].map((i) => ({ i, n: kws.filter((k) => k.intent === i).length }));
+          const withIntent = intents.reduce((a, b) => a + b.n, 0);
+          const INTENT_BAR: Record<string, string> = { informacional: "bg-brand-300", transaccional: "bg-brand-500", mixta: "bg-brand-200", navegacional: "bg-brand-100" };
+          return (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <StatTile highlight label="Keywords" value={kws.length.toLocaleString("es-ES")} hint="en este estudio" />
+              <StatTile label="Volumen total" value={totalVolume >= 1000 ? `${(totalVolume / 1000).toLocaleString("es-ES", { maximumFractionDigits: 1 })}k` : totalVolume} hint="búsquedas al mes" />
+              <div className="flex items-center justify-between gap-3 rounded-[20px] border border-line bg-surface p-5 shadow-card">
+                <div>
+                  <p className="text-[13px] font-semibold text-ink-soft">Ya posicionas</p>
+                  <p className="mt-2 text-[34px] font-extrabold leading-none tracking-[-0.03em] tabular-nums text-ink">{ranked}</p>
+                  <p className="mt-2 text-xs text-ink-faint">con posición en Rank Tracking</p>
+                </div>
+                <RadialGauge value={(ranked / kws.length) * 100} size={72} />
+              </div>
+              <div className="rounded-[20px] border border-line bg-surface p-5 shadow-card">
+                <p className="text-[13px] font-semibold text-ink-soft">Intención de búsqueda</p>
+                {withIntent > 0 ? (
+                  <>
+                    <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-brand-50">
+                      {intents.filter((x) => x.n > 0).map((x) => (
+                        <div key={x.i} className={INTENT_BAR[x.i]} style={{ width: `${(x.n / withIntent) * 100}%` }} title={`${x.i}: ${x.n}`} />
+                      ))}
+                    </div>
+                    <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-ink-soft">
+                      {intents.filter((x) => x.n > 0).map((x) => (
+                        <li key={x.i} className="flex items-center gap-1.5">
+                          <span className={cn("h-2 w-2 rounded-full", INTENT_BAR[x.i])} />
+                          <span className="capitalize">{x.i}</span>
+                          <strong className="ml-auto tabular-nums text-ink">{x.n}</strong>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <p className="mt-2 text-xs text-ink-faint">Sin intención resuelta en este estudio.</p>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Panel inline de edición del estudio */}
         {editing && (
@@ -753,90 +808,138 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               </div>
               <p className="text-sm text-ink-soft">Aún no hay keywords. Busca relacionadas o pega una lista para empezar.</p>
             </div>
-          ) : (
-            <div className="overflow-x-auto rounded-xl border border-line">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
-                    <th className="py-2.5 px-3 pl-4 font-medium rounded-tl-lg">Keyword</th>
-                    <th className="py-2.5 px-3 font-medium">Volumen</th>
-                    <th className="py-2.5 px-3 font-medium">Tend.</th>
-                    <th className="py-2.5 px-3 font-medium">Comp.</th>
-                    <th className="py-2.5 px-3 font-medium">CPC</th>
-                    <th className="py-2.5 px-3 font-medium">Dif.</th>
-                    <th className="py-2.5 px-3 font-medium">Intención</th>
-                    <th className="py-2.5 px-3 font-medium">Posición</th>
-                    <th className="py-2.5 px-3 font-medium">TF-IDF</th>
-                    <th className="py-2.5 px-3 font-medium text-right">Prio.</th>
-                    <th className="py-2.5 px-3 pr-4 font-medium rounded-tr-lg w-10"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {current.keywords.map((kw) => (
-                    <tr key={kw.id} className="border-b border-line/60 last:border-0 hover:bg-black/[0.025] transition-colors">
-                      <td className="py-2.5 px-3 pl-4 text-ink">{kw.keyword}</td>
-                      <td className="py-2.5 px-3 text-ink-soft tabular-nums">
-                        {kw.searchVolume === null ? <span className="text-ink-faint">—</span> : kw.searchVolume.toLocaleString("es-ES")}
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <SeasonalitySparkline points={kw.monthlySearches} />
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className={cn("text-xs font-medium", COMPETITION_STYLES[kw.competition ?? ""] ?? "text-ink-faint")}>
-                          {kw.competition ?? "—"}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-ink-soft tabular-nums">{fmtCpc(kw.cpc)}</td>
-                      <td className="py-2.5 px-3">
-                        {(() => {
-                          const dif = difficultyBadge(kw.difficulty);
-                          return dif ? (
-                            <Pill tone={dif.tone} className="px-1.5 text-[11px]">{dif.label}</Pill>
-                          ) : (
-                            <span className="text-ink-faint">—</span>
-                          );
-                        })()}
-                      </td>
-                      <td className="py-2.5 px-3">
-                        {kw.intent ? (
-                          <Pill tone={INTENT_TONES[kw.intent] ?? "neutral"} className="px-2 text-[11px]">
-                            {kw.intent}
-                          </Pill>
-                        ) : (
-                          <span className="text-ink-faint">—</span>
-                        )}
-                      </td>
-                      <td className="py-2.5 px-3 text-ink-soft tabular-nums">
-                        {kw.rankPosition == null ? <span className="text-ink-faint">—</span> : `#${kw.rankPosition}`}
-                      </td>
-                      <td className="py-2.5 px-3">
-                        {kw.tfidfAvailable ? (
-                          <Link
-                            href={`/app/proyectos/${projectId}/contenido/tfidf?keyword=${encodeURIComponent(kw.keyword)}`}
-                            className="text-[11px] px-2 py-0.5 rounded-full bg-brand/10 text-brand hover:bg-brand/20 font-medium transition-colors"
-                          >
-                            Ver →
-                          </Link>
-                        ) : (
-                          <span className="text-ink-faint">—</span>
-                        )}
-                      </td>
-                      <td className="py-2.5 px-3 text-right text-ink-soft tabular-nums">{kw.priority}</td>
-                      <td className="py-2.5 px-3 pr-4 text-right">
-                        <button
-                          onClick={() => handleRemove(kw.id)}
-                          className="p-1 rounded-md text-ink-faint hover:text-alert-ink hover:bg-alert-tint transition-colors"
-                          title="Quitar del estudio"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          ) : (() => {
+            const kws = current.keywords;
+            const has = {
+              trend: kws.some((k) => (k.monthlySearches?.length ?? 0) > 1),
+              comp: kws.some((k) => k.competition),
+              cpc: kws.some((k) => k.cpc != null && k.cpc !== ""),
+              dif: kws.some((k) => k.difficulty != null),
+              intent: kws.some((k) => k.intent),
+              pos: kws.some((k) => k.rankPosition != null),
+              tfidf: kws.some((k) => k.tfidfAvailable),
+            };
+            const q = kwSearch.trim().toLowerCase();
+            const filtered = q ? kws.filter((k) => k.keyword.toLowerCase().includes(q)) : kws;
+            const shown = filtered.slice(0, kwShown);
+            const maxVol = Math.max(1, ...kws.map((k) => k.searchVolume ?? 0));
+            return (
+              <div className="space-y-3">
+                <div className="relative max-w-sm">
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                  <input
+                    value={kwSearch}
+                    onChange={(e) => {
+                      setKwSearch(e.target.value);
+                      setKwShown(50);
+                    }}
+                    placeholder="Buscar en el estudio…"
+                    className="w-full rounded-full border border-line bg-surface py-2 pl-10 pr-4 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15"
+                  />
+                </div>
+                <div className="max-h-[640px] overflow-auto rounded-xl border border-line">
+                  <table className="data-table">
+                    <thead className="sticky top-0 z-10">
+                      <tr>
+                        <th>Keyword</th>
+                        <th className="w-[22%]">Volumen</th>
+                        {has.trend && <th>Tend.</th>}
+                        {has.comp && <th>Comp.</th>}
+                        {has.cpc && <th className="num">CPC</th>}
+                        {has.dif && <th>Dif.</th>}
+                        {has.intent && <th>Intención</th>}
+                        {has.pos && <th className="num">Posición</th>}
+                        {has.tfidf && <th>TF-IDF</th>}
+                        <th className="num">Prio.</th>
+                        <th className="w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {shown.map((kw) => (
+                        <tr key={kw.id}>
+                          <td className="font-medium">{kw.keyword}</td>
+                          <td>
+                            {kw.searchVolume === null ? (
+                              <span className="text-ink-faint">—</span>
+                            ) : (
+                              <div className="flex items-center gap-2.5">
+                                <span className="w-14 shrink-0 tabular-nums text-ink-soft">{kw.searchVolume.toLocaleString("es-ES")}</span>
+                                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-brand-50">
+                                  <div className="h-full rounded-full bg-brand-300" style={{ width: `${Math.max(2, (kw.searchVolume / maxVol) * 100)}%` }} />
+                                </div>
+                              </div>
+                            )}
+                          </td>
+                          {has.trend && (
+                            <td>
+                              <SeasonalitySparkline points={kw.monthlySearches} />
+                            </td>
+                          )}
+                          {has.comp && (
+                            <td>
+                              <span className={cn("text-xs font-medium", COMPETITION_STYLES[kw.competition ?? ""] ?? "text-ink-faint")}>{kw.competition ?? "—"}</span>
+                            </td>
+                          )}
+                          {has.cpc && <td className="num text-ink-soft">{fmtCpc(kw.cpc)}</td>}
+                          {has.dif && (
+                            <td>
+                              {(() => {
+                                const dif = difficultyBadge(kw.difficulty);
+                                return dif ? <Pill tone={dif.tone} className="px-1.5 text-[11px]">{dif.label}</Pill> : <span className="text-ink-faint">—</span>;
+                              })()}
+                            </td>
+                          )}
+                          {has.intent && (
+                            <td>
+                              {kw.intent ? <Pill tone={INTENT_TONES[kw.intent] ?? "neutral"} className="px-2 text-[11px]">{kw.intent}</Pill> : <span className="text-ink-faint">—</span>}
+                            </td>
+                          )}
+                          {has.pos && (
+                            <td className="num text-ink-soft">{kw.rankPosition == null ? <span className="text-ink-faint">—</span> : `#${kw.rankPosition}`}</td>
+                          )}
+                          {has.tfidf && (
+                            <td>
+                              {kw.tfidfAvailable ? (
+                                <Link
+                                  href={`/app/proyectos/${projectId}/contenido/tfidf?keyword=${encodeURIComponent(kw.keyword)}`}
+                                  className="rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand transition-colors hover:bg-brand/20"
+                                >
+                                  Ver →
+                                </Link>
+                              ) : (
+                                <span className="text-ink-faint">—</span>
+                              )}
+                            </td>
+                          )}
+                          <td className="num text-ink-soft">{kw.priority}</td>
+                          <td className="text-right">
+                            <button
+                              onClick={() => handleRemove(kw.id)}
+                              className="rounded-md p-1 text-ink-faint transition-colors hover:bg-alert-tint hover:text-alert-ink"
+                              title="Quitar del estudio"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-faint">
+                  <span>
+                    Mostrando {shown.length.toLocaleString("es-ES")} de {filtered.length.toLocaleString("es-ES")}
+                    {q && ` (filtrado de ${kws.length.toLocaleString("es-ES")})`}
+                  </span>
+                  {filtered.length > shown.length && (
+                    <button onClick={() => setKwShown((n) => n + 100)} className="rounded-full border border-line px-3.5 py-1.5 font-semibold text-ink-soft hover:bg-surface-muted">
+                      Ver 100 más
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Estructura de URLs — sección propia, no un botón secundario perdido
@@ -856,7 +959,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               disabled={generatingStructure || current.keywords.length === 0}
               className="inline-flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-full px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50 shrink-0"
             >
-              {generatingStructure ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {generatingStructure && <Loader2 className="h-4 w-4 animate-spin" />}
               {current.structure ? "Regenerar estructura" : "Generar estructura de URLs"}
             </button>
           </div>
@@ -895,6 +998,14 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         eyebrow="Módulo · Keywords"
         title="Keyword Research"
         description="Estudios de palabras clave por proyecto. Cada estudio es un espacio de trabajo: busca relacionadas, añade las que interesan y construye el árbol de URLs."
+        actions={
+          <button
+            onClick={() => setNewOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-strong"
+          >
+            <Plus className="h-4 w-4" /> Nuevo estudio
+          </button>
+        }
       />
 
       {/* Estudios primero (los datos), alta e importación después */}
@@ -1006,7 +1117,10 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         )}
       </div>
 
-      <form onSubmit={handleCreateStudy} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 flex items-end gap-3">
+      {/* Nuevo estudio (con nombre o subiendo un CSV), desde el botón de arriba */}
+      <Modal open={newOpen} title="Nuevo estudio de keywords" onClose={() => setNewOpen(false)} wide>
+      <div className="space-y-4">
+      <form onSubmit={handleCreateStudy} className="flex items-end gap-3 rounded-[20px] border border-line bg-surface p-5 shadow-card">
         <div className="flex-1 space-y-1.5">
           <label className="block text-sm font-medium text-ink-soft">Nuevo estudio</label>
           <input
@@ -1027,7 +1141,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         </button>
       </form>
 
-      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-2">
+      <div className="space-y-2 rounded-[20px] border border-line bg-surface p-5 shadow-card">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h3 className="text-sm font-semibold text-ink">O sube un CSV con keywords ya investigadas</h3>
@@ -1062,6 +1176,8 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
           <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">{importFileError}</p>
         )}
       </div>
+      </div>
+      </Modal>
     </div>
   );
 }

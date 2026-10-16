@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Copy, Check, Sparkles, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
+import { Loader2, Copy, Check, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import UrlLink from "@/components/app/UrlLink";
 import PageHeader from "@/components/app/PageHeader";
@@ -149,7 +149,7 @@ export default function SchemaView({ projectId }: { projectId: string }) {
           disabled={analyzing}
           className="flex items-center gap-2 bg-brand text-white text-sm font-medium rounded-full px-4 py-2 hover:bg-brand-strong disabled:opacity-50 transition-colors"
         >
-          {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          {analyzing && <Loader2 className="h-4 w-4 animate-spin" />}
           Analizar
         </button>
 

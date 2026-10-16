@@ -5,10 +5,22 @@ import { useRouter } from "next/navigation";
 import { Loader2, Trash2, AlertTriangle } from "lucide-react";
 import ProjectForm, { type ProjectFormValues } from "@/components/app/ProjectForm";
 import BootstrapPanel from "@/components/app/BootstrapPanel";
+import PageHeader from "@/components/app/PageHeader";
+import StatTile from "@/components/ui/StatTile";
+import Link from "next/link";
 
 type ProjectRecord = ProjectFormValues & { id: string };
 
-export default function ProjectEditView({ project }: { project: ProjectRecord }) {
+type ProjectSummary = {
+  auditScore: number | null;
+  auditDate: string | null;
+  rankCount: number;
+  studyCount: number;
+  competitorCount: number;
+  openTasks: number;
+};
+
+export default function ProjectEditView({ project, summary }: { project: ProjectRecord; summary: ProjectSummary }) {
   const router = useRouter();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -39,25 +51,54 @@ export default function ProjectEditView({ project }: { project: ProjectRecord })
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <button
-          onClick={() => setConfirmingDelete(true)}
-          className="flex items-center gap-1.5 text-sm text-ink-faint hover:text-alert-ink"
-        >
-          <Trash2 className="h-4 w-4" />
-          Eliminar proyecto
-        </button>
+      <PageHeader
+        eyebrow="Proyecto · Perfil"
+        title={project.name}
+        description={project.domain || "Sin dominio configurado"}
+        actions={
+          <button
+            onClick={() => setConfirmingDelete(true)}
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-ink-faint hover:bg-alert-tint hover:text-alert-ink"
+          >
+            <Trash2 className="h-4 w-4" />
+            Eliminar proyecto
+          </button>
+        }
+      />
+
+      {/* Estado del proyecto de un vistazo; cada tarjeta lleva a su módulo */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Link href={`/app/proyectos/${project.id}/auditoria`} className="block">
+          <StatTile
+            highlight
+            label="Nota de la auditoría"
+            value={summary.auditScore != null ? <>{summary.auditScore}<span className="text-xl font-bold text-white/60">/100</span></> : "—"}
+            hint={summary.auditDate ? `del ${new Date(summary.auditDate).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}` : "aún sin auditar"}
+          />
+        </Link>
+        <Link href={`/app/proyectos/${project.id}/rank`} className="block">
+          <StatTile label="Keywords en seguimiento" value={summary.rankCount} hint="en Rank Tracking" />
+        </Link>
+        <Link href={`/app/proyectos/${project.id}/keywords`} className="block">
+          <StatTile label="Keywords investigadas" value={summary.studyCount.toLocaleString("es-ES")} hint="en tus estudios" />
+        </Link>
+        <Link href={`/app/proyectos/${project.id}/tareas`} className="block">
+          <StatTile label="Tareas pendientes" value={summary.openTasks} hint={`${summary.competitorCount} competidores seguidos`} />
+        </Link>
       </div>
 
-      <BootstrapPanel projectId={project.id} />
-
-      <ProjectForm
-        initial={project}
-        showSlug={false}
-        projectId={project.id}
-        submitLabel="Guardar cambios"
-        onSubmit={handleSubmit}
-      />
+      <div className="grid items-start gap-4 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+          <ProjectForm
+            initial={project}
+            showSlug={false}
+            projectId={project.id}
+            submitLabel="Guardar cambios"
+            onSubmit={handleSubmit}
+          />
+        </div>
+        <BootstrapPanel projectId={project.id} />
+      </div>
 
       {confirmingDelete && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">

@@ -1,11 +1,16 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
-import { Loader2, Sparkles, ChevronDown, ChevronUp, ExternalLink, ShieldAlert, Filter, Link2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Loader2, ChevronRight, ExternalLink, ShieldAlert, Filter, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { backlinkAnalysisCostUsd } from "@/lib/dataforseo/pricing";
 import { fmtCredits } from "@/lib/credits";
 import PageHeader from "@/components/app/PageHeader";
+import Pill from "@/components/app/Pill";
+import Modal from "@/components/app/Modal";
+import Section from "@/components/ui/Section";
+import StatTile from "@/components/ui/StatTile";
+import { BarList, RadialGauge } from "@/components/ui/charts";
 
 // TODOS los campos que devuelve /v3/backlinks/backlinks/live — antes solo se
 // mostraban 6, el resto se pedía y se tiraba. Nada se muestra que no venga
@@ -151,10 +156,12 @@ function BacklinkGapCard({
   ownSnapshot,
   competitorSnapshot,
   competitorDomain,
+  bare = false,
 }: {
   ownSnapshot: Snapshot;
   competitorSnapshot: Snapshot;
   competitorDomain: string;
+  bare?: boolean;
 }) {
   const gap = useMemo(
     () => backlinkGap(ownSnapshot, competitorSnapshot),
@@ -164,7 +171,7 @@ function BacklinkGapCard({
   if (!ownSnapshot || !competitorSnapshot) return null; // falta analizar alguno de los dos — sin ruido
 
   return (
-    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 space-y-2">
+    <div className={cn("space-y-2", !bare && "bg-surface rounded-2xl border border-line shadow-card p-4")}>
       <div className="flex items-center gap-2">
         <Link2 className="h-4 w-4 text-ink-faint" />
         <h3 className="text-sm font-semibold text-ink">
@@ -303,20 +310,29 @@ function BacklinkRow({ b }: { b: TopBacklink }) {
   );
 }
 
+// Ficha de un dominio. "full" para el propio (sección ancha con gráficos) y
+// "card" para cada competidor (tarjeta compacta en rejilla). El listado
+// completo de backlinks, con filtros, va siempre en una ventana aparte.
 function DomainDetail({
   label,
   domain,
   snapshot,
   analyzing,
   onAnalyze,
+  variant = "full",
+  gap,
+  onShowGap,
 }: {
   label: string;
   domain: string | null;
   snapshot: Snapshot;
   analyzing: boolean;
   onAnalyze: (limit: number | "all") => void;
+  variant?: "full" | "card";
+  gap?: number | null;
+  onShowGap?: () => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
   const [limit, setLimit] = useState<number | "all">(20);
   const [minAuthority, setMinAuthority] = useState(0);
   const [maxDaysAgo, setMaxDaysAgo] = useState<number | null>(null);
@@ -355,178 +371,227 @@ function DomainDetail({
     onAnalyze(limit);
   }
 
+  const dofollowPct =
+    snapshot && snapshot.dofollowBacklinks != null && snapshot.nofollowBacklinks != null && snapshot.dofollowBacklinks + snapshot.nofollowBacklinks > 0
+      ? (snapshot.dofollowBacklinks / (snapshot.dofollowBacklinks + snapshot.nofollowBacklinks)) * 100
+      : null;
+
   if (!domain) {
     return (
-      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4">
-        <p className="text-sm text-ink-soft">
-          Define el dominio del proyecto en su ficha para analizar sus backlinks.
-        </p>
-      </div>
+      <Section>
+        <p className="text-sm text-ink-soft">Define el dominio del proyecto en su ficha para analizar sus backlinks.</p>
+      </Section>
     );
   }
-  return (
-    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 space-y-3">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <p className="text-xs text-ink-faint">{label}</p>
-          <p className="text-sm font-semibold text-ink">{domain}</p>
+
+  const analyzeControls = (
+    <div className="flex items-center gap-2">
+      <select
+        value={String(limit)}
+        onChange={(e) => setLimit(e.target.value === "all" ? "all" : Number(e.target.value))}
+        className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15"
+        title="Cuántos backlinks traer (los de más autoridad primero)"
+      >
+        {LIMIT_OPTIONS.map((n) => (
+          <option key={n} value={n}>Top {n}</option>
+        ))}
+        <option value="all">Todos</option>
+      </select>
+      <button
+        onClick={handleAnalyzeClick}
+        disabled={analyzing}
+        title={estimatedCost ? `Coste estimado ${fmtCredits(estimatedCost)}` : "Coste según cantidad real"}
+        className="flex items-center gap-1.5 rounded-full bg-brand px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
+      >
+        {analyzing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+        Analizar {estimatedCost != null && <span className="font-normal text-white/70">{fmtCredits(estimatedCost)}</span>}
+      </button>
+    </div>
+  );
+
+  const listModal = (
+    <Modal open={listOpen} title={`Backlinks · ${domain}`} onClose={() => setListOpen(false)} wide>
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-surface-muted px-4 py-2.5 text-xs text-ink-soft">
+          <Filter className="h-3.5 w-3.5 text-ink-faint" />
+          <label className="flex items-center gap-1.5">
+            Autoridad mín.
+            <input
+              type="number"
+              min={0}
+              max={1000}
+              value={minAuthority}
+              onChange={(e) => setMinAuthority(Number(e.target.value) || 0)}
+              className="w-16 rounded-lg border border-line bg-surface px-1.5 py-0.5 text-xs outline-none focus:border-brand"
+            />
+          </label>
+          <label className="flex items-center gap-1.5">
+            Visto en los últimos
+            <select
+              value={maxDaysAgo ?? ""}
+              onChange={(e) => setMaxDaysAgo(e.target.value ? Number(e.target.value) : null)}
+              className="rounded-lg border border-line bg-surface px-1.5 py-0.5 text-xs outline-none focus:border-brand"
+            >
+              <option value="">cualquier fecha</option>
+              <option value="30">30 días</option>
+              <option value="90">90 días</option>
+              <option value="365">1 año</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-1.5">
+            <input type="checkbox" checked={dofollowOnly} onChange={(e) => setDofollowOnly(e.target.checked)} className="h-3.5 w-3.5" />
+            Solo dofollow
+          </label>
+          <span className="ml-auto text-ink-faint">{filtered.length} de {items.length}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <select
-            value={String(limit)}
-            onChange={(e) => setLimit(e.target.value === "all" ? "all" : Number(e.target.value))}
-            className="px-2 py-1.5 border border-line rounded-xl text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-surface"
-          >
-            {LIMIT_OPTIONS.map((n) => (
-              <option key={n} value={n}>Top {n}</option>
-            ))}
-            <option value="all">Todos</option>
-          </select>
-          <button
-            onClick={handleAnalyzeClick}
-            disabled={analyzing}
-            title={estimatedCost ? `Coste estimado ${fmtCredits(estimatedCost)}` : "Coste según cantidad real"}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-xs font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
-          >
-            {analyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            Analizar {estimatedCost != null && <span className="opacity-70">{fmtCredits(estimatedCost)}</span>}
-          </button>
+        <div className="max-h-[60vh] overflow-auto rounded-xl border border-line">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-surface-muted text-left text-xs font-semibold text-ink-faint">
+                <th className="py-2 pl-3 pr-2 font-medium">Origen</th>
+                <th className="py-2 pr-2 text-right font-medium">Autoridad dominio</th>
+                <th className="py-2 pr-2 text-right font-medium">Autoridad página</th>
+                <th className="py-2 pr-2 font-medium">Anchor</th>
+                <th className="py-2 pr-2 font-medium">Tipo</th>
+                <th className="py-2 pr-2 font-medium">Estado</th>
+                <th className="py-2 pr-2 font-medium">Visto</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((b, i) => (
+                <BacklinkRow key={i} b={b} />
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
+    </Modal>
+  );
 
-      {!snapshot ? (
-        <p className="text-xs text-ink-faint">Sin analizar todavía.</p>
-      ) : (
-        <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div>
-              <p className="text-[11px] text-ink-faint">Autoridad</p>
-              <span className={cn("inline-block mt-0.5 px-1.5 py-0.5 rounded text-sm font-semibold", rankBadge(snapshot.rank))}>
-                {snapshot.rank ?? "—"}
-              </span>
-            </div>
-            <div>
-              <p className="text-[11px] text-ink-faint">Backlinks</p>
-              <p className="text-sm font-medium text-ink">{fmtNum(snapshot.backlinksTotal)}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-ink-faint">Dominios de referencia</p>
-              <p className="text-sm font-medium text-ink">{fmtNum(snapshot.referringDomains)}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-ink-faint">Rotos</p>
-              <p className="text-sm font-medium text-ink">{fmtNum(snapshot.brokenBacklinks)}</p>
-            </div>
-          </div>
-          <p className="text-[11px] text-ink-faint">
-            {snapshot.dofollowBacklinks != null && snapshot.nofollowBacklinks != null && (
-              <>dofollow {fmtNum(snapshot.dofollowBacklinks)} · nofollow {fmtNum(snapshot.nofollowBacklinks)} · </>
-            )}
-            actualizado {new Date(snapshot.fetchedAt).toLocaleDateString("es-ES")}
-            {items.length > 0 && <> · {items.length} backlinks individuales cargados</>}
+  // --- Tarjeta compacta (competidor) ---
+  if (variant === "card") {
+    return (
+      <section className="flex flex-col rounded-[20px] border border-line bg-surface p-5 shadow-card">
+        <div>
+          <h3 className="truncate text-[15px] font-bold text-ink">{domain}</h3>
+          <p className="text-xs text-ink-faint">
+            {snapshot ? `Analizado el ${new Date(snapshot.fetchedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}` : label}
           </p>
-
-          {(targetPages.length > 0 || referringPages.length > 0) && (
-            <div className="grid sm:grid-cols-2 gap-3">
-              {targetPages.length > 0 && (
-                <div className="border border-line rounded-xl p-2.5">
-                  <p className="text-[11px] font-semibold text-ink-soft mb-1.5">Tus páginas con más enlaces entrantes</p>
-                  <ul className="space-y-1">
-                    {targetPages.map((p) => (
-                      <li key={p.url} className="flex items-center justify-between gap-2 text-xs">
-                        <span className="text-ink-soft truncate">{p.url}</span>
-                        <span className="text-ink-faint shrink-0">{p.count}</span>
-                      </li>
-                    ))}
-                  </ul>
+        </div>
+        {snapshot ? (
+          <>
+            <div className="mt-4 flex items-end justify-between gap-3">
+              <div>
+                <p className="text-xs text-ink-faint">Autoridad</p>
+                <p className="text-[34px] font-extrabold leading-none tracking-[-0.03em] tabular-nums text-ink">{snapshot.rank ?? "—"}</p>
+                <div className="mt-2 h-1.5 w-28 overflow-hidden rounded-full bg-brand-50">
+                  <div className="h-full rounded-full bg-brand-500" style={{ width: `${Math.min(100, ((snapshot.rank ?? 0) / 1000) * 100)}%` }} />
                 </div>
-              )}
-              {referringPages.length > 0 && (
-                <div className="border border-line rounded-xl p-2.5">
-                  <p className="text-[11px] font-semibold text-ink-soft mb-1.5">Páginas de origen con más autoridad</p>
-                  <ul className="space-y-1">
-                    {referringPages.map((p, i) => (
-                      <li key={i} className="flex items-center justify-between gap-2 text-xs">
-                        <span className="text-ink-soft truncate">{p.urlFrom ?? p.domainFrom ?? "—"}</span>
-                        <span className="text-ink-faint shrink-0">{p.pageFromRank}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              </div>
+              {dofollowPct !== null && <RadialGauge value={dofollowPct} size={72} label="dofollow" />}
             </div>
-          )}
-
-          {items.length > 0 && (
-            <div>
+            <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-line pt-4 text-sm">
+              <div>
+                <dt className="text-xs text-ink-faint">Backlinks</dt>
+                <dd className="font-bold tabular-nums text-ink">{fmtNum(snapshot.backlinksTotal)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-ink-faint">Dominios ref.</dt>
+                <dd className="font-bold tabular-nums text-ink">{fmtNum(snapshot.referringDomains)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-ink-faint">Rotos</dt>
+                <dd className="font-bold tabular-nums text-ink">{fmtNum(snapshot.brokenBacklinks)}</dd>
+              </div>
+            </dl>
+            {gap != null && (
               <button
-                onClick={() => setExpanded((v) => !v)}
-                className="flex items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink"
+                onClick={onShowGap}
+                className="mt-4 flex items-center justify-between rounded-2xl bg-brand-50 px-4 py-3 text-left hover:bg-brand-100/60"
               >
-                {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                Todos los backlinks ({items.length})
+                <span className="text-sm text-ink">
+                  <strong className="tabular-nums">{gap}</strong> dominios le enlazan y a ti no
+                </span>
+                <ChevronRight className="h-4 w-4 text-brand" />
               </button>
-              {expanded && (
-                <div className="mt-2 space-y-2">
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-ink-soft bg-background rounded-xl px-3 py-2">
-                    <Filter className="h-3.5 w-3.5 text-ink-faint" />
-                    <label className="flex items-center gap-1.5">
-                      Autoridad mín.
-                      <input
-                        type="number"
-                        min={0}
-                        max={1000}
-                        value={minAuthority}
-                        onChange={(e) => setMinAuthority(Number(e.target.value) || 0)}
-                        className="w-16 px-1.5 py-0.5 border border-line rounded-lg text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-                      />
-                    </label>
-                    <label className="flex items-center gap-1.5">
-                      Visto en los últimos
-                      <select
-                        value={maxDaysAgo ?? ""}
-                        onChange={(e) => setMaxDaysAgo(e.target.value ? Number(e.target.value) : null)}
-                        className="px-1.5 py-0.5 border border-line rounded-lg text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-surface"
-                      >
-                        <option value="">cualquier fecha</option>
-                        <option value="30">30 días</option>
-                        <option value="90">90 días</option>
-                        <option value="365">1 año</option>
-                      </select>
-                    </label>
-                    <label className="flex items-center gap-1.5">
-                      <input type="checkbox" checked={dofollowOnly} onChange={(e) => setDofollowOnly(e.target.checked)} className="h-3.5 w-3.5" />
-                      Solo dofollow
-                    </label>
-                    <span className="text-ink-faint">{filtered.length} de {items.length}</span>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
-                          <th className="py-1.5 pr-2 font-medium">Origen</th>
-                          <th className="py-1.5 pr-2 font-medium text-right">Autoridad dominio</th>
-                          <th className="py-1.5 pr-2 font-medium text-right">Autoridad página</th>
-                          <th className="py-1.5 pr-2 font-medium">Anchor</th>
-                          <th className="py-1.5 pr-2 font-medium">Tipo</th>
-                          <th className="py-1.5 pr-2 font-medium">Estado</th>
-                          <th className="py-1.5 pr-2 font-medium">Visto</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filtered.map((b, i) => (
-                          <BacklinkRow key={i} b={b} />
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
+          </>
+        ) : (
+          <p className="mt-4 rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink-soft">Aún no hay datos. Analízalo para ver su autoridad y sus enlaces.</p>
+        )}
+        <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
+          {analyzeControls}
+          {items.length > 0 && (
+            <button onClick={() => setListOpen(true)} className="ml-auto flex items-center gap-1 rounded-full px-2 py-1.5 text-xs font-semibold text-brand hover:bg-brand-50">
+              Ver backlinks <ChevronRight className="h-3.5 w-3.5" />
+            </button>
           )}
+        </div>
+        {listModal}
+      </section>
+    );
+  }
+
+  // --- Sección ancha (dominio propio) ---
+  return (
+    <Section
+      title={`Tus backlinks · ${domain}`}
+      description={snapshot ? `Actualizado el ${new Date(snapshot.fetchedAt).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}` : "Sin analizar todavía."}
+      actions={
+        <>
+          {items.length > 0 && (
+            <button onClick={() => setListOpen(true)} className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-semibold text-brand hover:bg-brand-50">
+              Ver los {items.length} backlinks <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {analyzeControls}
         </>
+      }
+    >
+      {!snapshot ? (
+        <p className="text-sm text-ink-soft">Pulsa <strong>Analizar</strong> para ver quién te enlaza y con cuánta autoridad.</p>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="flex items-center gap-5">
+            {dofollowPct !== null ? <RadialGauge value={dofollowPct} size={96} label="enlaces dofollow" /> : null}
+            <dl className="space-y-2 text-sm">
+              <div>
+                <dt className="text-xs text-ink-faint">Dofollow / nofollow</dt>
+                <dd className="font-bold tabular-nums text-ink">
+                  {fmtNum(snapshot.dofollowBacklinks)} <span className="font-medium text-ink-faint">/ {fmtNum(snapshot.nofollowBacklinks)}</span>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-ink-faint">Enlaces rotos</dt>
+                <dd className={cn("font-bold tabular-nums", (snapshot.brokenBacklinks ?? 0) > 0 ? "text-alert-ink" : "text-ink")}>{fmtNum(snapshot.brokenBacklinks)}</dd>
+              </div>
+            </dl>
+          </div>
+          <div>
+            <p className="mb-2 text-[13px] font-semibold text-ink-soft">Tus páginas más enlazadas</p>
+            {targetPages.length > 0 ? (
+              <BarList items={targetPages.slice(0, 5).map((p) => ({ label: p.url.replace(/^https?:\/\//, ""), value: p.count }))} />
+            ) : (
+              <p className="text-xs text-ink-faint">Sin datos.</p>
+            )}
+          </div>
+          <div>
+            <p className="mb-2 text-[13px] font-semibold text-ink-soft">Enlaces con más autoridad</p>
+            {referringPages.length > 0 ? (
+              <BarList
+                items={referringPages.slice(0, 5).map((p) => ({
+                  label: (p.domainFrom ?? p.urlFrom ?? "—").replace(/^https?:\/\//, ""),
+                  value: p.pageFromRank ?? 0,
+                }))}
+              />
+            ) : (
+              <p className="text-xs text-ink-faint">Sin datos.</p>
+            )}
+          </div>
+        </div>
       )}
-    </div>
+      {listModal}
+    </Section>
   );
 }
 
@@ -535,6 +600,8 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
   const [loading, setLoading] = useState(true);
   const [analyzingDomain, setAnalyzingDomain] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [gapDomain, setGapDomain] = useState<string | null>(null);
+  const [showAllRows, setShowAllRows] = useState(false);
 
   function load() {
     fetch(`/api/proyectos/${projectId}/backlinks`)
@@ -579,43 +646,79 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
       <PageHeader
         eyebrow="Módulo · Backlinks"
         title="Backlinks"
-        description="{Enlazado externo: qué dominios enlazan a tu sitio (y a los de tus competidores ya trackeados           en Competidores), cuánta autoridad tienen y desde dónde. Cada análisis gasta créditos; ves cuántos antes de lanzarlo.}"
+        description="Enlazado externo: qué dominios enlazan a tu sitio (y a los de tus competidores ya trackeados en Competidores), cuánta autoridad tienen y desde dónde. Cada análisis gasta créditos; ves cuántos antes de lanzarlo."
       />
 
       {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
 
+      {/* Resumen de tu perfil de enlaces */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatTile
+          highlight
+          label="Tu autoridad"
+          icon={<ShieldAlert className="h-4 w-4" />}
+          value={data?.projectSnapshot?.rank ?? "—"}
+          hint="sobre 1.000"
+        />
+        <StatTile label="Backlinks" value={fmtNum(data?.projectSnapshot?.backlinksTotal)} hint="enlaces que apuntan a tu web" />
+        <StatTile label="Dominios de referencia" value={fmtNum(data?.projectSnapshot?.referringDomains)} hint="webs distintas que te enlazan" />
+        <StatTile
+          label="Tu puesto en autoridad"
+          value={(() => {
+            const ranked = comparisonRows.filter((r) => r.snapshot?.rank != null);
+            const pos = ranked.findIndex((r) => r.isOwn);
+            return pos >= 0 ? <>{pos + 1}<span className="text-xl font-bold text-ink-faint"> / {ranked.length}</span></> : "—";
+          })()}
+          hint="frente a tus competidores analizados"
+        />
+      </div>
+
       {comparisonRows.length > 1 && (
-        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4">
-          <h3 className="text-sm font-semibold text-ink mb-3">Comparativa de autoridad</h3>
+        <Section title="Comparativa de autoridad" description="Autoridad del dominio (0-1.000) y volumen de enlaces." flush>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="data-table">
               <thead>
-                <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
-                  <th className="py-1.5 pr-2 font-medium">Dominio</th>
-                  <th className="py-1.5 px-2 font-medium text-right">Autoridad</th>
-                  <th className="py-1.5 px-2 font-medium text-right">Backlinks</th>
-                  <th className="py-1.5 pl-2 font-medium text-right">Dominios de ref.</th>
+                <tr>
+                  <th>Dominio</th>
+                  <th className="w-[30%]">Autoridad</th>
+                  <th className="num">Backlinks</th>
+                  <th className="num">Dominios de ref.</th>
                 </tr>
               </thead>
               <tbody>
-                {comparisonRows.map((r, i) => (
-                  <tr key={i} className="border-t border-line">
-                    <td className="py-1.5 pr-2 text-ink font-medium">
-                      {r.domain} {r.isOwn && <span className="text-[10px] text-accent-ink font-semibold">· TÚ</span>}
+                {(showAllRows ? comparisonRows : comparisonRows.slice(0, 8)).map((r, i) => (
+                  <tr key={i}>
+                    <td className="font-semibold">
+                      {r.domain} {r.isOwn && <Pill tone="brand" className="ml-1.5">Tú</Pill>}
                     </td>
-                    <td className="py-1.5 px-2 text-right">
-                      <span className={cn("inline-block px-1.5 py-0.5 rounded font-medium", rankBadge(r.snapshot?.rank ?? null))}>
-                        {r.snapshot?.rank ?? "—"}
-                      </span>
+                    <td>
+                      {r.snapshot ? (
+                        <div className="flex items-center gap-3">
+                          <span className="w-12 shrink-0 font-semibold tabular-nums">{r.snapshot.rank ?? "—"}</span>
+                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-brand-50">
+                            <div className={cn("h-full rounded-full", r.isOwn ? "bg-brand-500" : "bg-brand-200")} style={{ width: `${Math.max(2, ((r.snapshot.rank ?? 0) / 1000) * 100)}%` }} />
+                          </div>
+                        </div>
+                      ) : (
+                        <Pill tone="neutral">Sin analizar</Pill>
+                      )}
                     </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{fmtNum(r.snapshot?.backlinksTotal)}</td>
-                    <td className="py-1.5 pl-2 text-right tabular-nums text-ink-soft">{fmtNum(r.snapshot?.referringDomains)}</td>
+                    <td className="num text-ink-soft">{fmtNum(r.snapshot?.backlinksTotal)}</td>
+                    <td className="num text-ink-soft">{fmtNum(r.snapshot?.referringDomains)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+          {comparisonRows.length > 8 && (
+            <button
+              onClick={() => setShowAllRows((v) => !v)}
+              className="w-full border-t border-line py-3 text-xs font-semibold text-brand hover:bg-surface-muted"
+            >
+              {showAllRows ? "Ver menos" : `Ver los ${comparisonRows.length} dominios`}
+            </button>
+          )}
+        </Section>
       )}
 
       <DomainDetail
@@ -627,31 +730,41 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
       />
 
       {data?.competitors.length === 0 ? (
-        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 flex items-start gap-2">
-          <ShieldAlert className="h-4 w-4 text-ink-faint shrink-0 mt-0.5" />
-          <p className="text-sm text-ink-soft">
-            Todavía no hay competidores trackeados. Añádelos en el módulo Competidores — aquí se
-            reutiliza la misma lista.
+        <Section>
+          <p className="flex items-start gap-2 text-sm text-ink-soft">
+            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
+            Todavía no sigues a ningún competidor. Añádelos en el módulo Competidores: aquí se usa la misma lista.
           </p>
-        </div>
+        </Section>
       ) : (
-        data?.competitors.map((c) => (
-          <Fragment key={c.domain}>
+        <div className="grid items-start gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          {data?.competitors.map((c) => (
             <DomainDetail
-              label="Competidor"
+              key={c.domain}
+              variant="card"
+              label="Sin analizar"
               domain={c.domain}
               snapshot={c.snapshot}
               analyzing={analyzingDomain === c.domain}
               onAnalyze={(limit) => handleAnalyze(c.domain, limit)}
+              gap={data.projectSnapshot && c.snapshot ? backlinkGap(data.projectSnapshot, c.snapshot).length : null}
+              onShowGap={() => setGapDomain(c.domain)}
             />
-            <BacklinkGapCard
-              ownSnapshot={data.projectSnapshot}
-              competitorSnapshot={c.snapshot}
-              competitorDomain={c.domain}
-            />
-          </Fragment>
-        ))
+          ))}
+        </div>
       )}
+
+      {/* Gap de dominios de referencia de un competidor */}
+      {(() => {
+        const comp = data?.competitors.find((c) => c.domain === gapDomain);
+        return (
+          <Modal open={!!comp} title={`Dominios que enlazan a ${gapDomain ?? ""} y no a ti`} onClose={() => setGapDomain(null)} wide>
+            {comp && data && (
+              <BacklinkGapCard ownSnapshot={data.projectSnapshot} competitorSnapshot={comp.snapshot} competitorDomain={comp.domain} bare />
+            )}
+          </Modal>
+        );
+      })()}
     </div>
   );
 }

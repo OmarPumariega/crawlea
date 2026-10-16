@@ -19,6 +19,7 @@ import {
   ListChecks,
   LogOut,
   Map,
+  MapPin,
   NotebookPen,
   PenLine,
   Search,
@@ -103,10 +104,15 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
       ],
     },
   ];
+  // SEO local: todo lo de SEO local en su propio grupo (de momento, el mapa de
+  // calor de Google Maps). Solo en proyectos de negocio local.
   if (isLocalBusiness) {
-    groups
-      .find((g) => g.id === "seguimiento")!
-      .modules.push({ href: `${base}/geogrid`, label: "Geogrid", icon: Map });
+    groups.push({
+      id: "geolocal",
+      label: "SEO local",
+      icon: MapPin,
+      modules: [{ href: `${base}/geogrid`, label: "Geogrid", icon: Map }],
+    });
   }
   return {
     top: [

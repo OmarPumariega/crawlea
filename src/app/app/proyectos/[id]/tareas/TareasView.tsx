@@ -399,6 +399,141 @@ export default function TareasView({ projectId }: { projectId: string }) {
         description="Lista de seguimiento del proyecto — manuales y auto-generadas desde hallazgos de auditoría. Marca, completa o elimina para tener siempre a la vista lo pendiente."
       />
 
+      {/* Lista (2/3) y alta de tareas con el progreso (1/3), lado a lado */}
+      <div className="grid items-start gap-4 xl:grid-cols-3">
+        <div className="space-y-4 xl:col-span-2">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
+          <button
+            onClick={() => setTab("pendientes")}
+            className={cn(
+              "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
+              tab === "pendientes"
+                ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]"
+                : "text-ink-soft hover:text-ink"
+            )}
+          >
+            Pendientes <span className="tabular-nums">({pendingCount})</span>
+          </button>
+          <button
+            onClick={() => setTab("completadas")}
+            className={cn(
+              "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
+              tab === "completadas"
+                ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]"
+                : "text-ink-soft hover:text-ink"
+            )}
+          >
+            Completadas <span className="tabular-nums">({completedCount})</span>
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          {dateFilter !== "all" && (
+            <span className="text-xs text-ink-faint tabular-nums">
+              {tabTodos.length} de {tabTodosUnfiltered.length}
+            </span>
+          )}
+          <select
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value as DateFilter)}
+            className="border border-line rounded-xl px-2.5 py-1.5 text-xs bg-surface text-ink-soft outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+          >
+            <option value="all">Todas las fechas</option>
+            <option value="this-month">Este mes</option>
+            <option value="last-month">Mes anterior</option>
+            {availableYears(todos).map((y) => (
+              <option key={y} value={`year:${y}`}>{y}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {loading ? (
+        <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
+      ) : tabTodos.length === 0 ? (
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
+          <div className="py-12 text-center">
+            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-ink-faint">
+              {tab === "pendientes" ? <CheckCircle2 className="h-5 w-5" /> : <ListChecks className="h-5 w-5" />}
+            </span>
+            <p className="text-sm text-ink-soft">
+              {tab === "pendientes"
+                ? "Sin tareas pendientes — todo al día."
+                : "Todavía no se ha completado ninguna tarea."}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+          {autoTodos.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-semibold text-ink-faint">
+                Hallazgos de auditoría ({autoTodos.length})
+              </h3>
+              <div className="space-y-2">
+                {autoTodos.map((todo) => (
+                  <AutoTaskCard
+                    key={todo.id}
+                    todo={todo}
+                    busy={busyId === todo.id}
+                    onToggleDone={() => toggleDone(todo)}
+                    onDelete={() => setConfirmDeleteId(todo.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {manualTodos.length > 0 && (
+            <div className="space-y-2">
+              {autoTodos.length > 0 && (
+                <h3 className="text-xs font-semibold text-ink-faint">Tareas manuales</h3>
+              )}
+              <div className="space-y-2">
+                {manualTodos.map((todo) => {
+                  const overdue = !todo.done && todo.dueDate !== null && new Date(todo.dueDate) < today;
+                  return (
+                    <ManualTaskCard
+                      key={todo.id}
+                      todo={todo}
+                      overdue={overdue}
+                      busy={busyId === todo.id}
+                      onToggleDone={() => toggleDone(todo)}
+                      onDelete={() => setConfirmDeleteId(todo.id)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+        </div>
+        <div className="space-y-4">
+          {/* Progreso: lo hecho frente a lo pendiente */}
+          {todos.length > 0 && (
+            <div className="flex items-center justify-between gap-3 rounded-[20px] bg-brand p-5 text-white shadow-[0_10px_30px_-12px_rgba(79,92,245,0.6)]">
+              <div>
+                <p className="text-[13px] font-semibold text-white/75">Progreso</p>
+                <p className="mt-2 text-[34px] font-extrabold leading-none tracking-[-0.03em] tabular-nums">
+                  {todos.length - pendingCount}<span className="text-xl font-bold text-white/60"> / {todos.length}</span>
+                </p>
+                <p className="mt-2 text-xs text-white/70">{pendingCount} pendientes</p>
+              </div>
+              <div className="relative h-20 w-20 shrink-0">
+                <svg viewBox="0 0 80 80" className="h-20 w-20 -rotate-90">
+                  <circle cx="40" cy="40" r="34" fill="none" strokeWidth="10" className="stroke-white/20" />
+                  <circle cx="40" cy="40" r="34" fill="none" strokeWidth="10" strokeLinecap="round" className="stroke-white"
+                    strokeDasharray={2 * Math.PI * 34}
+                    strokeDashoffset={2 * Math.PI * 34 * (pendingCount / Math.max(1, todos.length))} />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-sm font-extrabold tabular-nums">
+                  {Math.round(((todos.length - pendingCount) / Math.max(1, todos.length)) * 100)}%
+                </span>
+              </div>
+            </div>
+          )}
       {/* Añadir tarea: un único card con dos modos (manual / desde plantilla) */}
       <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
         <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
@@ -576,116 +711,12 @@ export default function TareasView({ projectId }: { projectId: string }) {
         )}
       </div>
 
-      <Modal open={manageOpen} title="Catálogo de plantillas" onClose={() => { setManageOpen(false); loadTemplates(); }}>
-        <TodoTemplatesCard />
-      </Modal>
-
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
-          <button
-            onClick={() => setTab("pendientes")}
-            className={cn(
-              "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
-              tab === "pendientes"
-                ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]"
-                : "text-ink-soft hover:text-ink"
-            )}
-          >
-            Pendientes <span className="tabular-nums">({pendingCount})</span>
-          </button>
-          <button
-            onClick={() => setTab("completadas")}
-            className={cn(
-              "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
-              tab === "completadas"
-                ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]"
-                : "text-ink-soft hover:text-ink"
-            )}
-          >
-            Completadas <span className="tabular-nums">({completedCount})</span>
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          {dateFilter !== "all" && (
-            <span className="text-xs text-ink-faint tabular-nums">
-              {tabTodos.length} de {tabTodosUnfiltered.length}
-            </span>
-          )}
-          <select
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-            className="border border-line rounded-xl px-2.5 py-1.5 text-xs bg-surface text-ink-soft outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-          >
-            <option value="all">Todas las fechas</option>
-            <option value="this-month">Este mes</option>
-            <option value="last-month">Mes anterior</option>
-            {availableYears(todos).map((y) => (
-              <option key={y} value={`year:${y}`}>{y}</option>
-            ))}
-          </select>
         </div>
       </div>
 
-      {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
-      ) : tabTodos.length === 0 ? (
-        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
-          <div className="py-12 text-center">
-            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-ink-faint">
-              {tab === "pendientes" ? <CheckCircle2 className="h-5 w-5" /> : <ListChecks className="h-5 w-5" />}
-            </span>
-            <p className="text-sm text-ink-soft">
-              {tab === "pendientes"
-                ? "Sin tareas pendientes — todo al día."
-                : "Todavía no se ha completado ninguna tarea."}
-            </p>
-          </div>
-        </div>
-      ) : (
-        <>
-          {autoTodos.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-xs font-semibold text-ink-faint">
-                Hallazgos de auditoría ({autoTodos.length})
-              </h3>
-              <div className="space-y-2">
-                {autoTodos.map((todo) => (
-                  <AutoTaskCard
-                    key={todo.id}
-                    todo={todo}
-                    busy={busyId === todo.id}
-                    onToggleDone={() => toggleDone(todo)}
-                    onDelete={() => setConfirmDeleteId(todo.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {manualTodos.length > 0 && (
-            <div className="space-y-2">
-              {autoTodos.length > 0 && (
-                <h3 className="text-xs font-semibold text-ink-faint">Tareas manuales</h3>
-              )}
-              <div className="space-y-2">
-                {manualTodos.map((todo) => {
-                  const overdue = !todo.done && todo.dueDate !== null && new Date(todo.dueDate) < today;
-                  return (
-                    <ManualTaskCard
-                      key={todo.id}
-                      todo={todo}
-                      overdue={overdue}
-                      busy={busyId === todo.id}
-                      onToggleDone={() => toggleDone(todo)}
-                      onDelete={() => setConfirmDeleteId(todo.id)}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+      <Modal open={manageOpen} title="Catálogo de plantillas" onClose={() => { setManageOpen(false); loadTemplates(); }}>
+        <TodoTemplatesCard />
+      </Modal>
 
       <ConfirmDialog
         open={confirmDeleteId !== null}

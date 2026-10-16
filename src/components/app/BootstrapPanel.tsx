@@ -191,8 +191,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
               {estimate.competitorsToAnalyze === 1 ? "" : "es"} a analizar (visibilidad + content gap)
             </div>
             <div className="text-ink-soft pt-0.5">
-              Coste estimado: <strong className="text-ink-soft">{fmtCredits(estimate.estimatedCostUsd)}</strong> · El
-              coste real es el que devuelve la API.
+              Coste estimado: <strong className="text-ink-soft">{fmtCredits(estimate.estimatedCostUsd)}</strong>
             </div>
           </div>
         )

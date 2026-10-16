@@ -6,7 +6,6 @@ import {
   Loader2,
   Copy,
   Check,
-  Sparkles,
   ChevronDown,
   GitCompare,
   History,
@@ -402,7 +401,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
         <div className="bg-accent-tint/60 border border-brand-100 rounded-xl p-4 space-y-1.5">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <Sparkles className="h-4 w-4 text-accent-ink shrink-0" />
+
               <p className="text-sm text-accent-ink">
                 Términos y temas cargados desde TF-IDF ({tfidfTerms.split("\n").filter(Boolean).length}).
                 Se pasarán al modelo como guía de cobertura.
@@ -563,7 +562,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           Generar
         </button>
       </form>

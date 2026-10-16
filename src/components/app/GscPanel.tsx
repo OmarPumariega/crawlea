@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, ArrowUp, ArrowDown, Minus, Sparkles, Check, ChevronDown } from "lucide-react";
+import { Loader2, ArrowUp, ArrowDown, Minus, Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Panel de Search Console ampliado. Periodo configurable (28d/3m/6m/12m),
@@ -365,7 +365,7 @@ export default function GscPanel({ projectId }: { projectId: string }) {
               className="inline-flex items-center gap-1 bg-brand text-white text-xs font-medium rounded-full px-2.5 py-1 hover:bg-brand-strong disabled:opacity-50 transition-colors"
               title="Crea un estudio del Módulo 1 con las top queries reales"
             >
-              {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              {importing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               Crear estudio de keywords
             </button>
           </div>

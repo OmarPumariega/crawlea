@@ -241,7 +241,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
       <PageHeader
         eyebrow="Módulo · Contenido"
         title="TF-IDF / Cobertura de temas"
-        description="{Analiza el top-10 de Google para una keyword y descubre qué temas (H2/H3) y términos           comparten las páginas que ya posicionan. Los resultados se generan automáticamente al           chequear keywords en Rank Tracking.}"
+        description="Analiza el top-10 de Google para una keyword y descubre qué temas (H2/H3) y términos comparten las páginas que ya posicionan. Los resultados se generan automáticamente al chequear keywords en Rank Tracking."
       />
 
       {/* Resultados disponibles (auto-generados desde Rank Tracking) */}

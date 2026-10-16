@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Loader2, Sparkles, AlertTriangle, XCircle, Globe } from "lucide-react";
+import { Loader2, AlertTriangle, XCircle, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Section from "@/components/ui/Section";
 import StatTile from "@/components/ui/StatTile";
@@ -326,7 +326,7 @@ function LabsVisibilityPanel({
     <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-ink-faint" />
+
           <h3 className="text-sm font-semibold text-ink">Visibilidad orgánica estimada</h3>
         </div>
         <span className="text-[10px] uppercase tracking-wide text-ink-faint">
@@ -595,7 +595,7 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
             disabled={triggering || current?.status === "pending" || current?.status === "running"}
             className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50 shrink-0"
           >
-            {triggering ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {triggering && <Loader2 className="h-4 w-4 animate-spin" />}
             Ejecutar auditoría ahora
           </button>
         </div>
