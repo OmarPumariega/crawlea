@@ -25,7 +25,7 @@ ya tomadas — se actualiza en el mismo commit que el cambio de fase.
 | 2 — Panel de administración de cuentas | ⬜ Pendiente | — |
 | 3 — Suscripciones con Stripe + gating de módulos | ⬜ Pendiente | — |
 | 4 — Web pública (marketing) | ⬜ Pendiente | — |
-| 5 — Lanzamiento e infra (dominio, OAuth verificado) | ⬜ Pendiente | — |
+| 5 — Lanzamiento e infra | 🔶 **En progreso** | — |
 
 Para trabajar en una fase: leer [`00-protocolo-trabajo.md`](./00-protocolo-trabajo.md)
 y marcarla aquí como "en progreso" al empezar.
@@ -113,15 +113,22 @@ Objetivo: la home del SaaS en `/`.
 
 Objetivo: dominio propio y todo lo externo resuelto.
 
-- Dominio decidido: **crawlea.com** (compra en trámite; ya apuntado en Dockerfile y
-  labels de Traefik). Quitar `NEXTAUTH_URL` horneado del Dockerfile → env de runtime;
-  decidir si se mantiene redirect 301 desde la URL anterior del despliegue actual.
-- Google Cloud: OAuth client de LOGIN (scopes básicos) + **verificación de los
+- ✅ Dominio comprado: **crawlea.com**, DNS apuntando al VPS (84.46.249.81).
+- ✅ Despliegue aislado en el VPS: proyecto propio en `/opt/crawlea`
+  (`docker-compose.yaml` con redes/volumen/límites propios, routers
+  `crawlea-*` en el Traefik compartido — único punto de acople, mismo patrón
+  que cirochat). `NEXTAUTH_URL` ya es env de runtime, no horneada. Repo en
+  `github.com/OmarPumariega/crawlea` (antes `seo-ciro`, renombrado con
+  redirect automático de GitHub).
+- ✅ www.crawlea.com → 301 a crawlea.com (canonical único).
+- ⬜ Google Cloud: OAuth client de LOGIN (scopes básicos) + **verificación de los
   scopes GSC/GA4** para conexiones por usuario — dependencia externa LENTA
   (semanas), arrancarla cuanto antes.
-- Stripe: cuenta, productos y precios, endpoint de webhook.
-- Seed: no crear admin con password por defecto en producción (solo con env explícito).
-- `docs/` y README revisados contra el estado final.
+- ⬜ Stripe: cuenta, productos y precios, endpoint de webhook (Fase 3).
+- ⬜ Decidir si se mantiene redirect 301 desde la URL del despliegue antiguo
+  y si se migran sus datos (proyectos del admin) a la instancia nueva; el
+  despliegue antiguo sigue corriendo intacto e independiente.
+- ⬜ `docs/` y README revisados contra el estado final.
 
 ## Riesgos y dependencias externas
 

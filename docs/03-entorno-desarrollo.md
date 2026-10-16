@@ -58,3 +58,35 @@ con `NODE_ENV=production` — para probarlo: `npm run build && npm run start`.
 ## Variables de entorno
 
 Ver [`.env.example`](../.env.example) para la lista completa con explicación de cada una.
+
+## Despliegue en producción (VPS Contabo)
+
+Crawlea corre en **crawlea.com** sobre el VPS de Contabo (84.46.249.81, SSH
+`vps-omar`), como un **stack aislado** del resto de servicios del VPS:
+
+- Código en `/opt/crawlea` (clone de `github.com/OmarPumariega/crawlea`, rama `main`).
+- `docker-compose.yaml` del repo: `crawlea-app` + `crawlea-db` en la red interna
+  `crawlea-internal` (la DB no se publica al host), volumen propio
+  `crawlea_pgdata`, límites de recursos (app 2G/2 CPUs, db 768M/1 CPU).
+- Único acople con el resto del VPS: el contenedor app se conecta también a la
+  red `coolify` para que el Traefik compartido (dueño de 80/443) enrute
+  `Host(crawlea.com)` — mismo patrón que cirochat. Routers/middleware
+  nombrados `crawlea-*` para no colisionar con otros stacks. `www.crawlea.com`
+  responde 301 al dominio desnudo.
+- Secrets en `/opt/crawlea/.env` (chmod 600, fuera de git): generados con
+  `openssl rand`; las claves de API se copiaron del despliegue anterior o se
+  configuran desde `/app/configuracion` (cifradas en BD).
+- `NEXTAUTH_URL` es env de runtime del compose (no está horneada en la imagen).
+
+Desplegar una actualización:
+
+```bash
+ssh vps-omar
+cd /opt/crawlea
+git pull
+docker compose up -d --build   # las migraciones se aplican solas al arrancar
+```
+
+El despliegue **antiguo** (el mismo producto en su etapa interna) sigue
+corriendo aparte en el mismo VPS, gestionado por Coolify; no comparte nada con
+Crawlea salvo el proxy de entrada.

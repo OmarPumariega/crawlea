@@ -32,7 +32,6 @@ RUN npx prisma generate
 RUN NODE_OPTIONS="--max-old-space-size=2048" \
     ENCRYPTION_KEY="build-placeholder-key-32-chars--" \
     DATABASE_URL="postgresql://build:build@localhost:5432/build" \
-    NEXTAUTH_URL="https://crawlea.com" \
     NEXTAUTH_SECRET="build-placeholder" \
     npm run build
 

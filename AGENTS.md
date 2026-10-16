@@ -99,10 +99,12 @@ terceros, no por trabajo pendiente — ver `docs/01-vision-general.md`.
   cada 60s procesa auditorías/rank tracking/geogrid/bootstrap pendientes. Solo corre
   con `NODE_ENV=production`; en `npm run dev` nunca se dispara
 - **nodemailer** — avisos por email opcionales, degradación silenciosa sin SMTP configurado
-- **Infraestructura de producción:** VPS Contabo, Docker multi-stage, Coolify + Traefik
-  (SSL automático). Las migraciones de Prisma se aplican solas al arrancar el
-  contenedor (`prisma migrate deploy` en el `CMD` del Dockerfile) — no hace falta
-  ningún paso manual de BD tras el deploy
+- **Infraestructura de producción:** VPS Contabo, **crawlea.com** — stack Docker
+  aislado en `/opt/crawlea` (redes, volumen y límites de recursos propios;
+  solo el Traefik compartido del VPS enruta el dominio). Las migraciones de
+  Prisma se aplican solas al arrancar el contenedor (`prisma migrate deploy`
+  en el `CMD` del Dockerfile) — no hace falta ningún paso manual de BD tras el
+  deploy. Ver `docs/03-entorno-desarrollo.md` → "Despliegue en producción".
 
 ## Arquitectura — lo esencial
 

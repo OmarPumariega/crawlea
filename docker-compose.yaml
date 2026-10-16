@@ -1,16 +1,23 @@
 # ============================================================
 # CRAWLEA — Producción en VPS Contabo (gestión por SSH)
-# Proxy público: Traefik de Coolify (red externa "coolify").
-# La app se descubre por etiquetas Traefik; SSL automático (Let's Encrypt).
-# La DB NO se publica al host ni a Traefik (solo red interna).
-# Dominio: crawlea.com. Nota: el volumen se llama seo_pgdata por historia
-# (anterior nombre del proyecto) — NO renombrarlo sin migrar la BD.
+#
+# Stack AISLADO del resto del VPS: proyecto compose propio
+# (/opt/crawlea), red interna propia, volumen propio y límites de
+# recursos. La única pieza compartida es la red "coolify", a la que
+# solo se engancha el contenedor app para que el Traefik de Coolify
+# (dueño de 80/443 en el host) enrute crawlea.com hacia él — mismo
+# patrón que cirochat. El despliegue antiguo (seo.*) usa routers
+# "seo-*": aquí todo se nombra "crawlea-*" para no colisionar.
+#
+# La DB NO se publica al host ni al proxy (solo red interna).
+# Prerequisito: `git clone` de este repo en /opt/crawlea y un .env
+# junto a este fichero (ver .env.example y docs/03).
 # ============================================================
 
 services:
   db:
     image: postgres:16-alpine
-    container_name: seo-db
+    container_name: crawlea-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -19,54 +26,88 @@ services:
       TZ: Europe/Madrid
       PGTZ: Europe/Madrid
     volumes:
-      - seo_pgdata:/var/lib/postgresql/data
+      - crawlea_pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: "1"
     networks:
-      - seo-internal
+      - crawlea-internal
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: seo-app
+    container_name: crawlea-app
     restart: unless-stopped
     env_file:
       - .env
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
+      # URL pública en runtime (no horneada en la imagen): cambiar de
+      # dominio no obliga a recompilar.
+      NEXTAUTH_URL: "https://crawlea.com"
       NODE_ENV: production
       TZ: Europe/Madrid
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      # /acceso es pública: 200 sin sesión, ideal para saber si la app vive.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/acceso || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2"
     networks:
-      - seo-internal
+      - crawlea-internal
       - coolify
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=coolify"
-      - "traefik.http.middlewares.seo-gzip.compress=true"
-      - "traefik.http.middlewares.seo-redir.redirectscheme.scheme=https"
-      - "traefik.http.routers.seo-http.rule=Host(`crawlea.com`) || Host(`www.crawlea.com`)"
-      - "traefik.http.routers.seo-http.entryPoints=http"
-      - "traefik.http.routers.seo-http.middlewares=seo-redir"
-      - "traefik.http.routers.seo-http.service=seo-svc"
-      - "traefik.http.routers.seo-https.rule=Host(`crawlea.com`) || Host(`www.crawlea.com`)"
-      - "traefik.http.routers.seo-https.entryPoints=https"
-      - "traefik.http.routers.seo-https.middlewares=seo-gzip"
-      - "traefik.http.routers.seo-https.tls=true"
-      - "traefik.http.routers.seo-https.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.seo-https.service=seo-svc"
-      - "traefik.http.services.seo-svc.loadbalancer.server.port=3000"
+      # gzip compartido + http→https
+      - "traefik.http.middlewares.crawlea-gzip.compress=true"
+      - "traefik.http.middlewares.crawlea-redir.redirectscheme.scheme=https"
+      # www → dominio desnudo (301 permanente, canonical único para SEO)
+      - "traefik.http.middlewares.crawlea-www.redirectregex.regex=https://www\\.crawlea\\.com/(.*)"
+      - "traefik.http.middlewares.crawlea-www.redirectregex.replacement=https://crawlea.com/$${1}"
+      - "traefik.http.middlewares.crawlea-www.redirectregex.permanent=true"
+      # ---- HTTP (80) ----
+      - "traefik.http.routers.crawlea-http.rule=Host(`crawlea.com`) || Host(`www.crawlea.com`)"
+      - "traefik.http.routers.crawlea-http.entryPoints=http"
+      - "traefik.http.routers.crawlea-http.middlewares=crawlea-redir"
+      - "traefik.http.routers.crawlea-http.service=crawlea-svc"
+      # ---- HTTPS (443) dominio principal ----
+      - "traefik.http.routers.crawlea-https.rule=Host(`crawlea.com`)"
+      - "traefik.http.routers.crawlea-https.entryPoints=https"
+      - "traefik.http.routers.crawlea-https.middlewares=crawlea-gzip"
+      - "traefik.http.routers.crawlea-https.tls=true"
+      - "traefik.http.routers.crawlea-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.crawlea-https.service=crawlea-svc"
+      # ---- HTTPS (443) www → 301 al desnudo ----
+      - "traefik.http.routers.crawlea-www-https.rule=Host(`www.crawlea.com`)"
+      - "traefik.http.routers.crawlea-www-https.entryPoints=https"
+      - "traefik.http.routers.crawlea-www-https.middlewares=crawlea-www"
+      - "traefik.http.routers.crawlea-www-https.tls=true"
+      - "traefik.http.routers.crawlea-www-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.crawlea-www-https.service=crawlea-svc"
+      - "traefik.http.services.crawlea-svc.loadbalancer.server.port=3000"
 
 volumes:
-  seo_pgdata:
+  crawlea_pgdata:
 
 networks:
-  seo-internal:
+  crawlea-internal:
   coolify:
     external: true

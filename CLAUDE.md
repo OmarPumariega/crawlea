@@ -505,10 +505,13 @@ Ver [`.env.example`](./.env.example).
 
 ## Consideraciones de despliegue (VPS Contabo)
 
-`Dockerfile` multi-stage + `docker-compose.yaml` con Traefik (Coolify) para SSL
-automático. Dominio: **crawlea.com** (compra en trámite; ya apuntado en los labels
-de Traefik). Pendiente de la Fase 5: quitar el `NEXTAUTH_URL` horneado del
-Dockerfile y pasar a env de runtime.
+**Producción: crawlea.com**, stack Docker aislado en `/opt/crawlea` del VPS
+(SSH `vps-omar`): `Dockerfile` multi-stage + `docker-compose.yaml` con redes,
+volumen y límites de recursos propios; el Traefik compartido del VPS (Coolify)
+enruta el dominio con SSL automático (Let's Encrypt) y `www` hace 301 al
+dominio desnudo. `NEXTAUTH_URL` es env de runtime del compose. Actualizar:
+`ssh vps-omar`, `cd /opt/crawlea`, `git pull`, `docker compose up -d --build`.
+Detalle completo en `docs/03-entorno-desarrollo.md` → "Despliegue en producción".
 
 ## Gotcha de desarrollo
 
