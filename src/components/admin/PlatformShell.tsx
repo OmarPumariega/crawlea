@@ -24,8 +24,8 @@ export default function PlatformShell({ children }: { children: React.ReactNode 
   const close = () => setNavOpen(false);
 
   return (
-    <div className="h-screen bg-frame overflow-hidden p-0 md:p-4">
-      <div className="h-full flex overflow-hidden bg-surface rounded-none md:rounded-[24px] border border-line shadow-[0_8px_30px_rgba(17,20,43,0.08)]">
+    <div className="h-screen bg-background overflow-hidden">
+      <div className="h-full flex overflow-hidden bg-surface">
         {navOpen && (
           <div className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-20 md:hidden" onClick={close} />
         )}
@@ -83,7 +83,7 @@ export default function PlatformShell({ children }: { children: React.ReactNode 
             </button>
           </div>
         </aside>
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0 rounded-none md:rounded-[23px]">
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <AdminHeader onOpenNav={() => setNavOpen(true)} />
           <main className="flex-1 overflow-y-auto bg-background p-4 md:p-6 lg:p-8">{children}</main>
         </div>
