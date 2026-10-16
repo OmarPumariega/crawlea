@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { track as trackEvent } from "@/lib/analytics/track";
 
 // Carrusel horizontal de tarjetas de funciones. Arranca alineado con el
 // contenedor de la página y sale por el borde derecho de la pantalla; las
@@ -49,6 +50,7 @@ export default function FeatureCarousel({ children, title, count }: { children: 
   };
   const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!drag.current.active) return;
+    if (drag.current.moved) trackEvent("carousel_nav", { carousel: "funciones", method: "drag" });
     drag.current.active = false;
     setDragging(false);
     if (track.current?.hasPointerCapture(e.pointerId)) track.current.releasePointerCapture(e.pointerId);
@@ -62,6 +64,7 @@ export default function FeatureCarousel({ children, title, count }: { children: 
   };
 
   const go = (dir: 1 | -1) => {
+    trackEvent("carousel_nav", { carousel: "funciones", direction: dir === 1 ? "next" : "prev", method: "arrow" });
     const el = track.current;
     if (!el) return;
     const card = el.querySelector("article");

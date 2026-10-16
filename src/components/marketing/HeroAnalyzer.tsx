@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Globe, Loader2, Lock } from "lucide-react";
 import { Pill } from "@/components/marketing/mockups";
+import { track } from "@/lib/analytics/track";
 
 type Summary = { domain: string; issuesCount: number; passedCount: number; bySeverity: { alto: number; medio: number; bajo: number } };
 
@@ -38,6 +39,7 @@ export default function HeroAnalyzer() {
     e.preventDefault();
     setError("");
     if (!url.trim()) { setError("Escribe la dirección de tu web."); return; }
+    track("analyzer_start");
     setPhase("analyzing");
     setProgress(0);
     const started = Date.now();
@@ -54,10 +56,16 @@ export default function HeroAnalyzer() {
     if (timer.current) clearInterval(timer.current);
     if (!res.ok || typeof res.body?.issuesCount !== "number") {
       setError(res.body?.error ?? "No hemos podido analizar esa web. Inténtalo de nuevo en unos minutos.");
+      track("analyzer_error", { reason: res.body?.error ? "rejected" : "failed" });
       setPhase("idle");
       return;
     }
     setProgress(100);
+    track("analyzer_result", {
+      issues_count: res.body.issuesCount,
+      passed_count: res.body.passedCount,
+      severe_count: res.body.bySeverity?.alto ?? 0,
+    });
     setSummary(res.body as Summary);
     setPhase("result");
   }
@@ -138,7 +146,7 @@ export default function HeroAnalyzer() {
               <p className="font-bold">{summary.issuesCount > 0 ? "Crea tu cuenta para ver qué corregir" : "Crea tu cuenta para rastrear toda tu web"}</p>
               <p className="mt-1 text-sm leading-relaxed text-ink-soft">Entras con Google en un clic, sin tarjeta. Esto es solo tu página principal: dentro rastreamos la web entera y te decimos qué hacer en cada caso.</p>
               <div className="mt-4">
-                <Link href={`/registro?web=${encodeURIComponent(summary.domain)}`} className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-strong">
+                <Link href={`/registro?web=${encodeURIComponent(summary.domain)}`} data-track="analyzer_signup_click" data-track-issues_count={String(summary.issuesCount)} className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-strong">
                   Crea tu cuenta gratis <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>

@@ -29,7 +29,7 @@ RUN npx prisma generate
 # VPS Contabo muy cargado: Turbopack pedía tanta RAM en pico que el kernel lo
 # mataba (OOM kill en el build de Coolify). Limitar el heap de Node evita que
 # el paso de `next build` compita por memoria con el resto de servicios.
-RUN NODE_OPTIONS="--max-old-space-size=2048" \
+RUN NODE_OPTIONS="--max-old-space-size=3072" \
     ENCRYPTION_KEY="build-placeholder-key-32-chars--" \
     DATABASE_URL="postgresql://build:build@localhost:5432/build" \
     NEXTAUTH_SECRET="build-placeholder" \

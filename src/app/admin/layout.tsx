@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { requireSession, isAdmin } from "@/lib/auth-guards";
 import Providers from "@/components/Providers";
 import PlatformShell from "@/components/admin/PlatformShell";
+import AnalyticsIdentity from "@/components/analytics/AnalyticsIdentity";
+import { analyticsIdentity } from "@/lib/analytics/identity";
 
 import type { Metadata } from "next";
 
@@ -14,8 +16,11 @@ export default async function AdminPlatformLayout({ children }: { children: Reac
   if (!session) redirect("/acceso");
   if (!isAdmin(session)) redirect("/app");
 
+  const identity = await analyticsIdentity(session.user.id);
+
   return (
     <Providers session={session}>
+      {identity && <AnalyticsIdentity {...identity} />}
       <PlatformShell>{children}</PlatformShell>
     </Providers>
   );

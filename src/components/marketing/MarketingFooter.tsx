@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import Logo from "@/components/app/Logo";
+import CookieSettingsLink from "@/components/analytics/CookieSettingsLink";
 
 const COLUMNS = [
   {
@@ -30,9 +31,11 @@ const COLUMNS = [
   {
     title: "Legal",
     links: [
+      { href: "/legal/aviso-legal", label: "Aviso legal" },
       { href: "/legal/privacidad", label: "Privacidad" },
-      { href: "/legal/terminos", label: "Términos de uso" },
       { href: "/legal/cookies", label: "Cookies" },
+      { href: "/legal/terminos", label: "Términos de uso" },
+      { href: "/legal/condiciones-contratacion", label: "Condiciones de contratación" },
     ],
   },
 ];
@@ -41,7 +44,7 @@ const COLUMNS = [
 // enlaces y el nombre de la marca en grande cortado por el borde inferior.
 export default function MarketingFooter() {
   return (
-    <footer className="relative overflow-hidden bg-[#0B0D2B] text-white">
+    <footer data-section="footer" className="relative overflow-hidden bg-[#0B0D2B] text-white">
       <div className="mk-grid-bg pointer-events-none absolute inset-0 opacity-50" aria-hidden="true" />
       <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={{ background: "radial-gradient(ellipse 60% 70% at 0% 0%, rgba(79,92,245,0.28), transparent 70%)" }} />
 
@@ -50,7 +53,7 @@ export default function MarketingFooter() {
           <div className="max-w-sm">
             <Link href="/" aria-label="Crawlea, inicio"><Logo textClassName="text-2xl !text-white" /></Link>
             <p className="mt-5 text-[15px] leading-relaxed text-white/60">Lo esencial del SEO, con claridad y a un precio justo.</p>
-            <Link href="/registro" className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-brand-700 transition hover:bg-brand-50">
+            <Link href="/registro" data-track="signup_cta_click" data-track-location="footer" className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-brand-700 transition hover:bg-brand-50">
               Empieza gratis <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
@@ -72,7 +75,7 @@ export default function MarketingFooter() {
         </div>
 
         <div className="mt-16 flex flex-col gap-2 border-t border-white/10 py-6 text-sm text-white/45 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Crawlea. Todos los derechos reservados.</p>
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1">© {new Date().getFullYear()} Crawlea. Todos los derechos reservados. <CookieSettingsLink className="font-semibold text-white/70 underline-offset-2 hover:text-white hover:underline" /></p>
           <p className="max-w-xl sm:text-right">Google, Search Console, Analytics, PageSpeed Insights y Google Maps son marcas de Google LLC. Crawlea no está afiliada a Google. Los datos de las maquetas son de ejemplo.</p>
         </div>
       </div>

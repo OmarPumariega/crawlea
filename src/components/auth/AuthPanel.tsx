@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Loader2, Check } from "lucide-react";
 import Logo from "@/components/app/Logo";
+import { track } from "@/lib/analytics/track";
 
 // Panel compartido de /acceso y /registro. El SaaS se entra con Google (vía
 // pública); el formulario email+contraseña queda como "acceso interno" para
@@ -25,6 +27,7 @@ export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: 
     setGoogleLoading(true);
     // redirect true: Google navega a su pantalla de consentimiento; no hay
     // resultado que inspeccionar aquí (los errores llegan por query param).
+    track(esRegistro ? "sign_up_start" : "login", { method: "google" });
     await signIn("google", { callbackUrl });
   }
 
@@ -176,12 +179,13 @@ export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: 
               {esRegistro ? "Continuar con Google" : "Entrar con Google"}
             </button>
 
-            {esRegistro && (
-              <p className="mt-3 text-xs text-ink-soft leading-relaxed">
-                Al continuar aceptas los términos del servicio. Plan gratis, sin
-                tarjeta: crea tu primer proyecto y pruébalo todo.
-              </p>
-            )}
+            <p className="mt-3 text-xs text-ink-soft leading-relaxed">
+              {esRegistro && "Plan gratis, sin tarjeta: crea tu primer proyecto y pruébalo todo. "}
+              Al continuar con Google, aceptas los{" "}
+              <Link href="/legal/terminos" target="_blank" className="font-semibold text-brand hover:underline">Términos de uso</Link> y la{" "}
+              <Link href="/legal/privacidad" target="_blank" className="font-semibold text-brand hover:underline">Política de privacidad</Link>.
+              Te los pediremos de nuevo al entrar para dejar constancia.
+            </p>
 
             <div className="mt-6 pt-5 border-t border-line">
               {showInternal ? (

@@ -34,12 +34,14 @@ export default function MarketingHeader({ loggedIn }: { loggedIn: boolean }) {
   useEffect(() => setOpen(false), [pathname]);
 
   const cta = loggedIn ? (
-    <Link href="/app" className="rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-strong">
+    <Link href="/app" data-track="open_app_click" data-track-location="header" className="rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-strong">
       Ir al panel
     </Link>
   ) : (
     <Link
       href="/registro"
+      data-track="signup_cta_click"
+      data-track-location="header"
       className={cn(
         "rounded-full px-5 py-2 text-sm font-semibold transition-colors",
         overHero ? "bg-white text-brand-700 hover:bg-brand-50" : "bg-brand text-white hover:bg-brand-strong"
@@ -51,6 +53,7 @@ export default function MarketingHeader({ loggedIn }: { loggedIn: boolean }) {
 
   return (
     <header
+      data-section="header"
       className={cn(
         "fixed inset-x-0 top-0 z-40 transition-all duration-300",
         overHero ? "border-b border-transparent" : "border-b border-line bg-background/85 backdrop-blur-xl",
@@ -92,6 +95,8 @@ export default function MarketingHeader({ loggedIn }: { loggedIn: boolean }) {
           {!loggedIn && (
             <Link
               href="/acceso"
+              data-track="login_click"
+              data-track-location="header"
               className={cn("hidden px-3 py-2 text-[15px] font-semibold transition-colors sm:block", overHero ? "text-white/80 hover:text-white" : "text-ink-soft hover:text-ink")}
             >
               Entra

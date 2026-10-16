@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { track } from "@/lib/analytics/track";
 
 export default function ContactForm({ topic }: { topic?: string }) {
   const [name, setName] = useState("");
@@ -14,6 +15,7 @@ export default function ContactForm({ topic }: { topic?: string }) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    track("contact_submit", { form_id: "contacto" });
     setStatus("sending");
     try {
       const res = await fetch("/api/contacto", {
@@ -22,6 +24,7 @@ export default function ContactForm({ topic }: { topic?: string }) {
         body: JSON.stringify({ name, email, message, web, topic }),
       });
       if (res.ok) {
+        track("generate_lead", { form_id: "contacto", topic: topic ?? "general" });
         setStatus("sent");
         return;
       }

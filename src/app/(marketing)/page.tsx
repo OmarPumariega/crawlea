@@ -40,7 +40,7 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* ============ HERO ============ */}
-      <section className="relative overflow-hidden bg-[#0E1033] pb-8 pt-32 text-white sm:pt-40">
+      <section data-section="hero" className="relative overflow-hidden bg-[#0E1033] pb-8 pt-32 text-white sm:pt-40">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={{ background: "radial-gradient(ellipse 80% 55% at 50% -10%, rgba(79,92,245,0.65), transparent 70%), radial-gradient(ellipse 50% 40% at 85% 30%, rgba(115,129,255,0.28), transparent 70%)" }} />
         <div className="mk-grid-bg pointer-events-none absolute inset-0" aria-hidden="true" />
         <div className="mk-glow pointer-events-none absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-brand blur-[120px]" aria-hidden="true" />
@@ -88,7 +88,7 @@ export default function HomePage() {
       </section>
 
       {/* ============ FUNCIONES (carrusel) ============ */}
-      <section className="overflow-hidden bg-background py-24">
+      <section data-section="funciones" className="overflow-hidden bg-background py-24">
         <Reveal>
           <FeatureCarousel count={7} title="Lo esencial del SEO, en un solo sitio">
             <FeatureCard id="posiciones" text="Comprueba en qué puesto de Google sale tu web para cada palabra clave, por ubicación y con la frecuencia que elijas." points={["Top 10, 30, 50 o 100 resultados", "Comprobación diaria, semanal o mensual", "Histórico y aviso si caes 10 puestos o más"]} kicker="Posiciones" title="Sigue dónde sales en Google">
@@ -125,14 +125,14 @@ export default function HomePage() {
           </FeatureCarousel>
         </Reveal>
         <div className="mx-auto mt-6 max-w-[1360px] px-5 sm:px-8 lg:px-10">
-          <Link href="/funciones" className="inline-flex items-center gap-2 text-[15px] font-bold text-brand hover:text-brand-strong">
+          <Link href="/funciones" data-track="see_all_features_click" className="inline-flex items-center gap-2 text-[15px] font-bold text-brand hover:text-brand-strong">
             Ver todas las funciones <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </section>
 
       {/* ============ DATOS REALES (oscura) ============ */}
-      <section className="relative overflow-hidden bg-[#0E1033] py-24 text-white">
+      <section data-section="datos-reales" className="relative overflow-hidden bg-[#0E1033] py-24 text-white">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={{ background: "radial-gradient(ellipse 60% 60% at 15% 50%, rgba(79,92,245,0.4), transparent 70%)" }} />
         <div className="mk-grid-bg pointer-events-none absolute inset-0" aria-hidden="true" />
         <div className="relative mx-auto grid max-w-[1360px] items-center gap-14 px-5 sm:px-8 lg:px-10 lg:grid-cols-2">
@@ -164,7 +164,7 @@ export default function HomePage() {
       </section>
 
       {/* ============ CÓMO FUNCIONA ============ */}
-      <section className="border-b border-line bg-background">
+      <section data-section="como-funciona" className="border-b border-line bg-background">
         <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
           <Reveal><SectionHead n="01" label="Cómo funciona" title="Del dominio al plan de mejora" text="Sin instalar nada: entras con tu cuenta de Google y en unos minutos sabes qué corregir primero." /></Reveal>
 
@@ -201,7 +201,7 @@ export default function HomePage() {
       </section>
 
       {/* ============ PRECIOS ============ */}
-      <section className="border-y border-line bg-surface">
+      <section data-section="precios-home" className="border-y border-line bg-surface">
         <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
           <Reveal><SectionHead n="02" label="Precios" title="SEO claro, a un precio justo" text="Empieza gratis y sube de plan cuando lo necesites." /></Reveal>
           <Reveal className="mt-14"><PricingCards /></Reveal>
@@ -223,7 +223,7 @@ export default function HomePage() {
             <div className="divide-y divide-line border-y border-line">
               {FAQ.map((f) => (
                 <details key={f.q} className="group py-5">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold text-ink">
+                  <summary data-track="faq_toggle" data-track-question={f.q} className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold text-ink">
                     {f.q}
                     <span className="text-2xl font-light text-brand transition-transform group-open:rotate-45" aria-hidden="true">+</span>
                   </summary>

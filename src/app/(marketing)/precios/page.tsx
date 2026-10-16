@@ -34,7 +34,7 @@ export default function PreciosPage() {
             <div className="divide-y divide-line border-y border-line">
               {FAQ.map((f) => (
                 <details key={f.q} className="group py-5">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold text-ink">
+                  <summary data-track="faq_toggle" data-track-question={f.q} className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold text-ink">
                     {f.q}
                     <span className="text-2xl font-light text-brand transition-transform group-open:rotate-45" aria-hidden="true">+</span>
                   </summary>

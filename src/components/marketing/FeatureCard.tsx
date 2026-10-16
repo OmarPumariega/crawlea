@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/track";
 
 // Tarjeta alta del carrusel: etiqueta, título y botón «+». Al pulsarlo el
 // título se sustituye, en el hueco de arriba, por la descripción del módulo
@@ -31,7 +32,10 @@ export default function FeatureCard({
         <p className="pt-1 text-xs font-bold uppercase tracking-[0.12em] text-ink">{kicker}</p>
         <button
           type="button"
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => {
+            track("feature_card_toggle", { feature: id, open: !open });
+            setOpen((o) => !o);
+          }}
           aria-expanded={open}
           aria-controls={`feat-${id}`}
           aria-label={open ? `Cerrar la descripción de ${kicker}` : `Qué hace ${kicker}`}
@@ -59,7 +63,7 @@ export default function FeatureCard({
               </li>
             ))}
           </ul>
-          <Link href={`/funciones#${id}`} tabIndex={open ? 0 : -1} className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-brand-700 hover:text-brand">
+          <Link href={`/funciones#${id}`} data-track="feature_see_more_click" data-track-feature={id} tabIndex={open ? 0 : -1} className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-brand-700 hover:text-brand">
             Ver más <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

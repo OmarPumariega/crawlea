@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
+import { connection } from "next/server";
 import { ThemeProvider } from "next-themes";
+import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
+import CookieBanner from "@/components/analytics/CookieBanner";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -26,13 +29,19 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
   },
   twitter: { card: "summary_large_image" },
+  // Verificación de propiedad en Google Search Console (etiqueta HTML).
+  verification: { google: "jbtVyWGW-TXSxVUq6qAd0P-X63bmave40kcdpy2cXAo" },
 };
 
-export default function RootLayout({
+// Async + connection(): el ID de GTM es una variable de RUNTIME (GTM_ID), no de
+// build; así se puede cambiar sin reconstruir la imagen.
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  await connection();
+  const gtmId = process.env.GTM_ID || undefined;
   return (
     // suppressHydrationWarning: next-themes muta el atributo data-theme de
     // <html> antes del primer pintado para evitar el flash de tema equivocado.
@@ -49,6 +58,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <AnalyticsProvider gtmId={gtmId} />
+          <CookieBanner />
         </ThemeProvider>
       </body>
     </html>

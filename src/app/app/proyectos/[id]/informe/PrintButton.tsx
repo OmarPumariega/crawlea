@@ -2,6 +2,7 @@
 
 import { Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics/track";
 
 // Caracteres inválidos como nombre de archivo en Windows/Mac — el resto
 // (espacios, tildes, mayúsculas) se conserva para que el nombre siga siendo
@@ -19,6 +20,7 @@ function todayDDMMYYYY(): string {
 
 export default function PrintButton({ className, projectName }: { className?: string; projectName: string }) {
   function handlePrint() {
+    track("report_print");
     // El nombre de archivo que sugiere "Guardar como PDF" en el diálogo de
     // impresión del navegador se deriva del document.title en el momento de
     // imprimir (Chrome/Edge/Safari) — es una sugerencia, no algo que la app

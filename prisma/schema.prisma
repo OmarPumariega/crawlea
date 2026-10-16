@@ -32,6 +32,11 @@ model User {
   // planOverride: el plan lo asignó el admin a mano; el webhook de Stripe
   // (Fase 3) no debe pisarlo. spendLimitOverrideUsd: tope mensual de la cuenta
   // que, si existe, SUSTITUYE el topeUsdMes del plan.
+  // Aceptación de los términos y la política de privacidad (versión de los
+  // textos legales vigente en ese momento, src/lib/legal/company.ts).
+  termsAcceptedAt DateTime?
+  termsVersion    String?
+
   planOverride          Boolean   @default(false)
   spendLimitOverrideUsd Float?
 

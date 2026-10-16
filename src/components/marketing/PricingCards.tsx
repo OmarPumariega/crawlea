@@ -8,7 +8,7 @@ import { PLANS } from "@/lib/plans";
 export default function PricingCards({ className = "" }: { className?: string }) {
   const plans = Object.values(PLANS);
   return (
-    <div className={"grid overflow-hidden rounded-[28px] border border-line bg-surface shadow-[0_30px_70px_-30px_rgba(17,20,43,0.35)] md:grid-cols-3 " + className}>
+    <div data-section="precios" className={"grid overflow-hidden rounded-[28px] border border-line bg-surface shadow-[0_30px_70px_-30px_rgba(17,20,43,0.35)] md:grid-cols-3 " + className}>
       {plans.map((p) => {
         const dark = p.id === "pro";
         const gratis = p.precioEurMes === 0;
@@ -34,6 +34,9 @@ export default function PricingCards({ className = "" }: { className?: string })
             </ul>
             <Link
               href="/registro"
+              data-track="pricing_cta_click"
+              data-track-plan={p.id}
+              data-track-price_eur={String(p.precioEurMes)}
               className={"mt-8 rounded-full px-5 py-3 text-center text-sm font-bold transition-colors " + (dark ? "bg-white text-brand-700 hover:bg-brand-50" : gratis ? "bg-brand text-white hover:bg-brand-strong" : "border border-line text-ink hover:bg-surface-muted")}
             >
               {gratis ? "Empieza gratis" : `Elige ${p.nombre}`}
