@@ -27,8 +27,8 @@ import { cn } from "@/lib/utils";
 import { rankMonthlyCostUsd } from "@/lib/dataforseo/pricing";
 import { downloadCsv } from "@/lib/csv";
 import RankVisibilityChart from "@/components/app/RankVisibilityChart";
+import { RadialGauge } from "@/components/ui/charts";
 import PageHeader from "@/components/app/PageHeader";
-import StatHero from "@/components/app/StatHero";
 import Pill from "@/components/app/Pill";
 import LocationPicker, { type LocationValue } from "@/components/app/LocationPicker";
 import UrlLink from "@/components/app/UrlLink";
@@ -774,16 +774,42 @@ export default function RankView({ projectId }: { projectId: string }) {
                   <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-white/15" />sin posicionar · {distribution.none}</span>
                 </div>
               </div>
-              <StatHero
-                label="En Top 3"
-                value={String(distribution.top3)}
-                sub={`${Math.round((distribution.top3 / Math.max(1, keywords.length)) * 100)}% del total`}
-              />
-              <StatHero
-                label="En Top 10"
-                value={String(distribution.top10)}
-                sub={`${Math.round((distribution.top10 / Math.max(1, keywords.length)) * 100)}% del total`}
-              />
+              {(() => {
+                const inTop10 = distribution.top3 + distribution.top10;
+                const share = (inTop10 / Math.max(1, keywords.length)) * 100;
+                let up = 0;
+                let down = 0;
+                for (const kw of keywords) {
+                  const d = deltaFor(kw);
+                  if (d !== null && d > 0) up++;
+                  else if (d !== null && d < 0) down++;
+                }
+                return (
+                  <>
+                    <div className="flex items-center justify-between gap-3 rounded-[20px] border border-line bg-surface p-5 shadow-card">
+                      <div>
+                        <p className="text-[13px] font-semibold text-ink-soft">En top 10</p>
+                        <p className="mt-2 text-[34px] font-extrabold leading-none tracking-[-0.03em] tabular-nums text-ink">{inTop10}</p>
+                        <p className="mt-2 text-xs text-ink-faint">de {keywords.length} keywords</p>
+                      </div>
+                      <RadialGauge value={share} size={76} />
+                    </div>
+                    <div className="rounded-[20px] border border-line bg-surface p-5 shadow-card">
+                      <p className="text-[13px] font-semibold text-ink-soft">Movimiento reciente</p>
+                      <div className="mt-2 flex items-end gap-5">
+                        <div>
+                          <p className="text-[34px] font-extrabold leading-none tracking-[-0.03em] tabular-nums text-accent-ink">▲ {up}</p>
+                          <p className="mt-2 text-xs text-ink-faint">suben</p>
+                        </div>
+                        <div>
+                          <p className={`text-[34px] font-extrabold leading-none tracking-[-0.03em] tabular-nums ${down > 0 ? "text-alert-ink" : "text-ink-faint"}`}>▼ {down}</p>
+                          <p className="mt-2 text-xs text-ink-faint">bajan</p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
 
             {/* Barra de herramientas: búsqueda, filtro por grupo y acciones,
@@ -1309,6 +1335,9 @@ export default function RankView({ projectId }: { projectId: string }) {
           <RankVisibilityChart projectId={projectId} group={visibilityGroup === "__all__" ? undefined : visibilityGroup} />
         </div>
       )}
+      {/* Alta de keywords (2/3) y ajustes de escaneo e importación (1/3), lado a lado */}
+      <div className="grid items-start gap-4 xl:grid-cols-3">
+      <div className="xl:col-span-2">
       {/* Añadir keyword */}
       <form onSubmit={handleAdd} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1410,6 +1439,8 @@ export default function RankView({ projectId }: { projectId: string }) {
         </p>
       </form>
 
+      </div>
+      <div className="space-y-4">
       {/* Escaneo programado del proyecto — antes vivía escondido dentro del
           formulario de alta; tarjeta propia para que sea fácil de encontrar
           y quede claro que es la palanca que sincroniza al mismo día TODAS
@@ -1518,6 +1549,8 @@ export default function RankView({ projectId }: { projectId: string }) {
       )}
 
 
+      </div>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 import {
   Loader2, Sparkles, Plus, Trash2, Target, TrendingUp, AlertTriangle,
   ExternalLink, ChevronDown, ChevronUp, ArrowDownToLine, Crosshair, FileSearch,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ConfirmDialog from "@/components/app/ConfirmDialog";
@@ -18,6 +19,12 @@ import {
 import { fmtCredits } from "@/lib/credits";
 import { importKeywordsToDefaultStudy } from "@/lib/keywords/client-import";
 import PageHeader from "@/components/app/PageHeader";
+import Pill from "@/components/app/Pill";
+import Section from "@/components/ui/Section";
+import StatTile from "@/components/ui/StatTile";
+import Toolbar from "@/components/ui/Toolbar";
+import Modal from "@/components/app/Modal";
+import { AreaSpark, BarList, RadialGauge } from "@/components/ui/charts";
 
 // Item enriquecido de keyword (visibilidad o content gap). Todos los campos
 // extra llegan GRATIS en la misma respuesta Labs que ya pagábamos — antes se
@@ -446,16 +453,28 @@ function TopKeywords({ keywords, title }: { keywords: TopKeyword[] | null; title
 // dificultad para priorizar, y al expandir, el snippet + título + URL con la
 // que el competidor posiciona esa keyword (ejemplo de copy). Antes solo se veían
 // 3 campos de los 10 que ya pagábamos.
-function ContentGapList({ items, contentGapAt, projectId }: { items: TopKeyword[]; contentGapAt: string | null; projectId: string }) {
+function ContentGapList({
+  items,
+  contentGapAt,
+  projectId,
+  title,
+  tall = false,
+}: {
+  items: TopKeyword[];
+  contentGapAt: string | null;
+  projectId: string;
+  title?: string;
+  tall?: boolean;
+}) {
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const q = search.trim().toLowerCase();
   const filtered = q ? items.filter((k) => k.keyword.toLowerCase().includes(q)) : items;
   return (
-    <div className="pt-2 border-t border-line space-y-1.5">
+    <div className="space-y-2">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <p className="text-xs text-ink-soft">
-          Content gap ({items.length}) — ranquea por estas y tú no
+        <p className="text-sm font-semibold text-ink">
+          {title ?? "Content gap — posiciona por estas y tú no"} <span className="font-medium text-ink-faint">({items.length})</span>
           {contentGapAt ? ` · ${new Date(contentGapAt).toLocaleDateString("es-ES")}` : ""}
         </p>
         <input
@@ -467,7 +486,7 @@ function ContentGapList({ items, contentGapAt, projectId }: { items: TopKeyword[
       {filtered.length === 0 ? (
         <p className="text-xs text-ink-faint">Sin resultados para &laquo;{search}&raquo;.</p>
       ) : (
-        <div className="max-h-80 overflow-y-auto border border-line rounded-xl">
+        <div className={cn("overflow-y-auto border border-line rounded-xl", tall ? "max-h-[420px]" : "max-h-80")}>
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-background text-left text-ink-faint">
               <tr>
@@ -545,6 +564,40 @@ function ContentGapList({ items, contentGapAt, projectId }: { items: TopKeyword[
   );
 }
 
+
+// % de keywords del dominio que están en top 10 (top 3 + posiciones 4-10).
+function top10Share(snapshot: Snapshot): number | null {
+  const b = snapshot?.positionBuckets;
+  if (!b) return null;
+  const total = b.top3 + b.top10 + b.top100;
+  return total > 0 ? ((b.top3 + b.top10) / total) * 100 : null;
+}
+
+// Variación entre los dos últimos análisis (tráfico), para la pastilla de tendencia.
+function trendDelta(points: number[] | undefined): { pct: number; up: boolean } | null {
+  if (!points || points.length < 2) return null;
+  const prev = points[points.length - 2];
+  const last = points[points.length - 1];
+  if (prev <= 0) return null;
+  const pct = ((last - prev) / prev) * 100;
+  if (Math.abs(pct) < 0.5) return null; // sin cambio real, no se muestra pastilla
+  return { pct: Math.abs(pct), up: pct >= 0 };
+}
+
+// Top keywords como lista de barras (volumen) con la posición como etiqueta.
+function topKeywordBars(keywords: TopKeyword[] | null | undefined, n = 5) {
+  return (keywords ?? [])
+    .filter((k) => k.keyword)
+    .sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0))
+    .slice(0, n)
+    .map((k) => ({
+      label: k.keyword,
+      value: k.volume ?? 0,
+      display: k.volume != null ? k.volume.toLocaleString("es-ES") : "—",
+      tag: k.position != null ? `#${k.position}` : undefined,
+    }));
+}
+
 export default function CompetidoresView({ projectId }: { projectId: string }) {
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
@@ -566,6 +619,8 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
   const [notice, setNotice] = useState<string>("");
   const [importNotice, setImportNotice] = useState<{ message: string; studyId: string } | null>(null);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
+  // Detalle completo de un dominio: id de competidor o "__own" para el propio.
+  const [detailId, setDetailId] = useState<string | null>(null);
   const [removing, setRemoving] = useState(false);
   // Series de tendencia agrupadas por dominio (proyecto + competidores). Una
   // sola llamada a /tendencia (sin ?domain) alimenta TODOS los sparklines en
@@ -882,30 +937,39 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
     ...(data?.projectDomain ? [{ domain: data.projectDomain, snapshot: data.projectSnapshot, isOwn: true }] : []),
     ...(data?.competitors.map((c) => ({ domain: c.domain, snapshot: c.snapshot, isOwn: false })) ?? []),
   ].sort((a, b) => (b.snapshot?.organicTraffic ?? -1) - (a.snapshot?.organicTraffic ?? -1));
+  // Resumen de cabecera: lo primero que se lee es dónde estás frente a la competencia.
+  const competitorsTotal = data?.competitors.length ?? 0;
+  const competitorsAnalyzed = data?.competitors.filter((c) => hasUsefulSnapshot(c.snapshot)).length ?? 0;
+  const maxTraffic = Math.max(1, ...comparisonRows.map((r) => (hasUsefulSnapshot(r.snapshot) ? r.snapshot?.organicTraffic ?? 0 : 0)));
+  const leader = comparisonRows.find((r) => !r.isOwn && hasUsefulSnapshot(r.snapshot)) ?? null;
+
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Módulo · Competidores"
         title="Competidores"
-        description="{Espía el tráfico orgánico estimado y las keywords de cualquier dominio, y           descubre el content gap: keywords por las que ranquean y tú no, con CPC, dificultad y el           snippet con el que posicionan.}"
+        description="Espía el tráfico orgánico estimado y las keywords de cualquier dominio, y descubre el content gap: keywords por las que ranquean y tú no, con CPC, dificultad y el snippet con el que posicionan."
       />
 
-      {/* Ubicación de todos los análisis de esta sesión (propio dominio,
-          competidores y content gap) — un negocio local no compite igual a
-          nivel nacional que en su ciudad. */}
-      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 space-y-1.5">
-        <label className="block text-sm font-medium text-ink-soft">
-          Ubicación de análisis <span className="text-ink-faint font-normal">(opcional)</span>
-        </label>
-        <div className="max-w-sm">
+      {/* Ajustes de la sesión en una sola barra: la ubicación se aplica a
+          Analizar y Gap (un negocio local no compite igual a nivel nacional
+          que en su ciudad) y a la derecha, lo que cuesta cada acción. */}
+      <Toolbar
+        aside={
+          <>
+            <span>Cada acción gasta:</span>
+            <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-ink-faint" /> Analizar <strong className="text-ink">{fmtCredits(analyzeCost)}</strong></span>
+            <span className="inline-flex items-center gap-1.5"><Target className="h-3.5 w-3.5 text-ink-faint" /> Content gap <strong className="text-ink">{fmtCredits(gapCost)}</strong></span>
+          </>
+        }
+      >
+        <span className="text-sm font-semibold text-ink-soft">Ubicación</span>
+        <div className="w-72">
           <LocationPicker value={location} onChange={setLocation} />
         </div>
-        <p className="text-xs text-ink-faint">
-          Se aplica a &laquo;Analizar&raquo; y &laquo;Gap&raquo; de abajo. Sin elegir nada, España
-          (nacional).
-        </p>
-      </div>
+        <span className="text-xs text-ink-faint">Sin elegir nada, España (nacional).</span>
+      </Toolbar>
 
       {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
       {notice && <p className="text-sm text-accent-ink bg-accent-tint px-3 py-2 rounded-lg">{notice}</p>}
@@ -918,41 +982,70 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
         />
       )}
 
-      {/* Aviso de coste estimado por acción (como en geogrid/rank tracking) */}
-      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-ink-soft">
-        <span>Coste estimado por acción:</span>
-        <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-ink-faint" /> Analizar visibilidad <strong className="text-ink">{fmtCredits(analyzeCost)}</strong></span>
-        <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-ink-faint" /> Content gap <strong className="text-ink">{fmtCredits(gapCost)}</strong></span>
+      {/* Resumen: tu posición de un vistazo */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatTile
+          highlight
+          label="Tu tráfico orgánico"
+          icon={<Target className="h-4 w-4" />}
+          value={data?.projectSnapshot && hasUsefulSnapshot(data.projectSnapshot) ? fmtTraffic(data.projectSnapshot.organicTraffic) : "—"}
+          hint="visitas al mes (estimación)"
+        />
+        <StatTile
+          label="Tus keywords orgánicas"
+          value={data?.projectSnapshot && hasUsefulSnapshot(data.projectSnapshot) ? data.projectSnapshot.organicKeywords?.toLocaleString("es-ES") ?? "—" : "—"}
+          hint="posicionadas en Google"
+        />
+        <StatTile
+          label="Competidores analizados"
+          value={<>{competitorsAnalyzed}<span className="text-xl font-bold text-ink-faint"> / {competitorsTotal}</span></>}
+          hint={competitorsTotal === 0 ? "añade tu primer competidor" : competitorsTotal - competitorsAnalyzed > 0 ? `${competitorsTotal - competitorsAnalyzed} pendientes de analizar` : "todos al día"}
+        />
+        <StatTile
+          label="Líder entre tus competidores"
+          value={leader ? fmtTraffic(leader.snapshot?.organicTraffic) : "—"}
+          hint={leader ? leader.domain : "analiza alguno para compararte"}
+        />
       </div>
 
       {comparisonRows.length > 1 && (
-        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4">
-          <h3 className="text-sm font-semibold text-ink mb-3">Comparativa frente a la competencia</h3>
+        <Section title="Comparativa frente a la competencia" description="Tráfico orgánico estimado y fuerza de cada dominio." flush>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="data-table">
               <thead>
-                <tr className="text-left text-xs font-semibold text-ink-faint bg-surface-muted">
-                  <th className="py-1.5 pr-2 font-medium">Dominio</th>
-                  <th className="py-1.5 px-2 font-medium text-right">Tráfico</th>
-                  <th className="py-1.5 px-2 font-medium text-right">Keywords</th>
-                  <th className="py-1.5 px-2 font-medium text-right">Posición media</th>
-                  <th className="py-1.5 pl-2 font-medium">Fuerza del dominio</th>
+                <tr>
+                  <th>Dominio</th>
+                  <th className="w-[28%]">Tráfico estimado</th>
+                  <th className="num">Keywords</th>
+                  <th className="num">Posición media</th>
+                  <th>Fuerza del dominio</th>
                 </tr>
               </thead>
               <tbody>
                 {comparisonRows.map((r, i) => {
                   const useful = hasUsefulSnapshot(r.snapshot);
+                  const traffic = r.snapshot?.organicTraffic ?? 0;
                   return (
-                    <tr key={i} className="border-t border-line">
-                      <td className="py-1.5 pr-2 text-ink font-medium">
-                        {r.domain} {r.isOwn && <span className="text-[10px] text-accent-ink font-semibold">· TÚ</span>}
+                    <tr key={i}>
+                      <td className="font-semibold">
+                        {r.domain} {r.isOwn && <Pill tone="brand" className="ml-1.5">Tú</Pill>}
                       </td>
                       {useful ? (
                         <>
-                          <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{fmtTraffic(r.snapshot?.organicTraffic)}</td>
-                          <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{r.snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</td>
-                          <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{r.snapshot?.avgPosition?.toFixed(1) ?? "—"}</td>
-                          <td className="py-1.5 pl-2">
+                          <td>
+                            <div className="flex items-center gap-3">
+                              <span className="w-14 shrink-0 font-semibold tabular-nums">{fmtTraffic(r.snapshot?.organicTraffic)}</span>
+                              <div className="h-2 flex-1 overflow-hidden rounded-full bg-brand-50">
+                                <div
+                                  className={cn("h-full rounded-full", r.isOwn ? "bg-brand-500" : "bg-brand-200")}
+                                  style={{ width: `${Math.max(3, (traffic / maxTraffic) * 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          </td>
+                          <td className="num text-ink-soft">{r.snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</td>
+                          <td className="num text-ink-soft">{r.snapshot?.avgPosition?.toFixed(1) ?? "—"}</td>
+                          <td>
                             {r.snapshot?.positionBuckets ? (
                               <PositionDistribution buckets={r.snapshot.positionBuckets} avgPosition={r.snapshot.avgPosition} />
                             ) : (
@@ -961,7 +1054,9 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                           </td>
                         </>
                       ) : (
-                        <td colSpan={4} className="py-1.5 px-2 text-ink-faint text-xs">Sin analizar</td>
+                        <td colSpan={4}>
+                          <Pill tone="neutral">Sin analizar</Pill>
+                        </td>
                       )}
                     </tr>
                   );
@@ -969,175 +1064,370 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
               </tbody>
             </table>
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* Visibilidad del propio dominio */}
-      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-ink">Tu visibilidad {data?.projectDomain ? `· ${data.projectDomain}` : ""}</h3>
-          <button
-            onClick={() => data?.projectDomain && handleAnalyze(data.projectDomain)}
-            disabled={!data?.projectDomain || analyzingDomain === data?.projectDomain}
-            className="flex items-center gap-2 px-3 py-1.5 bg-brand text-white text-xs font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
-            title={`Coste estimado ${fmtCredits(analyzeCost)}`}
-          >
-            {analyzingDomain === data?.projectDomain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            Analizar <span className="text-ink-faint font-normal">{fmtCredits(analyzeCost)}</span>
-          </button>
-        </div>
-        {!data?.projectDomain ? (
-          <p className="text-sm text-accent-ink flex items-center gap-1.5">
-            <AlertTriangle className="h-4 w-4" /> Define el dominio del proyecto en su ficha para analizar su visibilidad.
-          </p>
-        ) : (
-          <VisibilityKpis
-            snapshot={data?.projectSnapshot ?? null}
-            trend={data?.projectDomain ? trendsByDomain[data.projectDomain] : undefined}
-          />
-        )}
-        {data?.projectSnapshot && (
-          <TopKeywords keywords={data.projectSnapshot.topKeywords} title="Tus top keywords" />
-        )}
-      </div>
-
-      {/* Añadir competidor */}
-      <form onSubmit={handleAdd} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 flex items-end gap-3">
-        <div className="flex-1 space-y-1">
-          <label className="block text-sm font-medium text-ink-soft">Añadir competidor</label>
-          <input
-            type="text"
-            value={addDomain}
-            onChange={(e) => setAddDomain(e.target.value)}
-            placeholder="competidor.com"
-            required
-            className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-          />
-        </div>
-        <button type="submit" className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong">
-          <Plus className="h-4 w-4" /> Añadir
-        </button>
-      </form>
-
-      {/* Analizar todos / Gap todos — solo los competidores sin análisis o
-          sin gap hecho, en bucle secuencial. Los botones por fila de abajo
-          siguen disponibles para reanalizar uno suelto en cualquier momento. */}
-      {data && data.competitors.length > 0 && (() => {
-        const pendingAnalyze = data.competitors.filter((c) => !hasUsefulSnapshot(c.snapshot)).length;
-        const pendingGap = data.competitors.filter((c) => !c.contentGap || c.contentGap.length === 0).length;
-        return (
-          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 flex flex-wrap items-center gap-3">
+      {/* Tu visibilidad + alta de competidores, lado a lado */}
+      <div className="grid gap-4 xl:grid-cols-3">
+        <Section
+          className="xl:col-span-2"
+          title={`Tu visibilidad${data?.projectDomain ? ` · ${data.projectDomain}` : ""}`}
+          actions={
+            <>
+            {data?.projectSnapshot && (
+              <button onClick={() => setDetailId("__own")} className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-semibold text-brand hover:bg-brand-50">
+                Ver todo <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            )}
             <button
-              onClick={handleAnalyzeAll}
-              disabled={pendingAnalyze === 0 || bulkAnalyzing}
-              className="flex items-center gap-2 px-3 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
+              onClick={() => data?.projectDomain && handleAnalyze(data.projectDomain)}
+              disabled={!data?.projectDomain || analyzingDomain === data?.projectDomain}
+              className="flex items-center gap-2 rounded-full bg-brand px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
+              title={`Coste estimado ${fmtCredits(analyzeCost)}`}
             >
-              {bulkAnalyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-              {bulkAnalyzeProgress
-                ? `Analizando ${bulkAnalyzeProgress.done}/${bulkAnalyzeProgress.total}...`
-                : `Analizar todos${pendingAnalyze > 0 ? ` (${pendingAnalyze} pendientes)` : ""}`}
+              {analyzingDomain === data?.projectDomain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              Analizar <span className="font-normal text-white/70">{fmtCredits(analyzeCost)}</span>
             </button>
-            <button
-              onClick={handleGapAll}
-              disabled={pendingGap === 0 || bulkGapping}
-              className="flex items-center gap-2 px-3 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
-            >
-              {bulkGapping ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
-              {bulkGapProgress
-                ? `Calculando gap ${bulkGapProgress.done}/${bulkGapProgress.total}...`
-                : `Gap todos${pendingGap > 0 ? ` (${pendingGap} pendientes)` : ""}`}
-            </button>
-          </div>
-        );
-      })()}
-
-      {/* Lista de competidores */}
-      <div className="space-y-3">
-        {data?.competitors.length === 0 && <p className="text-sm text-ink-soft">Aún no hay competidores. Añade uno para espiar su visibilidad.</p>}
-        {data?.competitors.map((c) => (
-          <div key={c.id} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-ink truncate">{c.domain}</p>
-                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1 text-xs text-ink-soft">
-                  <span>Tráfico: <strong className="text-ink-soft">{fmtTraffic(c.snapshot?.organicTraffic ?? null)}</strong></span>
-                  <span>Keywords: <strong className="text-ink-soft">{c.snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</strong></span>
-                  {c.snapshot && <span>· {new Date(c.snapshot.fetchedAt).toLocaleDateString("es-ES")}</span>}
+            </>
+          }
+        >
+          {!data?.projectDomain ? (
+            <p className="flex items-center gap-1.5 text-sm text-accent-ink">
+              <AlertTriangle className="h-4 w-4" /> Define el dominio del proyecto en su ficha para analizar su visibilidad.
+            </p>
+          ) : !data?.projectSnapshot || !hasUsefulSnapshot(data.projectSnapshot) ? (
+            <p className="text-sm text-ink-soft">Aún no hay datos de tu dominio. Pulsa <strong>Analizar</strong> para ver tu tráfico y tus keywords.</p>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-3">
+              <div>
+                <p className="text-[13px] font-semibold text-ink-soft">Evolución del tráfico</p>
+                <div className="mt-3">
+                  {(trendsByDomain[data.projectDomain]?.length ?? 0) >= 2 ? (
+                    <>
+                      <AreaSpark points={trendsByDomain[data.projectDomain]} />
+                      <p className="mt-1 text-[11px] text-ink-faint">{trendsByDomain[data.projectDomain].length} análisis</p>
+                    </>
+                  ) : (
+                    <p className="text-xs text-ink-faint">La tendencia aparece con el segundo análisis.</p>
+                  )}
                 </div>
-                {!c.snapshot && (
-                  <p className="text-[11px] text-accent-ink bg-accent-tint border border-brand-100 rounded-lg px-2 py-1 mt-2">
-                    Aún sin analizar. Pulsa <strong>Analizar</strong> a la derecha (cuesta{' '}
-                    {fmtCredits(analyzeCost)}) o <strong>Analizar todos</strong> arriba para
-                    procesar de una vez todos los competidores pendientes.
-                  </p>
-                )}
-                {c.snapshot && !hasUsefulSnapshot(c.snapshot) && (
-                  <p className="text-[11px] text-accent-ink bg-accent-tint border border-brand-100 rounded-lg px-2 py-1 mt-2">
-                    Analizado el {new Date(c.snapshot.fetchedAt).toLocaleDateString("es-ES")}, pero
-                    no encontramos presencia orgánica medible para este dominio (puede ser
-                    normal en dominios muy pequeños o nuevos). Cuenta como pendiente en
-                    <strong> Analizar todos</strong> por si cambia con el tiempo.
-                  </p>
+              </div>
+              <div className="flex flex-col items-start gap-3">
+                <p className="text-[13px] font-semibold text-ink-soft">Fuerza del dominio</p>
+                {top10Share(data.projectSnapshot) !== null ? (
+                  <div className="flex items-center gap-4">
+                    <RadialGauge value={top10Share(data.projectSnapshot) as number} label="en top 10" />
+                    <div className="w-full min-w-[120px]">
+                      <PositionDistribution buckets={data.projectSnapshot.positionBuckets} avgPosition={data.projectSnapshot.avgPosition} />
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-ink-faint">Sin distribución de posiciones todavía.</p>
                 )}
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div>
+                <p className="mb-2 text-[13px] font-semibold text-ink-soft">Tus keywords principales</p>
+                {topKeywordBars(data.projectSnapshot.topKeywords).length > 0 ? (
+                  <BarList items={topKeywordBars(data.projectSnapshot.topKeywords)} />
+                ) : (
+                  <p className="text-xs text-ink-faint">Sin keywords todavía.</p>
+                )}
+              </div>
+            </div>
+          )}
+        </Section>
+
+        <Section title="Añadir competidor" description="Espía a un dominio y compárate con él.">
+          <form onSubmit={handleAdd} className="flex items-center gap-2">
+            <input
+              type="text"
+              value={addDomain}
+              onChange={(e) => setAddDomain(e.target.value)}
+              placeholder="competidor.com"
+              required
+              className="min-w-0 flex-1 rounded-full border border-line bg-surface px-4 py-2 text-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15"
+            />
+            <button type="submit" className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong">
+              <Plus className="h-4 w-4" /> Añadir
+            </button>
+          </form>
+          {data && data.competitors.length > 0 && (() => {
+            const pendingAnalyze = data.competitors.filter((c) => !hasUsefulSnapshot(c.snapshot)).length;
+            const pendingGap = data.competitors.filter((c) => !c.contentGap || c.contentGap.length === 0).length;
+            return (
+              <div className="mt-4 flex flex-wrap gap-2">
                 <button
-                  onClick={() => handleAnalyze(c.domain)}
-                  disabled={analyzingDomain === c.domain}
-                  className="flex items-center gap-1 px-2.5 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
-                  title={`Analizar visibilidad · coste estimado ${fmtCredits(analyzeCost)}`}
+                  onClick={handleAnalyzeAll}
+                  disabled={pendingAnalyze === 0 || bulkAnalyzing}
+                  className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs font-semibold text-ink-soft hover:bg-surface-muted disabled:opacity-50"
                 >
-                  {analyzingDomain === c.domain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                  Analizar <span className="text-ink-faint font-normal">{fmtCredits(analyzeCost)}</span>
+                  {bulkAnalyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  {bulkAnalyzeProgress ? `Analizando ${bulkAnalyzeProgress.done}/${bulkAnalyzeProgress.total}…` : `Analizar todos${pendingAnalyze > 0 ? ` (${pendingAnalyze})` : ""}`}
                 </button>
                 <button
-                  onClick={() => handleGap(c.id)}
-                  disabled={gapId === c.id}
-                  className="flex items-center gap-1 px-2.5 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
-                  title={`Content gap · coste estimado ${fmtCredits(gapCost)}`}
+                  onClick={handleGapAll}
+                  disabled={pendingGap === 0 || bulkGapping}
+                  className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs font-semibold text-ink-soft hover:bg-surface-muted disabled:opacity-50"
                 >
-                  {gapId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
-                  Gap <span className="text-ink-faint font-normal">{fmtCredits(gapCost)}</span>
+                  {bulkGapping ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
+                  {bulkGapProgress ? `Content gap ${bulkGapProgress.done}/${bulkGapProgress.total}…` : `Gap todos${pendingGap > 0 ? ` (${pendingGap})` : ""}`}
                 </button>
-                <button onClick={() => setConfirmRemoveId(c.id)} className="p-1.5 text-ink-faint hover:text-alert-ink" title="Eliminar">
+              </div>
+            );
+          })()}
+        </Section>
+      </div>
+
+      {/* Competidores: tarjetas compactas en rejilla */}
+      {data?.competitors.length === 0 && <p className="text-sm text-ink-soft">Aún no hay competidores. Añade uno para espiar su visibilidad.</p>}
+      <div className="grid items-start gap-4 md:grid-cols-2 2xl:grid-cols-3">
+        {data?.competitors.map((c) => {
+          const useful = hasUsefulSnapshot(c.snapshot);
+          const trend = trendsByDomain[c.domain];
+          const delta = trendDelta(trend);
+          const share = top10Share(c.snapshot);
+          const bars = topKeywordBars(c.snapshot?.topKeywords, 4);
+          const gapCount = c.contentGap?.length ?? 0;
+          return (
+            <section key={c.id} className="flex flex-col rounded-[20px] border border-line bg-surface p-5 shadow-card">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <button onClick={() => setDetailId(c.id)} className="block max-w-full truncate text-left text-[15px] font-bold text-ink hover:text-brand">
+                    {c.domain}
+                  </button>
+                  <p className="text-xs text-ink-faint">
+                    {c.snapshot ? `Analizado el ${new Date(c.snapshot.fetchedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}` : "Sin analizar"}
+                  </p>
+                </div>
+                <button onClick={() => setConfirmRemoveId(c.id)} className="shrink-0 rounded-full p-1.5 text-ink-faint hover:bg-alert-tint hover:text-alert-ink" title="Dejar de seguir">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
-            </div>
-            {c.snapshot && <VisibilityKpis snapshot={c.snapshot} trend={trendsByDomain[c.domain]} />}
-            {c.snapshot?.topKeywords && <TopKeywords keywords={c.snapshot.topKeywords} title="Sus top keywords" />}
-            {c.contentGap && c.contentGap.length > 0 && (
-              <ContentGapList items={c.contentGap} contentGapAt={c.contentGapAt} projectId={projectId} />
-            )}
-            {/* Acciones cruzadas: lleva la inteligencia del competidor a los
-                módulos donde se trabaja (estudio / rank tracking), sin copiar
-                a mano. Solo aparecen si hay keywords recolectadas. */}
-            {collectKeywords(c).length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-line">
+
+              {useful ? (
+                <>
+                  <div className="mt-4 flex items-end justify-between gap-3">
+                    <div>
+                      <p className="text-[34px] font-extrabold leading-none tracking-[-0.03em] tabular-nums text-ink">{fmtTraffic(c.snapshot?.organicTraffic)}</p>
+                      <p className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-faint">
+                        visitas/mes
+                        {delta && (
+                          <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-semibold", delta.up ? "bg-accent-tint text-accent-ink" : "bg-surface-muted text-ink-soft")}>
+                            {delta.up ? "▲" : "▼"} {delta.pct.toFixed(0)} %
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    {share !== null && <RadialGauge value={share} size={72} label="en top 10" />}
+                  </div>
+
+                  {trend && trend.length >= 2 && Math.max(...trend) > Math.min(...trend) && <AreaSpark points={trend} height={44} className="mt-3" />}
+
+                  <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-line pt-4 text-sm">
+                    <div>
+                      <dt className="text-xs text-ink-faint">Keywords</dt>
+                      <dd className="font-bold tabular-nums text-ink">{c.snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-ink-faint">Posición media</dt>
+                      <dd className="font-bold tabular-nums text-ink">{c.snapshot?.avgPosition?.toFixed(1) ?? "—"}</dd>
+                    </div>
+                  </dl>
+
+                  {c.snapshot?.positionBuckets && (
+                    <div className="mt-4">
+                      <PositionDistribution buckets={c.snapshot.positionBuckets} avgPosition={null} />
+                    </div>
+                  )}
+
+                  {bars.length > 0 && (
+                    <div className="mt-4 border-t border-line pt-4">
+                      <p className="mb-2 text-xs font-semibold text-ink-soft">Sus keywords principales</p>
+                      <BarList items={bars} />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="mt-4 rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink-soft">
+                  {c.snapshot
+                    ? "No hemos encontrado presencia orgánica medible (normal en dominios pequeños o nuevos)."
+                    : "Aún no hay datos. Analízalo para ver su tráfico y sus keywords."}
+                </p>
+              )}
+
+              <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
                 <button
-                  onClick={() => handleImportToStudy(c)}
-                  disabled={importingId === c.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
-                  title="Crear un estudio (Módulo 1) con las keywords de este competidor"
+                  onClick={() => handleAnalyze(c.domain)}
+                  disabled={analyzingDomain === c.domain}
+                  className="flex items-center gap-1.5 rounded-full bg-brand px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
+                  title={`Analizar visibilidad · ${fmtCredits(analyzeCost)}`}
                 >
-                  {importingId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowDownToLine className="h-3.5 w-3.5" />}
-                  Importar a estudio
+                  {analyzingDomain === c.domain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  Analizar
                 </button>
-                <button
-                  onClick={() => handleAddToTracking(c)}
-                  disabled={trackingId === c.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
-                  title="Añadir estas keywords a Rank Tracking (manual)"
-                >
-                  {trackingId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Crosshair className="h-3.5 w-3.5" />}
-                  Añadir a seguimiento
-                </button>
-                <span className="text-[11px] text-ink-faint">{collectKeywords(c).length} keywords</span>
+                {gapCount > 0 ? (
+                  <button
+                    onClick={() => setDetailId(c.id)}
+                    className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs font-semibold text-ink-soft hover:bg-surface-muted"
+                  >
+                    <Target className="h-3.5 w-3.5" /> Content gap · {gapCount}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleGap(c.id)}
+                    disabled={gapId === c.id}
+                    className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs font-semibold text-ink-soft hover:bg-surface-muted disabled:opacity-50"
+                    title={`Content gap · ${fmtCredits(gapCost)}`}
+                  >
+                    {gapId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
+                    Content gap
+                  </button>
+                )}
+                {c.snapshot && (
+                  <button
+                    onClick={() => setDetailId(c.id)}
+                    className="ml-auto flex items-center gap-1 rounded-full px-2 py-1.5 text-xs font-semibold text-brand hover:bg-brand-50"
+                  >
+                    Ver detalle <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {collectKeywords(c).length > 0 && (
+                  <>
+                    <button
+                      onClick={() => handleImportToStudy(c)}
+                      disabled={importingId === c.id}
+                      className="rounded-full border border-line p-1.5 text-ink-soft hover:bg-surface-muted disabled:opacity-50"
+                      title={`Importar sus ${collectKeywords(c).length} keywords a un estudio`}
+                    >
+                      {importingId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowDownToLine className="h-3.5 w-3.5" />}
+                    </button>
+                    <button
+                      onClick={() => handleAddToTracking(c)}
+                      disabled={trackingId === c.id}
+                      className="rounded-full border border-line p-1.5 text-ink-soft hover:bg-surface-muted disabled:opacity-50"
+                      title="Añadir sus keywords a Rank Tracking"
+                    >
+                      {trackingId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Crosshair className="h-3.5 w-3.5" />}
+                    </button>
+                  </>
+                )}
               </div>
-            )}
-          </div>
-        ))}
+            </section>
+          );
+        })}
       </div>
+
+      {/* Detalle completo de un dominio: todo lo que trae el análisis (para
+          informes y trabajo fino), sin cargar la vista de tarjetas. */}
+      {(() => {
+        const isOwn = detailId === "__own";
+        const comp = isOwn ? null : data?.competitors.find((x) => x.id === detailId) ?? null;
+        const domain = isOwn ? data?.projectDomain ?? "" : comp?.domain ?? "";
+        const snap: Snapshot = isOwn ? data?.projectSnapshot ?? null : comp?.snapshot ?? null;
+        const trend = domain ? trendsByDomain[domain] : undefined;
+        const share = top10Share(snap);
+        return (
+          <Modal open={detailId !== null && !!domain} title={isOwn ? `Tu dominio · ${domain}` : domain} onClose={() => setDetailId(null)} wide>
+            {snap ? (
+              <div className="space-y-6">
+                <p className="text-xs text-ink-faint">
+                  Último análisis: {new Date(snap.fetchedAt).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
+                </p>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {[
+                    { l: "Tráfico orgánico", v: fmtTraffic(snap.organicTraffic), h: "visitas/mes (estimación)" },
+                    { l: "Keywords orgánicas", v: snap.organicKeywords?.toLocaleString("es-ES") ?? "—", h: "posicionadas en Google" },
+                    { l: "Posición media", v: snap.avgPosition?.toFixed(1) ?? "—", h: "de todas sus keywords" },
+                  ].map((k) => (
+                    <div key={k.l} className="rounded-2xl border border-line p-4">
+                      <p className="text-xs font-semibold text-ink-soft">{k.l}</p>
+                      <p className="mt-1 text-2xl font-extrabold tabular-nums text-ink">{k.v}</p>
+                      <p className="text-[11px] text-ink-faint">{k.h}</p>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-center rounded-2xl border border-line p-3">
+                    {share !== null ? <RadialGauge value={share} size={76} label="keywords en top 10" /> : <span className="text-xs text-ink-faint">Sin distribución</span>}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-2xl border border-line p-4">
+                    <p className="text-sm font-semibold text-ink">Evolución del tráfico</p>
+                    {trend && trend.length >= 2 && Math.max(...trend) > Math.min(...trend) ? (
+                      <>
+                        <AreaSpark points={trend} height={90} className="mt-3" />
+                        <p className="mt-1 text-[11px] text-ink-faint">{trend.length} análisis · de {fmtTraffic(trend[0])} a {fmtTraffic(trend[trend.length - 1])}</p>
+                      </>
+                    ) : (
+                      <p className="mt-2 text-xs text-ink-faint">Sin cambios entre análisis todavía.</p>
+                    )}
+                  </div>
+                  <div className="rounded-2xl border border-line p-4">
+                    <p className="mb-3 text-sm font-semibold text-ink">Distribución de posiciones</p>
+                    {snap.positionBuckets ? (
+                      <PositionDistribution buckets={snap.positionBuckets} avgPosition={snap.avgPosition} />
+                    ) : (
+                      <p className="text-xs text-ink-faint">Sin distribución de posiciones.</p>
+                    )}
+                  </div>
+                </div>
+
+                {snap.topKeywords && snap.topKeywords.length > 0 && (
+                  <ContentGapList
+                    items={snap.topKeywords}
+                    contentGapAt={null}
+                    projectId={projectId}
+                    title={isOwn ? "Keywords por las que posicionas" : "Keywords por las que posiciona"}
+                    tall
+                  />
+                )}
+
+                {comp && (
+                  comp.contentGap && comp.contentGap.length > 0 ? (
+                    <ContentGapList items={comp.contentGap} contentGapAt={comp.contentGapAt} projectId={projectId} tall />
+                  ) : (
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-surface-muted px-4 py-3">
+                      <p className="text-sm text-ink-soft">Aún no has calculado el content gap con este competidor.</p>
+                      <button
+                        onClick={() => handleGap(comp.id)}
+                        disabled={gapId === comp.id}
+                        className="flex items-center gap-1.5 rounded-full bg-brand px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
+                      >
+                        {gapId === comp.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
+                        Calcular content gap <span className="font-normal text-white/70">{fmtCredits(gapCost)}</span>
+                      </button>
+                    </div>
+                  )
+                )}
+
+                {comp && collectKeywords(comp).length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 border-t border-line pt-4">
+                    <button
+                      onClick={() => handleImportToStudy(comp)}
+                      disabled={importingId === comp.id}
+                      className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs font-semibold text-ink-soft hover:bg-surface-muted disabled:opacity-50"
+                    >
+                      {importingId === comp.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowDownToLine className="h-3.5 w-3.5" />}
+                      Importar a estudio
+                    </button>
+                    <button
+                      onClick={() => handleAddToTracking(comp)}
+                      disabled={trackingId === comp.id}
+                      className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs font-semibold text-ink-soft hover:bg-surface-muted disabled:opacity-50"
+                    >
+                      {trackingId === comp.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Crosshair className="h-3.5 w-3.5" />}
+                      Añadir a seguimiento
+                    </button>
+                    <span className="text-xs text-ink-faint">{collectKeywords(comp).length} keywords</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-ink-soft">Aún no hay análisis de este dominio.</p>
+            )}
+          </Modal>
+        );
+      })()}
 
       <ConfirmDialog
         open={confirmRemoveId !== null}

@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils";
 import ProjectSwitcher, { pushRecent } from "@/components/app/ProjectSwitcher";
 import Logo from "@/components/app/Logo";
 import CreditsMeter from "@/components/app/CreditsMeter";
+import ThemeToggle from "@/components/app/ThemeToggle";
 import { useProjectIdFromPath } from "@/lib/hooks/useProjectIdFromPath";
 
 const NAV_ITEMS = [
@@ -368,11 +369,13 @@ export default function AdminSidebar({
                         onClick={() => setOverride(openGroup === g.id ? null : g.id)}
                         aria-expanded={isOpen}
                         className={cn(
-                          "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold transition-colors",
+                          "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-semibold transition-colors",
                           groupHasActive ? "text-ink" : "text-ink-faint hover:text-ink-soft"
                         )}
                       >
-                        <GIcon className="h-4 w-4 shrink-0" />
+                        <span className="flex h-5 w-7 shrink-0 items-center justify-center">
+                          <GIcon className="h-4 w-4" />
+                        </span>
                         <span className="flex-1 text-left">{g.label}</span>
                         <ChevronDown
                           className={cn(
@@ -391,6 +394,7 @@ export default function AdminSidebar({
                               pathname={pathname}
                               onClick={onClose}
                               forceOpen={searching}
+                              nested
                             />
                           ))}
                         </div>
@@ -482,6 +486,7 @@ export default function AdminSidebar({
                 {session?.user?.role === "admin" ? "Plataforma" : "Mi cuenta"}
               </p>
             </Link>
+            <ThemeToggle />
             <button
               onClick={() => signOut({ callbackUrl: "/acceso" })}
               className="p-2 text-ink-faint hover:text-alert-ink rounded-lg hover:bg-alert-tint transition-colors"
@@ -541,12 +546,16 @@ function ModuleLink({
   pathname,
   onClick,
   forceOpen = false,
+  nested = false,
 }: {
   module: NavModule;
   base: string;
   pathname: string;
   onClick: () => void;
   forceOpen?: boolean;
+  // true solo para los hijos de una carpeta desplegada; los módulos sueltos
+  // (Perfil, Tareas, Notas, Informe) van alineados con las cabeceras de carpeta.
+  nested?: boolean;
 }) {
   const active = isModuleActive(m.href, base, pathname);
   const Icon = m.icon;
@@ -561,20 +570,22 @@ function ModuleLink({
     !planAllowsModule(session.user.plan, moduleId);
   // Al buscar (forceOpen) los módulos se muestran planos; normalmente los
   // hijos de grupo van indentados bajo su carpeta.
-  const indent = forceOpen ? "" : "ml-5";
+  const indent = nested && !forceOpen ? "ml-5" : "";
   return (
     <Link
       href={m.href}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium transition-all",
+        "flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all",
         indent,
         active
           ? "bg-brand text-white shadow-[0_6px_16px_-6px_rgba(79,92,245,0.5)]"
           : "text-ink-soft hover:bg-surface hover:text-ink"
       )}
     >
-      <Icon className={cn("h-4 w-4 shrink-0", active ? "" : "text-ink-faint")} />
+      <span className="flex h-5 w-7 shrink-0 items-center justify-center">
+        <Icon className={cn("h-4 w-4", active ? "" : "text-ink-faint")} />
+      </span>
       <span className="truncate">{m.label}</span>
       {locked && <Lock className="ml-auto h-3.5 w-3.5 shrink-0 text-ink-faint" aria-label="Plan de pago" />}
     </Link>

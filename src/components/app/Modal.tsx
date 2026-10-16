@@ -10,11 +10,13 @@ export default function Modal({
   title,
   onClose,
   children,
+  wide = false,
 }: {
   open: boolean;
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  wide?: boolean;
 }) {
   if (!open) return null;
   return (
@@ -24,7 +26,7 @@ export default function Modal({
       role="presentation"
     >
       <div
-        className="bg-surface rounded-2xl border border-line shadow-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5 space-y-4 animate-[pop_0.14s_ease-out]"
+        className={`bg-surface rounded-2xl border border-line shadow-xl ${wide ? "max-w-5xl" : "max-w-2xl"} w-full max-h-[85vh] overflow-y-auto p-5 space-y-4 animate-[pop_0.14s_ease-out]`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

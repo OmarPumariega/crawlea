@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Loader2, Sparkles, AlertTriangle, XCircle, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Section from "@/components/ui/Section";
+import StatTile from "@/components/ui/StatTile";
+import { RadialGauge } from "@/components/ui/charts";
 import AuditTrendChart from "@/components/app/AuditTrendChart";
 import AuditIssuesTrendChart from "@/components/app/AuditIssuesTrendChart";
 import AuditTechnicalDetails from "@/components/app/AuditTechnicalDetails";
@@ -99,17 +102,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   accesibilidadImagenes: "Accesibilidad",
 };
 
-function ScoreTile({ label, score, max }: { label: string; score: number | null; max: number }) {
-  return (
-    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 flex flex-col">
-      <p className="text-[13px] font-medium text-ink-soft">{label}</p>
-      <p className="text-2xl font-bold tracking-tight text-ink tabular-nums mt-2 leading-none">
-        {score === null ? "—" : `${score}/${max}`}
-      </p>
-    </div>
-  );
-}
-
 function KpiTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 flex flex-col">
@@ -169,12 +161,14 @@ function CwvPanel({ detail, psiData }: { detail: Record<string, number>; psiData
   const inpStatus = inp < 0 ? null : inp <= 200 ? "good" : inp <= 500 ? "warn" : "bad";
 
   const extraScores = [
-    { label: "Accesibilidad", value: psiData?.scores.accessibility },
-    { label: "Best Practices", value: psiData?.scores.bestPractices },
-    { label: "SEO (Lighthouse)", value: psiData?.scores.seo },
+    { label: "Accesibilidad", value: psiData?.scores?.accessibility },
+    { label: "Best Practices", value: psiData?.scores?.bestPractices },
+    { label: "SEO (Lighthouse)", value: psiData?.scores?.seo },
   ].filter((s) => s.value != null) as { label: string; value: number }[];
 
   const field = psiData?.fieldData;
+  // Las auditorías antiguas guardaban psiData con otra forma: sin estas listas.
+  const opportunities = Array.isArray(psiData?.opportunities) ? psiData.opportunities : [];
 
   return (
     <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
@@ -239,11 +233,11 @@ function CwvPanel({ detail, psiData }: { detail: Record<string, number>; psiData
         )}
       </div>
 
-      {psiData && psiData.opportunities.length > 0 && (
+      {opportunities.length > 0 && (
         <div>
           <p className="text-xs font-medium text-ink-soft mb-2">Oportunidades de mejora detectadas</p>
           <ul className="space-y-2">
-            {psiData.opportunities.slice(0, 6).map((o) => (
+            {opportunities.slice(0, 6).map((o) => (
               <li key={o.id} className="bg-background rounded-lg p-2.5">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm text-ink font-medium">{o.title}</span>
@@ -677,44 +671,44 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
 
           {tab === "resumen" && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                {/* Nota global — tarjeta protagonista de tinta con barra de color semántico */}
-                {(() => {
-                  const score = current.overallScore;
-                  const tone =
-                    score == null ? "text-white/60"
-                    : score >= 80 ? "text-white"
-                    : score >= 50 ? "text-white/85"
-                    : "text-alert-bright";
-                  const bar =
-                    score == null ? "bg-white/30"
-                    : score >= 80 ? "bg-white"
-                    : score >= 50 ? "bg-brand-300"
-                    : "bg-alert";
-                  return (
-                    <div className="lg:col-span-2 bg-brand text-white rounded-2xl p-6 shadow-[0_10px_30px_-10px_rgba(79,92,245,0.55)]">
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="text-[13px] font-medium text-white/60">Optimización del sitio</p>
-                        <span className="text-xs text-white/40">sobre 100</span>
-                      </div>
-                      <p className={`text-6xl font-bold tracking-tight tabular-nums leading-none mt-3 ${tone}`}>
-                        {score == null ? "—" : score}
-                        {score != null && <span className="text-2xl font-semibold text-white/40">%</span>}
-                      </p>
-                      <div className="mt-5 h-2 rounded-full bg-white/15 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-[width] ${bar}`}
-                          style={{ width: `${score ?? 0}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })()}
-                <KpiTile label="Páginas rastreadas" value={current.pagesCrawled.toLocaleString("es-ES")} />
-                <KpiTile
-                  label="Páginas con incidencias"
-                  value={pagesWithIssuesCount.toLocaleString("es-ES")}
-                  sub={`${Math.round((pagesWithIssuesCount / Math.max(1, current.pagesCrawled)) * 100)}% · ${totalIssueInstances.toLocaleString("es-ES")} incidencias`}
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {/* Nota global: medidor sobre la tarjeta destacada */}
+                <div className="flex items-center justify-between gap-4 rounded-[20px] bg-brand p-5 text-white shadow-[0_10px_30px_-12px_rgba(79,92,245,0.6)]">
+                  <div>
+                    <p className="text-[13px] font-semibold text-white/75">Optimización del sitio</p>
+                    <p className="mt-2 text-[40px] font-extrabold leading-none tracking-[-0.03em] tabular-nums">
+                      {current.overallScore ?? "—"}
+                      {current.overallScore != null && <span className="text-xl font-bold text-white/60">/100</span>}
+                    </p>
+                    <p className="mt-2 text-xs text-white/70">
+                      {current.overallScore == null ? "sin puntuación" : current.overallScore >= 80 ? "buen estado" : current.overallScore >= 50 ? "mejorable" : "necesita trabajo"}
+                    </p>
+                  </div>
+                  <div className="relative h-20 w-20 shrink-0">
+                    <svg viewBox="0 0 80 80" className="h-20 w-20 -rotate-90">
+                      <circle cx="40" cy="40" r="34" fill="none" strokeWidth="10" className="stroke-white/20" />
+                      <circle
+                        cx="40" cy="40" r="34" fill="none" strokeWidth="10" strokeLinecap="round"
+                        strokeDasharray={2 * Math.PI * 34}
+                        strokeDashoffset={2 * Math.PI * 34 * (1 - (current.overallScore ?? 0) / 100)}
+                        className={current.overallScore != null && current.overallScore < 50 ? "stroke-alert" : "stroke-white"}
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <StatTile label="Páginas rastreadas" value={current.pagesCrawled.toLocaleString("es-ES")} hint={current.truncated ? "límite de seguridad alcanzado" : "todo el sitio"} />
+                <div className="flex items-center justify-between gap-3 rounded-[20px] border border-line bg-surface p-5 shadow-card">
+                  <div>
+                    <p className="text-[13px] font-semibold text-ink-soft">Páginas con incidencias</p>
+                    <p className="mt-2 text-[34px] font-extrabold leading-none tracking-[-0.03em] tabular-nums text-ink">{pagesWithIssuesCount.toLocaleString("es-ES")}</p>
+                    <p className="mt-2 text-xs text-ink-faint">{totalIssueInstances.toLocaleString("es-ES")} incidencias en total</p>
+                  </div>
+                  <RadialGauge value={(pagesWithIssuesCount / Math.max(1, current.pagesCrawled)) * 100} size={72} label="del sitio" />
+                </div>
+                <StatTile
+                  label="Enlaces rotos"
+                  value={<span className={totalBrokenLinks > 0 ? "text-alert-ink" : ""}>{totalBrokenLinks.toLocaleString("es-ES")}</span>}
+                  hint={totalBrokenLinks > 0 ? "revísalos en la pestaña Técnica" : "ninguno encontrado"}
                 />
               </div>
 
@@ -729,25 +723,30 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
                 </p>
               )}
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {(Object.keys(CATEGORY_LABELS) as (keyof CategoryScores)[]).map((key) => {
-                  const cat = current.categoryScores?.[key];
-                  return (
-                    <ScoreTile
-                      key={key}
-                      label={CATEGORY_LABELS[key]}
-                      score={cat ? cat.score : null}
-                      max={cat ? cat.max : 0}
-                    />
-                  );
-                })}
-                {/* 6ª casilla del grid 3×2 — no es parte de las 5 categorías
-                    puntuadas (no se fabrica una puntuación /100 para no
-                    inventar una fórmula), pero es el dato clásico de
-                    auditoría técnica que faltaba por resumir: enlaces rotos
-                    totales encontrados en todo el rastreo. */}
-                <KpiTile label="Enlaces rotos" value={totalBrokenLinks.toLocaleString("es-ES")} />
-              </div>
+              <Section title="Puntuación por categoría" description="Cada categoría suma a la nota global; sin cajas negras.">
+                <ul className="grid gap-x-10 gap-y-4 md:grid-cols-2">
+                  {(Object.keys(CATEGORY_LABELS) as (keyof CategoryScores)[]).map((key) => {
+                    const cat = current.categoryScores?.[key];
+                    const pct = cat && cat.max > 0 ? (cat.score / cat.max) * 100 : null;
+                    return (
+                      <li key={key}>
+                        <div className="flex items-baseline justify-between gap-3 text-sm">
+                          <span className="font-semibold text-ink">{CATEGORY_LABELS[key]}</span>
+                          <span className="tabular-nums text-ink-soft">
+                            {cat ? <><strong className="text-ink">{cat.score}</strong> / {cat.max}</> : "sin datos"}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-brand-50">
+                          <div
+                            className={cn("h-full rounded-full", pct == null ? "" : pct >= 80 ? "bg-brand-500" : pct >= 50 ? "bg-brand-300" : "bg-alert")}
+                            style={{ width: `${pct ?? 0}%` }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Section>
               {!current.categoryScores.rendimiento && (
                 <p className="text-xs text-ink-faint">
                   Rendimiento sin datos (falta configurar PAGESPEED_API_KEY).
@@ -774,8 +773,10 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
               {/* Visibilidad en Google (Search Console) + visibilidad orgánica
                   estimada (DataForSEO Labs, módulo Competidores) — real vs.
                   estimación de mercado, ambas gratis de ver aquí. */}
-              <VisibilityPanel visibility={visibility} projectId={projectId} />
-              <LabsVisibilityPanel snapshot={labsSnapshot} projectId={projectId} />
+              <div className="grid items-start gap-4 lg:grid-cols-2">
+                <VisibilityPanel visibility={visibility} projectId={projectId} />
+                <LabsVisibilityPanel snapshot={labsSnapshot} projectId={projectId} />
+              </div>
             </div>
           )}
 
@@ -792,42 +793,41 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
         </>
       )}
 
-      <div>
-        <h3 className="text-sm font-semibold text-ink mb-3">Histórico</h3>
+      <Section title="Histórico" description="Pulsa una auditoría para ver sus resultados.">
         {loadingHistory ? (
           <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
         ) : history.length === 0 ? (
           <p className="text-sm text-ink-soft">Todavía no se ha ejecutado ninguna auditoría.</p>
         ) : (
-          <div className="space-y-2">
-            {history.map((run) => (
-              <button
-                key={run.id}
-                onClick={() => loadDetail(run.id)}
-                className={cn(
-                  "w-full text-left bg-surface rounded-lg border p-3 hover:bg-background transition-colors",
-                  current?.id === run.id ? "border-brand" : "border-line"
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-ink">
-                    {new Date(run.triggeredAt).toLocaleString("es-ES")}
-                  </span>
-                  <span className="text-xs text-ink-faint">
-                    {run.status === "completed"
-                      ? run.robotsBlocked
-                        ? "Bloqueada por robots.txt"
-                        : `${run.overallScore}/100`
-                      : run.status === "failed"
-                        ? "Error"
-                        : "En curso"}
-                  </span>
-                </div>
-              </button>
-            ))}
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
+            {history.map((run) => {
+              const score = run.status === "completed" && !run.robotsBlocked ? run.overallScore : null;
+              return (
+                <button
+                  key={run.id}
+                  onClick={() => loadDetail(run.id)}
+                  className={cn(
+                    "rounded-2xl border p-3 text-left transition-colors hover:bg-surface-muted",
+                    current?.id === run.id ? "border-brand bg-brand-50/50" : "border-line"
+                  )}
+                >
+                  <p className="text-xs text-ink-faint">
+                    {new Date(run.triggeredAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
+                  </p>
+                  <p className="mt-1 text-lg font-extrabold tabular-nums text-ink">
+                    {run.status === "completed" ? (run.robotsBlocked ? "Bloqueada" : `${run.overallScore}/100`) : run.status === "failed" ? "Error" : "En curso"}
+                  </p>
+                  {score != null && (
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-brand-50">
+                      <div className={cn("h-full rounded-full", score >= 80 ? "bg-brand-500" : score >= 50 ? "bg-brand-300" : "bg-alert")} style={{ width: `${score}%` }} />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
-      </div>
+      </Section>
     </div>
   );
 }
