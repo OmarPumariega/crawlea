@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/auth-guards";
+import { SITE_URL } from "@/lib/site"; // detrás del proxy req.url apunta a localhost:3000
 import { prisma } from "@/lib/db/prisma";
 import { encrypt } from "@/lib/crypto";
 import { NextRequest, NextResponse } from "next/server";
@@ -7,7 +8,7 @@ import { exchangeCodeForTokens, getConnectedEmail, GoogleOAuthConfigError } from
 const STATE_COOKIE = "google_oauth_state";
 
 function redirectWithError(req: NextRequest, error: string) {
-  const url = new URL("/app/perfil", req.url);
+  const url = new URL("/app/perfil", SITE_URL);
   url.searchParams.set("error", error);
   const response = NextResponse.redirect(url);
   response.cookies.delete(STATE_COOKIE);
@@ -19,7 +20,7 @@ function redirectWithError(req: NextRequest, error: string) {
 // userId, nunca contra un id fijo — cada cliente conecta su propia cuenta.
 export async function GET(req: NextRequest) {
   const session = await requireSession();
-  if (!session) return NextResponse.redirect(new URL("/acceso", req.url));
+  if (!session) return NextResponse.redirect(new URL("/acceso", SITE_URL));
 
   const { searchParams } = req.nextUrl;
 
@@ -67,7 +68,7 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  const url = new URL("/app/perfil", req.url);
+  const url = new URL("/app/perfil", SITE_URL);
   url.searchParams.set("connected", "1");
   const response = NextResponse.redirect(url);
   response.cookies.delete(STATE_COOKIE);
