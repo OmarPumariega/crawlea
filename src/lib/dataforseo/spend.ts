@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { getSetting } from "@/lib/settings";
 import { effectiveUserLimitUsd } from "@/lib/plans";
+import { usdToCredits, creditsLabel } from "@/lib/credits";
 
 // Tope de gasto mensual de DataForSEO (sección 5 del spec: "topes de gasto
 // configurables, con opción de bloquear nuevas llamadas al superarlo").
@@ -22,7 +23,7 @@ export class DataForSeoSpendLimitError extends Error {
       scope === "global"
         ? `Tope mensual de DataForSEO alcanzado: ${spentUsd.toFixed(2)}$ de ${limitUsd.toFixed(2)}$ configurados. Sube DATAFORSEO_MONTHLY_LIMIT_USD o espera al próximo mes para nuevas llamadas.`
         : scope === "user"
-          ? `Tope de gasto de tu plan alcanzado: ${spentUsd.toFixed(2)}$ de ${limitUsd.toFixed(2)}$ este mes. Sube de plan o espera al próximo mes.`
+          ? `Has gastado tus créditos de este mes (${creditsLabel(usdToCredits(spentUsd))} de ${creditsLabel(usdToCredits(limitUsd))}). Se renuevan el día 1 del mes que viene; si los necesitas antes, sube de plan.`
           : `Tope de gasto del proyecto alcanzado: ${spentUsd.toFixed(2)}$ de ${limitUsd.toFixed(2)}$ este mes. Sube el tope del proyecto en su ficha o espera al próximo mes.`
     );
     this.name = "DataForSeoSpendLimitError";

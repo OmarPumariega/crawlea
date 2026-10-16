@@ -38,7 +38,11 @@ export async function GET(req: NextRequest) {
     });
     if (!project) return NextResponse.json({ error: "Proyecto no encontrado" }, { status: 404 });
 
-    const where = { projectId, createdAt: { gte: startOfMonth, lt: startOfNextMonth } };
+    const where = {
+      projectId,
+      ...(isAdmin(session) ? {} : { api: "dataforseo" }), // el cliente solo ve lo que gasta créditos
+      createdAt: { gte: startOfMonth, lt: startOfNextMonth },
+    };
     const [byEndpointRows, totalAgg, dataforseoAgg, recentCalls] = await Promise.all([
       prisma.apiUsageLog.groupBy({ by: ["api", "endpoint"], where, _sum: { costUsd: true }, _count: true }),
       prisma.apiUsageLog.aggregate({ where, _sum: { costUsd: true } }),
@@ -93,7 +97,7 @@ export async function GET(req: NextRequest) {
   // el consumo real de toda la instalación contra el tope global.
   const admin = isAdmin(session);
   const where = {
-    ...(admin ? {} : { project: { userId: session.user.id } }),
+    ...(admin ? {} : { project: { userId: session.user.id }, api: "dataforseo" }), // el cliente solo ve lo que gasta créditos
     createdAt: { gte: startOfMonth, lt: startOfNextMonth },
   };
 

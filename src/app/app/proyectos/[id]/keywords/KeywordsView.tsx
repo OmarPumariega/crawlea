@@ -24,6 +24,7 @@ import { suggestionsCostUsd } from "@/lib/dataforseo/pricing";
 import { downloadCsv } from "@/lib/csv";
 import LocationPicker, { type LocationValue } from "@/components/app/LocationPicker";
 import { resolveLocationName } from "@/lib/rank/locations";
+import { fmtCredits } from "@/lib/credits";
 
 type Keyword = {
   id: string;
@@ -615,7 +616,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
             </button>
           </div>
           <p className="text-xs text-ink-faint">
-            Coste estimado de la búsqueda: ~${suggestionsCostUsd(limit).toFixed(2)} (las que añadas después son gratis, ya cacheadas).
+            Coste estimado de la búsqueda: {fmtCredits(suggestionsCostUsd(limit))} (las que añadas después son gratis, ya cacheadas).
           </p>
 
           {suggError && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">{suggError}</p>}

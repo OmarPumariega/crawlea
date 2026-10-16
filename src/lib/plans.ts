@@ -7,6 +7,8 @@
 // el coste real de DataForSEO por usuario. Stripe (Fase 3) sincroniza el plan
 // del usuario por webhook; hasta entonces todos nacen en "free".
 
+import { creditsToUsd } from "@/lib/credits";
+
 export const MODULE_IDS = [
   "keywords",
   "titulos-meta",
@@ -34,9 +36,11 @@ export interface PlanDef {
   nombre: string;
   descripcion: string;
   precioEurMes: number;
-  // Tope de gasto de DataForSEO de la CUENTA (USD/mes, mes natural). Se suma
-  // al tope global de la plataforma y al tope por proyecto si lo hay. null =
-  // sin tope a nivel de cuenta (el global sigue aplicando).
+  // Bolsa mensual de créditos (lo que ve el cliente). El tope de gasto real de
+  // DataForSEO de la cuenta (USD/mes, mes natural) se DERIVA de ella:
+  // topeUsdMes = creditosMes × USD_PER_CREDIT. Se suma al tope global de la
+  // plataforma y al tope por proyecto si lo hay. null = sin tope de cuenta.
+  creditosMes: number;
   topeUsdMes: number | null;
   maxProyectos: number | null;
   // Módulos habilitados por el plan. El admin de la plataforma no está
@@ -50,7 +54,8 @@ export const PLANS: Record<string, PlanDef> = {
     nombre: "Gratis",
     descripcion: "Para probar la herramienta con un proyecto real.",
     precioEurMes: 0,
-    topeUsdMes: 3,
+    creditosMes: 100,
+    topeUsdMes: creditsToUsd(100),
     maxProyectos: 1,
     // Los módulos de más coste de API (backlinks, competidores, geogrid) son
     // de pago. Se aplican con moduleGate() en las rutas y con candados en la UI.
@@ -61,7 +66,8 @@ export const PLANS: Record<string, PlanDef> = {
     nombre: "Basic",
     descripcion: "Para autónomos y negocios con un par de webs.",
     precioEurMes: 9,
-    topeUsdMes: 5,
+    creditosMes: 600,
+    topeUsdMes: creditsToUsd(600),
     maxProyectos: 3,
     modulos: MODULE_IDS,
   },
@@ -70,7 +76,8 @@ export const PLANS: Record<string, PlanDef> = {
     nombre: "Pro",
     descripcion: "Para freelancers y agencias con varios clientes.",
     precioEurMes: 25,
-    topeUsdMes: 15,
+    creditosMes: 2000,
+    topeUsdMes: creditsToUsd(2000),
     maxProyectos: 10,
     modulos: MODULE_IDS,
   },

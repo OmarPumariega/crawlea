@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { fmtCredits } from "@/lib/credits";
 import { Loader2, RefreshCw, Rocket, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 
 // Panel "Lanzar / re-procesar proyecto": encola el mismo flujo que el wizard
@@ -190,7 +191,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
               {estimate.competitorsToAnalyze === 1 ? "" : "es"} a analizar (visibilidad + content gap)
             </div>
             <div className="text-ink-soft pt-0.5">
-              Coste estimado: <strong className="text-ink-soft">${estimate.estimatedCostUsd.toFixed(2)}</strong> · El
+              Coste estimado: <strong className="text-ink-soft">{fmtCredits(estimate.estimatedCostUsd)}</strong> · El
               coste real es el que devuelve la API.
             </div>
           </div>

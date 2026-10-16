@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { Loader2, Sparkles, ChevronDown, ChevronUp, ExternalLink, ShieldAlert, Filter, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { backlinkAnalysisCostUsd } from "@/lib/dataforseo/pricing";
+import { fmtCredits } from "@/lib/credits";
 import PageHeader from "@/components/app/PageHeader";
 
 // TODOS los campos que devuelve /v3/backlinks/backlinks/live — antes solo se
@@ -347,7 +348,7 @@ function DomainDetail({
   function handleAnalyzeClick() {
     if (limit === "all") {
       const msg = estimatedCost
-        ? `Se pedirán los ${snapshot?.backlinksTotal?.toLocaleString("es-ES")} backlinks reales de este dominio — coste estimado ~$${estimatedCost.toFixed(2)}. ¿Continuar?`
+        ? `Se pedirán los ${snapshot?.backlinksTotal?.toLocaleString("es-ES")} backlinks reales de este dominio — coste estimado ${fmtCredits(estimatedCost)}. ¿Continuar?`
         : "No se conoce el total de backlinks todavía (primer análisis) — el coste puede ser alto en dominios grandes. ¿Continuar?";
       if (!window.confirm(msg)) return;
     }
@@ -384,11 +385,11 @@ function DomainDetail({
           <button
             onClick={handleAnalyzeClick}
             disabled={analyzing}
-            title={estimatedCost ? `Coste estimado ~$${estimatedCost.toFixed(2)}` : "Coste según cantidad real"}
+            title={estimatedCost ? `Coste estimado ${fmtCredits(estimatedCost)}` : "Coste según cantidad real"}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
           >
             {analyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            Analizar {estimatedCost != null && <span className="opacity-70">~${estimatedCost.toFixed(2)}</span>}
+            Analizar {estimatedCost != null && <span className="opacity-70">{fmtCredits(estimatedCost)}</span>}
           </button>
         </div>
       </div>

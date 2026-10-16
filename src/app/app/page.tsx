@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { requireSession } from "@/lib/auth-guards";
+import { usdToCredits } from "@/lib/credits";
 import { getMonthSpendUsd, getMonthlyLimitUsd, getUserMonthSpendUsd, getUserLimitUsd } from "@/lib/dataforseo/spend";
 import PageHeader from "@/components/app/PageHeader";
 import StatHero from "@/components/app/StatHero";
@@ -45,6 +46,8 @@ export default async function DashboardPage() {
   if (!session) redirect("/acceso");
   const admin = session.user.role === "admin";
   const own = admin ? undefined : { project: { userId: session.user.id } };
+  // Los créditos del cliente solo cuentan DataForSEO (la IA no gasta créditos).
+  const creditScope = admin ? {} : { api: "dataforseo" };
 
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -73,7 +76,7 @@ export default async function DashboardPage() {
     prisma.rankKeyword.count({ where: own }),
     prisma.keywordStudy.count({ where: own }),
     prisma.apiUsageLog.aggregate({
-      where: { ...own, createdAt: { gte: startOfMonth } },
+      where: { ...own, ...creditScope, createdAt: { gte: startOfMonth } },
       _sum: { costUsd: true },
     }),
     admin ? getMonthSpendUsd() : getUserMonthSpendUsd(session.user.id),
@@ -101,12 +104,12 @@ export default async function DashboardPage() {
     }),
     prisma.apiUsageLog.groupBy({
       by: ["projectId"],
-      where: { ...own, createdAt: { gte: startOfMonth } },
+      where: { ...own, ...creditScope, createdAt: { gte: startOfMonth } },
       _sum: { costUsd: true },
     }),
     prisma.apiUsageLog.groupBy({
       by: ["api", "endpoint"],
-      where: { ...own, createdAt: { gte: startOfMonth } },
+      where: { ...own, ...creditScope, createdAt: { gte: startOfMonth } },
       _sum: { costUsd: true },
       _count: true,
     }),
@@ -192,6 +195,9 @@ export default async function DashboardPage() {
   }
 
   const monthTotal = monthTotalAgg._sum.costUsd ? Number(monthTotalAgg._sum.costUsd) : 0;
+  // El cliente ve créditos; el admin de la plataforma ve el coste real en USD.
+  const money = (usd: number) => (admin ? `${usd.toFixed(2)}$` : `${usdToCredits(usd).toLocaleString("es-ES")}`);
+  const moneyUnit = admin ? "" : " créditos";
   const monthLabel = startOfMonth.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
   const dfsPct = dfsLimit !== null ? (dfsSpent / dfsLimit) * 100 : null;
   const projectsWithoutDomain = projects.filter((p) => !p.domain);
@@ -203,13 +209,13 @@ export default async function DashboardPage() {
   if (dfsLimit !== null && dfsSpent >= dfsLimit) {
     alerts.push({
       tone: "danger",
-      text: `Tope mensual de DataForSEO superado: ${dfsSpent.toFixed(2)}$ de ${dfsLimit.toFixed(2)}$.`,
+      text: admin ? `Tope mensual de DataForSEO superado: ${dfsSpent.toFixed(2)}$ de ${dfsLimit.toFixed(2)}$.` : `Has gastado todos tus créditos de este mes (${money(dfsSpent)} de ${money(dfsLimit)}).`,
       href: "/app/costes",
     });
   } else if (dfsLimit !== null && dfsSpent >= dfsLimit * 0.8) {
     alerts.push({
       tone: "warning",
-      text: `Cerca del tope mensual de DataForSEO: ${dfsPct!.toFixed(0)}% (${dfsSpent.toFixed(2)}$ de ${dfsLimit.toFixed(2)}$).`,
+      text: admin ? `Cerca del tope mensual de DataForSEO: ${dfsPct!.toFixed(0)}% (${dfsSpent.toFixed(2)}$ de ${dfsLimit.toFixed(2)}$).` : `Te quedan pocos créditos: has usado el ${dfsPct!.toFixed(0)}% (${money(dfsSpent)} de ${money(dfsLimit)}).`,
       href: "/app/costes",
     });
   }
@@ -278,7 +284,7 @@ export default async function DashboardPage() {
           <div className="relative flex flex-col gap-5 h-full">
             <div className="flex items-start justify-between gap-3">
               <p className="text-[13px] font-medium text-white/60">
-                Presupuesto DataForSEO · <span className="capitalize">{monthLabel}</span>
+                {admin ? "Presupuesto DataForSEO" : "Créditos"} · <span className="capitalize">{monthLabel}</span>
               </p>
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white/80">
                 <Gauge className="h-4 w-4" />
@@ -286,10 +292,10 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-bold tracking-tight tabular-nums leading-none">
-                {dfsSpent.toFixed(2)}$
+                {money(dfsSpent)}
               </span>
               <span className="text-sm text-white/50">
-                {dfsLimit !== null ? `de ${dfsLimit.toFixed(2)}$` : "sin tope configurado"}
+                {dfsLimit !== null ? `de ${money(dfsLimit)}${moneyUnit}` : "sin tope configurado"}
               </span>
             </div>
             {dfsLimit !== null && (
@@ -319,8 +325,8 @@ export default async function DashboardPage() {
         />
 
         <StatHero
-          label="Coste total del mes"
-          value={`${monthTotal.toFixed(2)}$`}
+          label={admin ? "Coste total del mes" : "Créditos usados este mes"}
+          value={admin ? `${monthTotal.toFixed(2)}$` : money(dfsSpent)}
           sub={monthLabel}
           icon={<Wallet className="h-4 w-4" />}
         />
@@ -470,7 +476,7 @@ export default async function DashboardPage() {
                         )}
                       </td>
                       <td className="py-2.5 pl-3 pr-4 text-right font-semibold text-ink tabular-nums">
-                        {cost > 0 ? `${cost.toFixed(2)}$` : <span className="text-ink-faint">—</span>}
+                        {cost > 0 ? (admin ? `${cost.toFixed(2)}$` : money(cost)) : <span className="text-ink-faint">—</span>}
                       </td>
                     </tr>
                   );
@@ -484,7 +490,7 @@ export default async function DashboardPage() {
       {/* Costes del mes — barras horizontales proporcionales */}
       <div className="bg-surface rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold tracking-tight text-ink">¿A dónde va el gasto?</h2>
+          <h2 className="text-base font-bold tracking-tight text-ink">{admin ? "¿A dónde va el gasto?" : "¿En qué se gastan tus créditos?"}</h2>
           <Link
             href="/app/costes"
             className="text-[13px] font-medium text-ink-faint hover:text-brand transition-colors"
@@ -509,7 +515,7 @@ export default async function DashboardPage() {
                   />
                 </div>
                 <span className="w-20 shrink-0 text-right text-[13px] font-semibold text-ink tabular-nums">
-                  {r.cost.toFixed(3)}$
+                  {admin ? `${r.cost.toFixed(3)}$` : `${money(r.cost)} cr.`}
                 </span>
               </div>
             ))}

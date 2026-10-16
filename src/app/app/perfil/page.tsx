@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { requireSession, isAdmin } from "@/lib/auth-guards";
 import { getUserMonthSpendUsd } from "@/lib/dataforseo/spend";
 import { getPlan, effectiveUserLimitUsd } from "@/lib/plans";
+import { usdToCredits, creditsRenewalLabel } from "@/lib/credits";
 
 import PageHeader from "@/components/app/PageHeader";
 import GoogleConnectionCard from "@/components/app/GoogleConnectionCard";
@@ -130,9 +131,10 @@ export default async function PerfilPage({
           <>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-ink-soft">Consumo de API del mes (incluido en el plan)</span>
-                <span className="font-medium text-ink">
-                  {spentUsd.toFixed(2)}$ {limitUsd !== null && `/ ${limitUsd.toFixed(2)}$`}
+                <span className="text-ink-soft">Créditos usados este mes</span>
+                <span className="font-medium text-ink tabular-nums">
+                  {usdToCredits(spentUsd).toLocaleString("es-ES")}
+                  {limitUsd !== null && ` / ${usdToCredits(limitUsd).toLocaleString("es-ES")}`}
                 </span>
               </div>
               {limitUsd !== null && (
@@ -148,8 +150,8 @@ export default async function PerfilPage({
               {limitUsd !== null && pct >= 80 && (
                 <p className="text-xs text-accent-ink">
                   {pct >= 100
-                    ? "Has agotado el gasto incluido este mes: las nuevas llamadas de pago están bloqueadas hasta el mes que viene."
-                    : "Estás cerca del tope mensual de tu plan."}
+                    ? `Has gastado todos tus créditos de este mes. Se renuevan el ${creditsRenewalLabel()}.`
+                    : "Te quedan pocos créditos este mes."}
                 </p>
               )}
             </div>
@@ -162,7 +164,7 @@ export default async function PerfilPage({
             )}
             <SubscriptionActions hasCustomer={!!user.stripeCustomerId} paid={!!user.stripeSubscriptionId} pagoOk={params.pago === "ok"} plan={user.plan} />
             <p className="text-xs text-ink-faint">
-              El consumo cuenta solo las llamadas de pago con coste real registradas este mes natural.
+              Los créditos se gastan al consultar datos de pago (posiciones, palabras clave, backlinks…). La auditoría, los títulos, el schema y el contenido con IA no gastan créditos. Tu bolsa se renueva el {creditsRenewalLabel()}.
             </p>
           </>
         )}

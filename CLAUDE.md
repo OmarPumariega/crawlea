@@ -26,7 +26,7 @@ registro con Google OAuth (credentials queda solo para el admin de la plataforma
 aislamiento por usuario en todas las rutas y páginas (`src/lib/auth-guards.ts`),
 panel en `/app`, perfil `/app/perfil`, planes con límites (`src/lib/plans.ts`) y
 conexión Google por usuario. Panel de administración de cuentas en `/admin` (F2: resumen,
-usuarios, costes por cuenta). Web pública en `/` (F4). Stripe + gating de módulos (F3) hecha y en modo REAL (planes Gratis/Basic 9 €/Pro 25 €); pendiente OAuth verificado (F5).
+usuarios, costes por cuenta). Web pública en `/` (F4). Stripe + gating de módulos (F3) hecha y en modo REAL (planes Gratis/Basic 9 €/Pro 25 €, con bolsa mensual de créditos que oculta al cliente el coste en USD — `src/lib/credits.ts`); pendiente OAuth verificado (F5).
 Alrededor de cada proyecto cuelgan, módulo a módulo: keyword research,
 títulos/metas, schema, rank tracking, integraciones Google, generación de
 contenido, auditoría técnica y geogrid local SEO — los 9 módulos del spec están

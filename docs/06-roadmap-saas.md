@@ -136,8 +136,18 @@ por ID → 404, config de plataforma → 403, 2º proyecto → 402. `tsc` y `bui
 > productos/precios y webhook nuevos en modo activo, y cambiarlos en Configuración/`.env`.
 
 - **Planes** (`src/lib/plans.ts`): Gratis 0 € (1 proyecto), **Basic 9 €** (3 proyectos),
-  **Pro 25 €** (10 proyectos), IVA incluido. Los topes de gasto de API por cuenta (3/5/15 USD)
-  y los límites de proyectos son valores iniciales ajustables. Se eliminó el plan Business.
+  **Pro 25 €** (10 proyectos), IVA incluido. Se eliminó el plan Business.
+- **Créditos** (`src/lib/credits.ts`): el cliente nunca ve céntimos ni coste por llamada,
+  solo una bolsa mensual de créditos: **Gratis 100, Basic 600, Pro 2000** (`creditosMes`
+  en `plans.ts`). 1 crédito = 0,002 $ de coste real de DataForSEO (`USD_PER_CREDIT`), así que
+  un chequeo de posición Top-10 cuesta 1 crédito. Por dentro nada cambia: el gasto sigue
+  siendo `ApiUsageLog.costUsd` y el tope de la cuenta (`topeUsdMes`) se deriva de
+  `creditosMes`; el guard (`assertWithinSpendLimit`) bloquea al agotarse y la bolsa se
+  renueva sola el día 1 (mes natural). Solo cuenta DataForSEO: auditoría, títulos, schema,
+  contenido y Copilot (IA) no gastan créditos. Las estimaciones previas a cada acción, el
+  perfil, el dashboard, `/app/costes` y el informe muestran créditos al cliente; el admin
+  sigue viendo USD reales (`/admin`, `/app/costes`). Ajustar valores = tocar `plans.ts` /
+  `USD_PER_CREDIT`. Al cliente le basta: «posiciones, palabras clave… gastan créditos».
 - **Gating**: Gratis excluye `backlinks`, `competidores` y `geogrid` (`PAID_MODULES`). Servidor:
   `moduleGate(session, módulo)` en `src/lib/auth-guards.ts` (402 `plan_required`, lee el plan
   de BD, el admin está exento) en las 13 rutas API de esos módulos; las 3 páginas muestran

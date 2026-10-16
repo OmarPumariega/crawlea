@@ -62,7 +62,7 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   competitors: "Competidores",
   backlinks: "Backlinks",
   tfidf: "TF-IDF",
-  costs: "Costes",
+  costs: "Consumo de créditos",
 };
 
 export type ReportSections = Record<SectionKey, boolean>;

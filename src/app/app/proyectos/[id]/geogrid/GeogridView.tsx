@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Loader2, Sparkles, XCircle, GitCompareArrows, Check, MapPin, Star, MousePointerClick, Trash2, Search, Send, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { geogridCostUsd, geogridBusinessKeywordsCostUsd } from "@/lib/dataforseo/pricing";
+import { fmtCredits } from "@/lib/credits";
 import { importKeywordsToDefaultStudy } from "@/lib/keywords/client-import";
 import GeogridMap from "@/components/app/GeogridMap";
 import UrlLink from "@/components/app/UrlLink";
@@ -261,7 +262,7 @@ function PointRankingPanel({
                       title={
                         freeDomains.has(item.domain)
                           ? `Ya disponible gratis (analizado antes en Competidores) — ${item.domain}`
-                          : `Ver keywords de ${item.domain} (~$${geogridBusinessKeywordsCostUsd().toFixed(2)})`
+                          : `Ver keywords de ${item.domain} (${fmtCredits(geogridBusinessKeywordsCostUsd())})`
                       }
                     >
                       {loadingDomain === item.domain ? (
@@ -711,7 +712,7 @@ export default function GeogridView({
           </div>
         </div>
         <p className="text-xs text-ink-faint">
-          {gridSize * gridSize} consultas · coste estimado ~${geogridCostUsd(gridSize).toFixed(2)} por escaneo
+          {gridSize * gridSize} consultas · coste estimado {fmtCredits(geogridCostUsd(gridSize))} por escaneo
         </p>
 
         {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}

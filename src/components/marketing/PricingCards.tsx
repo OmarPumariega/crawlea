@@ -34,7 +34,7 @@ export default async function PricingCards({ className = "", autoPlan }: { class
               {[
                 p.maxProyectos === null ? "Proyectos sin límite" : `${p.maxProyectos} ${p.maxProyectos === 1 ? "proyecto" : "proyectos"}`,
                 gratis ? "Sin Backlinks, Competidores ni Geogrid" : "Todas las funciones",
-                "Consultas de pago con límite mensual",
+                `${p.creditosMes.toLocaleString("es-ES")} créditos al mes para consultas de pago`,
                 "Conexión con Search Console y Analytics",
               ].map((t) => (
                 <li key={t} className="flex gap-2.5">

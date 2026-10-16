@@ -116,7 +116,7 @@ export default async function InformePage({
     prisma.keywordStudy.count({ where: { projectId: id } }),
     prisma.keyword.count({ where: { study: { projectId: id } } }),
     prisma.apiUsageLog.aggregate({
-      where: { projectId: id, createdAt: { gte: startOfMonth, lt: startOfNextMonth } },
+      where: { projectId: id, api: "dataforseo", createdAt: { gte: startOfMonth, lt: startOfNextMonth } },
       _sum: { costUsd: true },
     }),
     prisma.geogridRun.findFirst({

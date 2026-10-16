@@ -33,6 +33,7 @@ import Pill from "@/components/app/Pill";
 import LocationPicker, { type LocationValue } from "@/components/app/LocationPicker";
 import UrlLink from "@/components/app/UrlLink";
 import { RANK_FREQUENCY_LABELS, RANK_SCAN_FREQUENCIES } from "@/lib/rank/constants";
+import { fmtCredits } from "@/lib/credits";
 
 type RankPosition = {
   id: string;
@@ -1403,9 +1404,9 @@ export default function RankView({ projectId }: { projectId: string }) {
         </button>
         <p className="text-xs text-ink-faint">
           {newKeywordCount > 0
-            ? <>Estas {newKeywordCount} keyword(s) costarán <strong className="text-ink-soft">~${newKeywordMonthlyCost.toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>
-            : <>Coste por keyword: <strong className="text-ink-soft">~${rankMonthlyCostUsd(1, Number(newDepth), newFrequency).toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>}
-          {" "}Total del proyecto al añadirlas: ~${(projectMonthlyCost + newKeywordMonthlyCost).toFixed(2)}/mes.
+            ? <>Estas {newKeywordCount} keyword(s) costarán <strong className="text-ink-soft">{fmtCredits(newKeywordMonthlyCost)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>
+            : <>Coste por keyword: <strong className="text-ink-soft">{fmtCredits(rankMonthlyCostUsd(1, Number(newDepth), newFrequency))}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>}
+          {" "}Total del proyecto al añadirlas: {fmtCredits((projectMonthlyCost + newKeywordMonthlyCost))}/mes.
         </p>
       </form>
 
@@ -1510,7 +1511,7 @@ export default function RankView({ projectId }: { projectId: string }) {
           {importStudy && (
             <p className="text-xs text-ink-faint">
               Importar {importStudy._count.keywords} keywords costará{" "}
-              <strong className="text-ink-soft">~${importBatchMonthly.toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).
+              <strong className="text-ink-soft">{fmtCredits(importBatchMonthly)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).
             </p>
           )}
         </div>

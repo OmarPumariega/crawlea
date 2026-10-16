@@ -1,5 +1,6 @@
 "use client";
 
+import { usdToCredits } from "@/lib/credits";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -940,7 +941,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
     <section className="space-y-4">
       <SectionTitle icon={<Wallet className="h-4 w-4" />}>Coste del mes <span className="text-ink-faint font-normal text-sm">({data.monthLabel})</span></SectionTitle>
       <div className="grid grid-cols-1 gap-4">
-        <Stat label="Gasto en APIs" value={`${data.costs.monthCost.toFixed(2)}$`} sub="DataForSEO + OpenRouter" />
+        <Stat label="Créditos usados este mes" value={usdToCredits(data.costs.monthCost).toLocaleString("es-ES")} sub="Consultas de pago de este proyecto" />
       </div>
     </section>
   );

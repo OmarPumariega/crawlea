@@ -15,6 +15,7 @@ import {
   contentGapCostUsd,
   onPageAnalysisCostUsd,
 } from "@/lib/dataforseo/pricing";
+import { fmtCredits } from "@/lib/credits";
 import { importKeywordsToDefaultStudy } from "@/lib/keywords/client-import";
 import PageHeader from "@/components/app/PageHeader";
 
@@ -228,7 +229,7 @@ function OnPageButton({ projectId, url }: { projectId: string; url: string }) {
           onClick={() => (analysis ? setExpanded((v) => !v) : handleAnalyze())}
           disabled={analyzing || checkingExisting}
           className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded bg-surface-muted text-ink-soft hover:bg-surface-muted disabled:opacity-50"
-          title={analysis ? "Ver informe on-page" : `Analizar página (~$${onPageAnalysisCostUsd().toFixed(4)}, gratis si ya se analizó hace menos de 7 días)`}
+          title={analysis ? "Ver informe on-page" : `Analizar página (${fmtCredits(onPageAnalysisCostUsd())}, gratis si ya se analizó hace menos de 7 días)`}
         >
           {analyzing ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileSearch className="h-3 w-3" />}
           {analysis ? (expanded ? "Ocultar informe on-page" : "Ver informe on-page") : "Analizar página"}
@@ -920,8 +921,8 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       {/* Aviso de coste estimado por acción (como en geogrid/rank tracking) */}
       <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-ink-soft">
         <span>Coste estimado por acción:</span>
-        <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-ink-faint" /> Analizar visibilidad <strong className="text-ink">~${analyzeCost.toFixed(2)}</strong></span>
-        <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-ink-faint" /> Content gap <strong className="text-ink">~${gapCost.toFixed(2)}</strong></span>
+        <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-ink-faint" /> Analizar visibilidad <strong className="text-ink">{fmtCredits(analyzeCost)}</strong></span>
+        <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-ink-faint" /> Content gap <strong className="text-ink">{fmtCredits(gapCost)}</strong></span>
       </div>
 
       {comparisonRows.length > 1 && (
@@ -979,10 +980,10 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
             onClick={() => data?.projectDomain && handleAnalyze(data.projectDomain)}
             disabled={!data?.projectDomain || analyzingDomain === data?.projectDomain}
             className="flex items-center gap-2 px-3 py-1.5 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
-            title={`Coste estimado ~$${analyzeCost.toFixed(2)}`}
+            title={`Coste estimado ${fmtCredits(analyzeCost)}`}
           >
             {analyzingDomain === data?.projectDomain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            Analizar <span className="text-ink-faint font-normal">~${analyzeCost.toFixed(2)}</span>
+            Analizar <span className="text-ink-faint font-normal">{fmtCredits(analyzeCost)}</span>
           </button>
         </div>
         {!data?.projectDomain ? (
@@ -1066,7 +1067,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                 {!c.snapshot && (
                   <p className="text-[11px] text-accent-ink bg-accent-tint border border-brand-100 rounded-lg px-2 py-1 mt-2">
                     Aún sin analizar. Pulsa <strong>Analizar</strong> a la derecha (cuesta{' '}
-                    {analyzeCost.toFixed(2)}$) o <strong>Analizar todos</strong> arriba para
+                    {fmtCredits(analyzeCost)}) o <strong>Analizar todos</strong> arriba para
                     procesar de una vez todos los competidores pendientes.
                   </p>
                 )}
@@ -1084,19 +1085,19 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                   onClick={() => handleAnalyze(c.domain)}
                   disabled={analyzingDomain === c.domain}
                   className="flex items-center gap-1 px-2.5 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
-                  title={`Analizar visibilidad · coste estimado ~$${analyzeCost.toFixed(2)}`}
+                  title={`Analizar visibilidad · coste estimado ${fmtCredits(analyzeCost)}`}
                 >
                   {analyzingDomain === c.domain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                  Analizar <span className="text-ink-faint font-normal">~${analyzeCost.toFixed(2)}</span>
+                  Analizar <span className="text-ink-faint font-normal">{fmtCredits(analyzeCost)}</span>
                 </button>
                 <button
                   onClick={() => handleGap(c.id)}
                   disabled={gapId === c.id}
                   className="flex items-center gap-1 px-2.5 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
-                  title={`Content gap · coste estimado ~$${gapCost.toFixed(2)}`}
+                  title={`Content gap · coste estimado ${fmtCredits(gapCost)}`}
                 >
                   {gapId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
-                  Gap <span className="text-ink-faint font-normal">~${gapCost.toFixed(2)}</span>
+                  Gap <span className="text-ink-faint font-normal">{fmtCredits(gapCost)}</span>
                 </button>
                 <button onClick={() => setConfirmRemoveId(c.id)} className="p-1.5 text-ink-faint hover:text-alert-ink" title="Eliminar">
                   <Trash2 className="h-4 w-4" />

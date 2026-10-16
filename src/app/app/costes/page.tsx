@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import { downloadCsv } from "@/lib/csv";
 import ProjectSwitcher, { type ProjectInfo } from "@/components/app/ProjectSwitcher";
 import PageHeader from "@/components/app/PageHeader";
+import { useSession } from "next-auth/react";
+import { usdToCredits } from "@/lib/credits";
 
 type EndpointRow = { api: string; endpoint: string; cost: number; count: number };
 type ProjectRow = { projectId: string | null; name: string; cost: number; limit: number | null };
@@ -59,6 +61,10 @@ function Bar({ pct, className }: { pct: number; className: string }) {
 const now = new Date();
 
 export default function CostesPage() {
+  const { data: session } = useSession();
+  const admin = session?.user?.role === "admin";
+  // El cliente ve créditos (solo DataForSEO); el admin, el coste real en USD.
+  const usd = (v: number, d: number) => (admin ? `${v.toFixed(d)}$` : `${usdToCredits(v).toLocaleString("es-ES")} cr.`);
   const [data, setData] = useState<CostData | null>(null);
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -126,13 +132,13 @@ export default function CostesPage() {
         actions={
           <button
             onClick={() =>
-              downloadCsv(`costes-${data.monthLabel.replace(/\s+/g, "-")}${data.project ? `-${data.project.name}` : ""}.csv`, ["Sección", "Concepto", "Coste (USD)", "Llamadas / tope"], [
-                ...data.byProject.map((r) => ["Por proyecto", r.name, r.cost.toFixed(3), r.limit !== null ? `tope ${r.limit.toFixed(2)}$` : ""]),
-                ...data.byEndpoint.map((r) => ["Por tipo de llamada", ENDPOINT_LABELS[r.endpoint] ?? r.endpoint, r.cost.toFixed(3), `${r.count} llamadas`]),
+              downloadCsv(`costes-${data.monthLabel.replace(/\s+/g, "-")}${data.project ? `-${data.project.name}` : ""}.csv`, ["Sección", "Concepto", admin ? "Coste (USD)" : "Créditos", "Llamadas / tope"], [
+                ...data.byProject.map((r) => ["Por proyecto", r.name, admin ? r.cost.toFixed(3) : String(usdToCredits(r.cost)), r.limit !== null ? `tope ${usd(r.limit, 2)}` : ""]),
+                ...data.byEndpoint.map((r) => ["Por tipo de llamada", ENDPOINT_LABELS[r.endpoint] ?? r.endpoint, admin ? r.cost.toFixed(3) : String(usdToCredits(r.cost)), `${r.count} llamadas`]),
                 ...data.recentCalls.map((c) => [
                   "Llamada individual",
                   `${ENDPOINT_LABELS[c.endpoint] ?? c.endpoint}${c.model ? ` (${c.model})` : ""}`,
-                  c.cost.toFixed(4),
+                  admin ? c.cost.toFixed(4) : String(usdToCredits(c.cost)),
                   new Date(c.createdAt).toLocaleString("es-ES"),
                 ]),
               ])
@@ -210,9 +216,9 @@ export default function CostesPage() {
           )}
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-2xl font-semibold text-ink">{dfs.spentUsd.toFixed(2)}$</span>
+          <span className="text-2xl font-semibold text-ink">{usd(dfs.spentUsd, 2)}</span>
           {dfs.limitUsd !== null ? (
-            <span className="text-sm text-ink-faint">/ {dfs.limitUsd.toFixed(2)}$ configurados</span>
+            <span className="text-sm text-ink-faint">/ {usd(dfs.limitUsd, 2)} {admin ? "configurados" : "incluidos en tu plan"}</span>
           ) : (
             <span className="text-xs text-ink-faint">(sin tope — define DATAFORSEO_MONTHLY_LIMIT_USD)</span>
           )}
@@ -225,14 +231,16 @@ export default function CostesPage() {
         )}
       </div>
 
-      {/* Total mes (todas las APIs) */}
-      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
-        <h2 className="text-sm font-semibold text-ink">
-          Total del mes (todas las APIs){data.project && <> · {data.project.name}</>}
-        </h2>
-        <div className="text-2xl font-semibold text-ink mt-1">{data.totalUsd.toFixed(2)}$</div>
-        <p className="text-xs text-ink-faint">Incluye DataForSEO y OpenRouter (títulos, schema, contenido...).</p>
-      </div>
+      {/* Total mes (todas las APIs): solo admin; el cliente solo ve créditos */}
+      {admin && (
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
+          <h2 className="text-sm font-semibold text-ink">
+            Total del mes (todas las APIs){data.project && <> · {data.project.name}</>}
+          </h2>
+          <div className="text-2xl font-semibold text-ink mt-1">{admin ? `${data.totalUsd.toFixed(2)}$` : usd(dfs.spentUsd, 2)}</div>
+          <p className="text-xs text-ink-faint">Incluye DataForSEO y OpenRouter (títulos, schema, contenido...).</p>
+        </div>
+      )}
 
       {/* Desglose por endpoint */}
       <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
@@ -248,7 +256,7 @@ export default function CostesPage() {
                     {ENDPOINT_LABELS[r.endpoint] ?? r.endpoint}
                     <span className="text-xs text-ink-faint ml-1">· {r.count} {r.count === 1 ? "llamada" : "llamadas"}</span>
                   </td>
-                  <td className="py-2 text-right text-ink tabular-nums">{r.cost.toFixed(3)}$</td>
+                  <td className="py-2 text-right text-ink tabular-nums">{usd(r.cost, 3)}</td>
                 </tr>
               ))}
             </tbody>
@@ -278,10 +286,10 @@ export default function CostesPage() {
                   >
                     <td className="py-2 text-ink-soft truncate">{r.name}</td>
                     <td className="py-2 text-right text-ink tabular-nums">
-                      {r.cost.toFixed(3)}$
+                      {usd(r.cost, 3)}
                       {r.limit !== null && (
                         <span className={cn("text-xs ml-1", r.cost >= r.limit ? "text-alert-ink" : r.cost >= r.limit * 0.8 ? "text-accent-ink" : "text-ink-faint")}>
-                          / {r.limit.toFixed(2)}$
+                          / {usd(r.limit, 2)}
                         </span>
                       )}
                     </td>
@@ -318,7 +326,7 @@ export default function CostesPage() {
                     <tr key={c.id} className="border-b border-line last:border-0">
                       <td className="py-1.5 pr-2 text-ink-soft">{ENDPOINT_LABELS[c.endpoint] ?? c.endpoint}</td>
                       <td className="py-1.5 px-2 text-ink-faint text-xs">{c.model ?? "—"}</td>
-                      <td className="py-1.5 px-2 text-right text-ink tabular-nums">{c.cost.toFixed(4)}$</td>
+                      <td className="py-1.5 px-2 text-right text-ink tabular-nums">{usd(c.cost, 4)}</td>
                       <td className="py-1.5 pl-2 text-right text-ink-faint text-xs whitespace-nowrap">
                         {new Date(c.createdAt).toLocaleString("es-ES")}
                       </td>
