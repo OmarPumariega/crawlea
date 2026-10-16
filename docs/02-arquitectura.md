@@ -208,5 +208,6 @@ El panel abandonó las pestañas horizontales por proyecto (el antiguo
   son globales (el dato de SERP no depende de quién pregunta) — amortiguan el coste
   de DataForSEO entre cuentas.
 - **Free sin límites de módulos de momento:** sin vía de pago no se bloquea a nadie;
-  el listado `modulos` del plan y su enforcement llegan con Stripe (Fase 3). Las
-  cifras de planes son placeholder en `src/lib/plans.ts`.
+  el listado `modulos` del plan se aplica con `moduleGate()` (402) y candados en la UI;
+  los pagos van por Stripe (`src/lib/stripe/`, ver roadmap Fase 3). Las cifras de planes
+  son valores iniciales ajustables en `src/lib/plans.ts`.

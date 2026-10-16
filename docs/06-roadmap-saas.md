@@ -84,29 +84,38 @@ por ID → 404, config de plataforma → 403, 2º proyecto → 402. `tsc` y `bui
   y `perfil`.
 - **Pendiente de la Fase 3:** el webhook de Stripe no debe pisar el plan si `planOverride`.
 
-## Fase 3 — Suscripciones con Stripe + gating de módulos
+## Fase 3 — Suscripciones con Stripe + gating de módulos (CÓDIGO HECHO; en modo PRUEBA)
 
-> **Requisito previo (no técnico):** antes de activar cobros hay que tener la actividad
-> dada de alta fiscalmente (autónomo o sociedad) y definir cómo se factura y declara el IVA.
-> Stripe cobra y puede calcular impuestos, pero el vendedor y sus obligaciones con Hacienda
-> son del titular. Hoy el titular es persona física sin alta de actividad. Consultar con un
-> gestor. Los textos legales ya muestran los precios «IVA incluido».
+> **Requisito previo (no técnico):** antes de activar cobros reales hay que tener la
+> actividad dada de alta fiscalmente (autónomo o sociedad) y definir cómo se factura y
+> declara el IVA. Hoy el titular es persona física sin alta. **Stripe está configurado en
+> modo prueba (`sk_test_`)**: no se cobra nada real. Pasar a modo real = claves `sk_live_`,
+> productos/precios y webhook nuevos en modo activo, y cambiarlos en Configuración/`.env`.
 
-Objetivo: la gente puede pagar y los módulos se bloquean por plan.
-
-- Env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_PRO`,
-  `STRIPE_PRICE_ID_BUSINESS` (añadir a `.env.example` y `settings-catalog.ts` si se
-  quiere configurable desde el panel).
-- `POST /api/stripe/checkout`: crea Checkout Session (modo subscription) desde el plan
-  elegido en `/precios`.
-- `POST /api/stripe/webhook` (público, firma verificada): `checkout.session.completed`,
-  `customer.subscription.updated|deleted` → sincroniza `plan`/`planStatus`/
-  `currentPeriodEnd`/`stripeCustomerId` en `User`.
-- Stripe Billing Portal para cambiar/cancelar plan (sin UI propia).
-- **Gating de módulos por plan**: recortar `modulos` del plan free en `plans.ts` y
-  añadir enforcement server-side (`assertModuleAllowed`) en las rutas de módulo +
-  candados con CTA a `/precios` en `AdminSidebar`/vistas. Excluir del free lo caro
-  (backlinks, competidores, geogrid) según el coste real por usuario observado.
+- **Planes** (`src/lib/plans.ts`): Gratis 0 € (1 proyecto), **Basic 9 €** (3 proyectos),
+  **Pro 25 €** (10 proyectos), IVA incluido. Los topes de gasto de API por cuenta (3/5/15 USD)
+  y los límites de proyectos son valores iniciales ajustables. Se eliminó el plan Business.
+- **Gating**: Gratis excluye `backlinks`, `competidores` y `geogrid` (`PAID_MODULES`). Servidor:
+  `moduleGate(session, módulo)` en `src/lib/auth-guards.ts` (402 `plan_required`, lee el plan
+  de BD, el admin está exento) en las 13 rutas API de esos módulos; las 3 páginas muestran
+  `UpgradeWall`; el sidebar pinta un candado.
+- **Stripe** (`src/lib/stripe/`): `client.ts` (clave y price IDs vía `getSetting`, editables
+  en Configuración: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_BASIC`,
+  `STRIPE_PRICE_ID_PRO`), `sync.ts` (aplica la suscripción a `User`; respeta `planOverride`;
+  `past_due` conserva el plan, `canceled/unpaid` vuelve a Gratis; cancela la suscripción al
+  borrar la cuenta).
+- Rutas: `POST /api/stripe/checkout` (suscripción), `POST /api/stripe/portal` (gestionar/cancelar),
+  `POST /api/stripe/webhook` (público, firma verificada sobre el cuerpo crudo; eventos
+  `checkout.session.completed` y `customer.subscription.created|updated|deleted`). El plan lo
+  fija SOLO el webhook.
+- UI: `PricingCards` es servidor; con Stripe configurado y sesión muestra `CheckoutButton`
+  (evento `begin_checkout`), sin sesión envía a `/registro`; sin Stripe, «Pago disponible
+  próximamente». `/app/perfil` muestra renovación y «Gestionar suscripción»; la vuelta de
+  Checkout (`?pago=ok`) emite `purchase`.
+- Stripe (cuenta en prueba): productos «Crawlea Basic» y «Crawlea Pro» (mensual), destino de
+  eventos `crawlea-suscripciones` → `https://crawlea.com/api/stripe/webhook`, portal de
+  clientes con la configuración por defecto (sin cambio de plan desde el portal: se cancela
+  y se contrata el otro).
 
 ## Fase 4 — Web pública (marketing) (HECHA)
 
@@ -114,8 +123,7 @@ Objetivo: la gente puede pagar y los módulos se bloquean por plan.
   «Empieza gratis» → `/registro`; con sesión muestra «Ir al panel») y footer con legales.
   La raíz `/` ya es la home (se eliminó el redirect a `/app`).
 - `/` home (hero, funciones reales por módulo, datos reales, pasos, CTA), `/precios`
-  (renderiza desde `plans.ts`; los CTA de Pro/Business llevan a `/registro` con aviso
-  «Pago disponible próximamente» hasta la Fase 3), `/contacto` (formulario →
+  (renderiza desde `plans.ts`; los CTA de pago llevan a `/registro` o a Checkout según Stripe/sesión, ver Fase 3), `/contacto` (formulario →
   `POST /api/contacto`: honeypot, rate limit 5/h por IP, envía por el SMTP existente a
   `ALERT_TO` con reply-to; 503 si no hay SMTP), `/legal/{privacidad,terminos,cookies}`
   **con huecos marcados** `[...]` — Omar aporta los textos definitivos.
