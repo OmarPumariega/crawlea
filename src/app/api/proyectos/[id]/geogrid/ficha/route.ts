@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { DataForSeoError } from "@/lib/dataforseo/client";
 import { assertWithinSpendLimit, DataForSeoSpendLimitError } from "@/lib/dataforseo/spend";
+import { MAPS_COST_PER_POINT } from "@/lib/dataforseo/pricing";
 import { searchGbpCandidates } from "@/lib/geogrid/places-search";
 
 // GET ?q=<nombre del negocio> — busca en Google Maps (vía DataForSEO) para
@@ -25,7 +26,7 @@ export async function GET(
   if (!query) return NextResponse.json({ error: "Falta el texto a buscar" }, { status: 400 });
 
   try {
-    await assertWithinSpendLimit(id);
+    await assertWithinSpendLimit(id, MAPS_COST_PER_POINT);
     const { candidates, costUsd } = await searchGbpCandidates(query);
 
     if (costUsd !== null) {

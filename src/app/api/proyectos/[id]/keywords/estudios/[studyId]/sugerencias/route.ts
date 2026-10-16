@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { DataForSeoError } from "@/lib/dataforseo/client";
 import { DataForSeoSpendLimitError, assertWithinSpendLimit } from "@/lib/dataforseo/spend";
+import { suggestionsCostUsd } from "@/lib/dataforseo/pricing";
 import { fetchSuggestions } from "@/lib/keywords/suggestions";
 
 // Busca keywords relacionadas con una semilla (modo Planificador). NO persiste
@@ -35,7 +36,7 @@ export async function GET(
   const limit = Number.isInteger(rawLimit) && rawLimit > 0 && rawLimit <= MAX_LIMIT ? rawLimit : 30;
 
   try {
-    await assertWithinSpendLimit(id);
+    await assertWithinSpendLimit(id, suggestionsCostUsd(limit));
   } catch (error) {
     if (error instanceof DataForSeoSpendLimitError) {
       return NextResponse.json({ error: error.message }, { status: 422 });

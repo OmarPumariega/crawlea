@@ -142,7 +142,9 @@ por ID → 404, config de plataforma → 403, 2º proyecto → 402. `tsc` y `bui
   en `plans.ts`). 1 crédito = 0,002 $ de coste real de DataForSEO (`USD_PER_CREDIT`), así que
   un chequeo de posición Top-10 cuesta 1 crédito. Por dentro nada cambia: el gasto sigue
   siendo `ApiUsageLog.costUsd` y el tope de la cuenta (`topeUsdMes`) se deriva de
-  `creditosMes`; el guard (`assertWithinSpendLimit`) bloquea al agotarse y la bolsa se
+  `creditosMes`; el guard (`assertWithinSpendLimit(projectId, estimatedUsd)`) bloquea si la bolsa está agotada
+  O si gastado + coste estimado de la acción la superaría (todas las llamadas de pago pasan
+  su estimación de `pricing.ts`, así nadie se pasa de la bolsa con una sola acción) y la bolsa se
   renueva sola el día 1 (mes natural). Solo cuenta DataForSEO: auditoría, títulos, schema,
   contenido y Copilot (IA) no gastan créditos. Las estimaciones previas a cada acción, el
   perfil, el dashboard, `/app/costes` y el informe muestran créditos al cliente; el admin

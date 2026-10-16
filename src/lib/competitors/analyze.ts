@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
 import { assertWithinSpendLimit } from "@/lib/dataforseo/spend";
+import { competitorAnalysisCostUsd, contentGapCostUsd, geogridBusinessKeywordsCostUsd } from "@/lib/dataforseo/pricing";
 import { fetchDomainOverview, fetchRankedKeywords, fetchContentGap, type RankedKeyword } from "@/lib/competitors/dataforseo";
 
 // Guard de frescura compartido por Competidores/Geogrid/Bootstrap: si ya
@@ -44,7 +45,7 @@ export async function analyzeCompetitorVisibility(
   const existing = await getFreshVisibilitySnapshot(projectId, domain);
   if (existing) return { snapshot: existing, fromCache: true };
 
-  await assertWithinSpendLimit(projectId);
+  await assertWithinSpendLimit(projectId, competitorAnalysisCostUsd(opts.limit));
   const [overview, ranked] = await Promise.all([
     fetchDomainOverview({ domain, locationCode: opts.locationCode, languageCode: opts.languageCode }),
     fetchRankedKeywords({ domain, locationCode: opts.locationCode, languageCode: opts.languageCode, limit: opts.limit }),
@@ -93,7 +94,7 @@ export async function computeCompetitorContentGap(
     };
   }
 
-  await assertWithinSpendLimit(projectId);
+  await assertWithinSpendLimit(projectId, contentGapCostUsd(opts.limit));
   const { items, costUsd } = await fetchContentGap({
     competitorDomain: competitor.domain,
     projectDomain,
@@ -143,7 +144,7 @@ export async function getRankedKeywordsCached(
   const cached = await getFreshRankedKeywords(projectId, domain);
   if (cached) return { items: cached, costUsd: null, fromCache: true };
 
-  await assertWithinSpendLimit(projectId);
+  await assertWithinSpendLimit(projectId, geogridBusinessKeywordsCostUsd(opts.limit));
   const { items, costUsd } = await fetchRankedKeywords({
     domain,
     locationCode: opts.locationCode,

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
 import { assertWithinSpendLimit, DataForSeoSpendLimitError } from "@/lib/dataforseo/spend";
+import { geogridCostUsd } from "@/lib/dataforseo/pricing";
 import { generateGridPoints } from "@/lib/geogrid/grid";
 import { checkMapsRank, normalizeDomain, type MapsRank, type MapsTopItem } from "@/lib/geogrid/maps";
 
@@ -35,7 +36,7 @@ export async function runGeogridJob(): Promise<{ processed: number }> {
     // Tope de gasto: una rejilla son N² llamadas (hasta 49). Comprobamos ANTES
     // de empezar para no dejar un mapa a medias. Si el tope ya se alcanzó, el
     // run queda failed sin gastar nada.
-    await assertWithinSpendLimit(run.projectId);
+    await assertWithinSpendLimit(run.projectId, geogridCostUsd(run.gridSize));
 
     const projectDomain = run.project.domain ? normalizeDomain(run.project.domain) : null;
     const points = generateGridPoints(run.centerLat, run.centerLng, run.gridSize, run.radiusKm);

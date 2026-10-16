@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
 import { assertWithinSpendLimit } from "@/lib/dataforseo/spend";
+import { ONPAGE_ANALYSIS_COST_USD } from "@/lib/dataforseo/pricing";
 import { fetchInstantPageAnalysis } from "@/lib/onpage/dataforseo";
 import { normalizeDomain } from "@/lib/competitors/dataforseo";
 import { scrapePage } from "@/lib/seo/scrape";
@@ -49,7 +50,7 @@ export async function analyzeOnPage(
   const existing = await getFreshOnPageAnalysis(projectId, url);
   if (existing) return { analysis: existing, fromCache: true };
 
-  await assertWithinSpendLimit(projectId);
+  await assertWithinSpendLimit(projectId, ONPAGE_ANALYSIS_COST_USD);
 
   const [result, sentenceCount] = await Promise.all([
     fetchInstantPageAnalysis(url),

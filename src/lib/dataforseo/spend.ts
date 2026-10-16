@@ -18,9 +18,11 @@ export class DataForSeoSpendLimitError extends Error {
   readonly spentUsd: number;
   readonly limitUsd: number;
   readonly scope: string;
-  constructor(spentUsd: number, limitUsd: number, scope: string = "global") {
+  constructor(spentUsd: number, limitUsd: number, scope: string = "global", estimatedUsd = 0) {
     super(
-      scope === "global"
+      scope === "user" && estimatedUsd > 0 && spentUsd < limitUsd
+        ? `Esta acción gasta ${creditsLabel(usdToCredits(estimatedUsd))} y te quedan ${creditsLabel(usdToCredits(limitUsd - spentUsd))} este mes. Se renuevan el día 1 del mes que viene; si los necesitas antes, sube de plan.`
+        : scope === "global"
         ? `Tope mensual de DataForSEO alcanzado: ${spentUsd.toFixed(2)}$ de ${limitUsd.toFixed(2)}$ configurados. Sube DATAFORSEO_MONTHLY_LIMIT_USD o espera al próximo mes para nuevas llamadas.`
         : scope === "user"
           ? `Has gastado tus créditos de este mes (${creditsLabel(usdToCredits(spentUsd))} de ${creditsLabel(usdToCredits(limitUsd))}). Se renuevan el día 1 del mes que viene; si los necesitas antes, sube de plan.`
@@ -94,7 +96,12 @@ export async function getUserLimitUsd(userId: string): Promise<number | null> {
 // tope propio). Llamar ANTES de cualquier llamada nueva a DataForSEO. Si no
 // hay topes configurados, no hace nada. Las lecturas de caché no gastan → no
 // pasan por aquí.
-export async function assertWithinSpendLimit(projectId?: string): Promise<void> {
+//
+// `estimatedUsd` (opcional): coste previsto de la acción. Con él, el tope de la
+// cuenta y el del proyecto también bloquean si gastado + estimado lo
+// superaría, para que nadie se pase de la bolsa de créditos por una sola
+// acción grande. Sin él, solo bloquea si el tope ya estaba alcanzado.
+export async function assertWithinSpendLimit(projectId?: string, estimatedUsd = 0): Promise<void> {
   // Tope global de la plataforma.
   const limit = await getMonthlyLimitUsd();
   if (limit !== null) {
@@ -119,7 +126,9 @@ export async function assertWithinSpendLimit(projectId?: string): Promise<void> 
     const userLimit = effectiveUserLimitUsd(project.user.plan, project.user.spendLimitOverrideUsd);
     if (userLimit !== null) {
       const userSpent = await getUserMonthSpendUsd(project.userId);
-      if (userSpent >= userLimit) throw new DataForSeoSpendLimitError(userSpent, userLimit, "user");
+      if (userSpent >= userLimit || userSpent + estimatedUsd > userLimit) {
+        throw new DataForSeoSpendLimitError(userSpent, userLimit, "user", estimatedUsd);
+      }
     }
   }
 
@@ -127,6 +136,6 @@ export async function assertWithinSpendLimit(projectId?: string): Promise<void> 
   const pLimit = project.spendLimitUsd ?? null;
   if (pLimit !== null && pLimit > 0) {
     const pSpent = await getProjectMonthSpendUsd(projectId);
-    if (pSpent >= pLimit) throw new DataForSeoSpendLimitError(pSpent, pLimit, "project");
+    if (pSpent >= pLimit || pSpent + estimatedUsd > pLimit) throw new DataForSeoSpendLimitError(pSpent, pLimit, "project");
   }
 }

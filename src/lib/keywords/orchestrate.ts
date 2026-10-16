@@ -1,6 +1,7 @@
 import { fetchSearchVolume, fetchSearchIntent, type IntentValue } from "@/lib/keywords/dataforseo";
 import { getFreshCache, upsertCache } from "@/lib/keywords/cache";
 import { assertWithinSpendLimit } from "@/lib/dataforseo/spend";
+import { KEYWORDS_STUDY_FLAT_COST_USD } from "@/lib/dataforseo/pricing";
 
 // Orquesta la resolución de datos de keyword combinando caché (primera
 // fuente, 30 días) y DataForSEO (solo para lo no cacheado).
@@ -61,7 +62,7 @@ export async function fetchKeywordData(params: {
   // Tope de gasto: bloquea ANTES de pagar por keywords nuevas. Las cacheadas
   // ya se sirvieron arriba sin coste, así que un estudio 100% cacheado nunca
   // tropieza con el tope (comportamiento correcto: el dato ya se pagó antes).
-  await assertWithinSpendLimit(projectId);
+  await assertWithinSpendLimit(projectId, KEYWORDS_STUDY_FLAT_COST_USD);
 
   // 2. Las pendientes: dos llamadas reales (volumen + intención). Se lanzan
   //    en paralelo — son independientes entre sí.

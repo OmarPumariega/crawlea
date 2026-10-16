@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
 import { DataForSeoError } from "@/lib/dataforseo/client";
 import { assertWithinSpendLimit, DataForSeoSpendLimitError } from "@/lib/dataforseo/spend";
+import { rankCheckCostUsd } from "@/lib/dataforseo/pricing";
 import { fetchTopOrganic } from "@/lib/tfidf/serp";
 import { computeTfidf, type TfidfResult as ComputedTfidfResult } from "@/lib/tfidf/tfidf";
 import { normalizeKeyword } from "@/lib/keywords/normalize";
@@ -39,7 +40,7 @@ export async function getOrComputeTfidfResult(params: {
     return { result: stored.result as unknown as StoredTfidfResult, costUsd: null, fromCache: true };
   }
 
-  await assertWithinSpendLimit(projectId); // lanza DataForSeoSpendLimitError si aplica
+  await assertWithinSpendLimit(projectId, rankCheckCostUsd(10)); // lanza DataForSeoSpendLimitError si aplica
 
   // Usa la keyword NORMALIZADA (igual que RankKeyword.keyword) para que el
   // lookup de SerpCache haga match aunque el usuario la haya escrito con

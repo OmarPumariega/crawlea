@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { assertWithinSpendLimit } from "@/lib/dataforseo/spend";
+import { rankCheckCostUsd } from "@/lib/dataforseo/pricing";
 import { checkSerpRank, normalizeDomain } from "@/lib/rank/serp";
 import { madridDayBounds } from "@/lib/rank/day-guard";
 
@@ -66,7 +67,7 @@ export async function checkRankKeyword(rankKeywordId: string): Promise<{
   // Tope de gasto: bloquea ANTES de la llamada (no gastar si ya estamos en el
   // límite mensual). Solo se evalúa para chequeos reales (los cacheados no
   // gastan).
-  await assertWithinSpendLimit(rk.projectId);
+  await assertWithinSpendLimit(rk.projectId, rankCheckCostUsd(rk.depth));
 
   const projectDomain = normalizeDomain(rk.project.domain);
 

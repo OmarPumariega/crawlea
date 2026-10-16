@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { DataForSeoError } from "@/lib/dataforseo/client";
 import { DataForSeoSpendLimitError, assertWithinSpendLimit } from "@/lib/dataforseo/spend";
+import { backlinkAnalysisCostUsd } from "@/lib/dataforseo/pricing";
 import {
   fetchBacklinkSummary,
   fetchTopBacklinks,
@@ -78,7 +79,7 @@ export async function POST(
   }
 
   try {
-    await assertWithinSpendLimit(id);
+    await assertWithinSpendLimit(id, backlinkAnalysisCostUsd(wantsAll ? 100 : limit));
   } catch (error) {
     if (error instanceof DataForSeoSpendLimitError) {
       return NextResponse.json({ error: error.message }, { status: 422 });
@@ -102,7 +103,7 @@ export async function POST(
       let page = 0;
       while (offset < total && page < BACKLINKS_MAX_PAGES_SAFETY) {
         try {
-          await assertWithinSpendLimit(id);
+          await assertWithinSpendLimit(id, backlinkAnalysisCostUsd(Math.min(BACKLINKS_MAX_PER_REQUEST, total - offset)));
         } catch (error) {
           if (error instanceof DataForSeoSpendLimitError) break; // se corta con lo ya traído, no se pierde
           throw error;
