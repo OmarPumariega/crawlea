@@ -86,6 +86,12 @@ por ID → 404, config de plataforma → 403, 2º proyecto → 402. `tsc` y `bui
 
 ## Fase 3 — Suscripciones con Stripe + gating de módulos
 
+> **Requisito previo (no técnico):** antes de activar cobros hay que tener la actividad
+> dada de alta fiscalmente (autónomo o sociedad) y definir cómo se factura y declara el IVA.
+> Stripe cobra y puede calcular impuestos, pero el vendedor y sus obligaciones con Hacienda
+> son del titular. Hoy el titular es persona física sin alta de actividad. Consultar con un
+> gestor. Los textos legales ya muestran los precios «IVA incluido».
+
 Objetivo: la gente puede pagar y los módulos se bloquean por plan.
 
 - Env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_PRO`,

@@ -21,7 +21,7 @@ export default function Page() {
           body: [
             { table: {
               head: ["Plan", "Precio mensual", "Proyectos"],
-              rows: plans.map((p) => [p.nombre, p.precioEurMes === 0 ? "0 €" : `${p.precioEurMes} € [IVA INCLUIDO / MÁS IVA]`, p.maxProyectos === null ? "Sin límite" : String(p.maxProyectos)]),
+              rows: plans.map((p) => [p.nombre, p.precioEurMes === 0 ? "0 €" : `${p.precioEurMes} € (IVA incluido)`, p.maxProyectos === null ? "Sin límite" : String(p.maxProyectos)]),
             } },
             "Los precios y límites pueden cambiar. Un cambio de precio no afecta al periodo ya pagado, y a las suscripciones en curso les avisaremos con al menos 30 días de antelación; podrás cancelar antes de que se aplique.",
           ],
