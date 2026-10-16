@@ -1,4 +1,4 @@
-import { requireSession, projectForSession } from "@/lib/auth-guards";
+import { requireSession, projectForSession, moduleGate } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -11,6 +11,8 @@ export async function GET(
 ) {
   const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const gate = await moduleGate(session, "backlinks");
+  if (gate) return gate;
 
   const { id } = await params;
 

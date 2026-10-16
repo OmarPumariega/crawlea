@@ -1,3 +1,5 @@
+import { requireSession, canUseModule } from "@/lib/auth-guards";
+import UpgradeWall from "@/components/app/UpgradeWall";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import GeogridView from "./GeogridView";
@@ -8,6 +10,8 @@ export default async function GeogridPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await requireSession();
+  if (session && !(await canUseModule(session, "geogrid"))) return <UpgradeWall modulo="Geogrid" />;
   const project = await prisma.project.findUnique({
     where: { id },
     select: { id: true, lat: true, lng: true, businessName: true, gbpName: true, gbpPlaceId: true },

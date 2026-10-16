@@ -26,6 +26,9 @@ export const MODULE_IDS = [
 
 export type ModuleId = (typeof MODULE_IDS)[number];
 
+// Módulos que el plan gratuito no incluye (los de mayor coste de API).
+export const PAID_MODULES: readonly ModuleId[] = ["backlinks", "competidores", "geogrid"];
+
 export interface PlanDef {
   id: string;
   nombre: string;
@@ -49,28 +52,26 @@ export const PLANS: Record<string, PlanDef> = {
     precioEurMes: 0,
     topeUsdMes: 3,
     maxProyectos: 1,
-    // De entrada el plan free no excluye módulos: no hay vía de pago todavía
-    // y los primeros usuarios son beta testers. Cuando Stripe esté listo
-    // (Fase 3), este listado se recorta y se añade el enforcement en las
-    // rutas de módulo (assertModuleAllowed).
+    // Los módulos de más coste de API (backlinks, competidores, geogrid) son
+    // de pago. Se aplican con moduleGate() en las rutas y con candados en la UI.
+    modulos: MODULE_IDS.filter((m) => !PAID_MODULES.includes(m)),
+  },
+  basic: {
+    id: "basic",
+    nombre: "Basic",
+    descripcion: "Para autónomos y negocios con un par de webs.",
+    precioEurMes: 9,
+    topeUsdMes: 5,
+    maxProyectos: 3,
     modulos: MODULE_IDS,
   },
   pro: {
     id: "pro",
     nombre: "Pro",
-    descripcion: "Para freelancers y negocios con varios proyectos.",
-    precioEurMes: 29,
-    topeUsdMes: 25,
-    maxProyectos: 5,
-    modulos: MODULE_IDS,
-  },
-  business: {
-    id: "business",
-    nombre: "Business",
-    descripcion: "Para agencias con muchos clientes y mucho volumen.",
-    precioEurMes: 79,
-    topeUsdMes: 75,
-    maxProyectos: 20,
+    descripcion: "Para freelancers y agencias con varios clientes.",
+    precioEurMes: 25,
+    topeUsdMes: 15,
+    maxProyectos: 10,
     modulos: MODULE_IDS,
   },
 };

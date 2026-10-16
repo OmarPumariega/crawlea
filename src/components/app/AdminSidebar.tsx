@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { PAID_MODULES, planAllowsModule, type ModuleId } from "@/lib/plans";
 import {
   Anchor,
   Braces,
@@ -31,6 +32,7 @@ import {
   Wrench,
   X,
   Globe,
+  Lock,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -494,6 +496,15 @@ function ModuleLink({
 }) {
   const active = isModuleActive(m.href, base, pathname);
   const Icon = m.icon;
+  // Candado en módulos de pago cuando el plan de la cuenta no los incluye
+  // (el admin no está limitado). El gating real está en las rutas API.
+  const { data: session } = useSession();
+  const moduleId = m.href.split("/").pop() as ModuleId;
+  const locked =
+    session?.user?.role !== "admin" &&
+    !!session?.user?.plan &&
+    PAID_MODULES.includes(moduleId) &&
+    !planAllowsModule(session.user.plan, moduleId);
   // Al buscar (forceOpen) los módulos se muestran planos; normalmente los
   // hijos de grupo van indentados bajo su carpeta.
   const indent = forceOpen ? "" : "ml-5";
@@ -511,6 +522,7 @@ function ModuleLink({
     >
       <Icon className={cn("h-4 w-4 shrink-0", active ? "" : "text-ink-faint")} />
       <span className="truncate">{m.label}</span>
+      {locked && <Lock className="ml-auto h-3.5 w-3.5 shrink-0 text-ink-faint" aria-label="Plan de pago" />}
     </Link>
   );
 }

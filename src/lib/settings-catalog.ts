@@ -20,7 +20,11 @@ export type SettingKey =
   | "SMTP_USER"
   | "SMTP_PASS"
   | "ALERT_FROM"
-  | "ALERT_TO";
+  | "ALERT_TO"
+  | "STRIPE_SECRET_KEY"
+  | "STRIPE_WEBHOOK_SECRET"
+  | "STRIPE_PRICE_ID_PRO"
+  | "STRIPE_PRICE_ID_BASIC";
 
 export type SettingMeta = {
   key: SettingKey;
@@ -95,6 +99,22 @@ export const SETTINGS_CATALOG: SettingMeta[] = [
     helpText:
       "Debe coincidir exactamente con el configurado en Google Cloud. En producción, usa https://tudominio.com/api/google/oauth/callback.",
   },
+  {
+    key: "STRIPE_SECRET_KEY",
+    label: "Clave secreta",
+    group: "Stripe (pagos)",
+    placeholder: "sk_test_… / sk_live_…",
+    helpText: "Modo prueba (sk_test_) hasta tener el alta fiscal; con ella se crean las suscripciones.",
+  },
+  {
+    key: "STRIPE_WEBHOOK_SECRET",
+    label: "Secreto del webhook",
+    group: "Stripe (pagos)",
+    placeholder: "whsec_…",
+    helpText: "Endpoint: https://crawlea.com/api/stripe/webhook",
+  },
+  { key: "STRIPE_PRICE_ID_PRO", label: "Price ID plan Pro", group: "Stripe (pagos)", placeholder: "price_…" },
+  { key: "STRIPE_PRICE_ID_BASIC", label: "Price ID plan Basic", group: "Stripe (pagos)", placeholder: "price_…" },
   { key: "SMTP_HOST", label: "Host SMTP", group: "Avisos por email" },
   { key: "SMTP_PORT", label: "Puerto", group: "Avisos por email", placeholder: "587" },
   { key: "SMTP_USER", label: "Usuario SMTP", group: "Avisos por email" },

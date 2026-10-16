@@ -6,6 +6,7 @@ import { getPlan, effectiveUserLimitUsd } from "@/lib/plans";
 import PageHeader from "@/components/app/PageHeader";
 import GoogleConnectionCard from "@/components/app/GoogleConnectionCard";
 import DeleteAccountButton from "@/app/app/perfil/DeleteAccountButton";
+import SubscriptionActions from "@/app/app/perfil/SubscriptionActions";
 
 const ERROR_MESSAGES: Record<string, string> = {
   cancelado: "Has cancelado la conexión con Google.",
@@ -25,7 +26,7 @@ function formatDate(d: Date) {
 export default async function PerfilPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; connected?: string }>;
+  searchParams: Promise<{ error?: string; connected?: string; pago?: string }>;
 }) {
   const session = await requireSession();
   if (!session) return null;
@@ -39,6 +40,10 @@ export default async function PerfilPage({
         name: true,
         image: true,
         plan: true,
+        planStatus: true,
+        currentPeriodEnd: true,
+        stripeCustomerId: true,
+        stripeSubscriptionId: true,
         spendLimitOverrideUsd: true,
         createdAt: true,
         _count: { select: { projects: true } },
@@ -95,6 +100,11 @@ export default async function PerfilPage({
 
       {/* Plan y consumo del mes */}
       <section className="rounded-2xl border border-line bg-surface p-6 space-y-4">
+        {params.pago === "ok" && (
+          <p className="rounded-xl border border-line bg-brand-50 px-4 py-3 text-sm text-ink">
+            Pago recibido. Tu plan se activa en unos segundos; si no lo ves, recarga la página.
+          </p>
+        )}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">Plan</p>
@@ -143,6 +153,14 @@ export default async function PerfilPage({
                 </p>
               )}
             </div>
+            {user.stripeSubscriptionId && user.currentPeriodEnd && (
+              <p className="text-sm text-ink-soft">
+                {user.planStatus === "past_due"
+                  ? "No hemos podido cobrar la última renovación. Actualiza tu método de pago."
+                  : `Próxima renovación: ${formatDate(user.currentPeriodEnd)}.`}
+              </p>
+            )}
+            <SubscriptionActions hasCustomer={!!user.stripeCustomerId} paid={!!user.stripeSubscriptionId} pagoOk={params.pago === "ok"} plan={user.plan} />
             <p className="text-xs text-ink-faint">
               El consumo cuenta solo las llamadas de pago con coste real registradas este mes natural.
             </p>

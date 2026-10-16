@@ -1,3 +1,4 @@
+import { cancelStripeSubscriptionForUser } from "@/lib/stripe/sync";
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, isAdmin, unauthorized } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
@@ -119,6 +120,11 @@ export async function DELETE(_req: NextRequest, { params }: Ctx) {
     );
   }
 
+  try {
+    await cancelStripeSubscriptionForUser(id);
+  } catch {
+    return NextResponse.json({ error: "No se pudo cancelar la suscripción en Stripe; la cuenta no se ha borrado." }, { status: 502 });
+  }
   await prisma.user.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

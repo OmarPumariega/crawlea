@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import type { Prisma, Project } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
+import { planAllowsModule, type ModuleId } from "@/lib/plans";
 
 // Barrera de aislamiento multi-tenant de las rutas API. Todo handler llama a
 // requireSession() en vez de getServerSession(), y todo acceso a un proyecto
@@ -62,4 +63,29 @@ export async function projectForSession<T extends Prisma.ProjectSelect>(
     where,
     ...(select ? { select } : {}),
   });
+}
+
+// Gating por plan en el servidor: devuelve una respuesta 402 si el plan de la
+// cuenta no incluye el módulo, o null si puede continuar. El admin de la
+// plataforma no está limitado. Lee el plan de BD (no del JWT) para que un
+// cambio de plan o una cancelación apliquen en la siguiente petición.
+export async function moduleGate(
+  session: Session,
+  moduleId: ModuleId
+): Promise<NextResponse | null> {
+  if (isAdmin(session)) return null;
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { plan: true },
+  });
+  if (user && planAllowsModule(user.plan, moduleId)) return null;
+  return NextResponse.json(
+    { error: "Este módulo no está incluido en tu plan. Mejora a Pro para usarlo.", code: "plan_required" },
+    { status: 402 }
+  );
+}
+
+// Para páginas de servidor: true si la cuenta puede usar el módulo.
+export async function canUseModule(session: Session, moduleId: ModuleId): Promise<boolean> {
+  return (await moduleGate(session, moduleId)) === null;
 }

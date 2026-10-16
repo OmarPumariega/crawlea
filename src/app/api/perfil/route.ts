@@ -1,3 +1,4 @@
+import { cancelStripeSubscriptionForUser } from "@/lib/stripe/sync";
 import { requireSession, isAdmin } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextResponse } from "next/server";
@@ -17,6 +18,14 @@ export async function DELETE() {
     );
   }
 
+  try {
+    await cancelStripeSubscriptionForUser(session.user.id);
+  } catch {
+    return NextResponse.json(
+      { error: "No hemos podido cancelar tu suscripción. Cancélala desde Gestionar suscripción y vuelve a intentarlo." },
+      { status: 502 }
+    );
+  }
   await prisma.user.delete({ where: { id: session.user.id } });
 
   return NextResponse.json({ ok: true });

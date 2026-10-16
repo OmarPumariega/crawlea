@@ -1,4 +1,4 @@
-import { requireSession, projectForSession } from "@/lib/auth-guards";
+import { requireSession, projectForSession, moduleGate } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
@@ -13,6 +13,8 @@ export async function GET(
 ) {
   const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const gate = await moduleGate(session, "competidores");
+  if (gate) return gate;
 
   const { id } = await params;
   const project = await projectForSession(session, id, { domain: true });
@@ -52,6 +54,8 @@ export async function POST(
 ) {
   const session = await requireSession();
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const gate = await moduleGate(session, "competidores");
+  if (gate) return gate;
 
   const { id } = await params;
   const project = await projectForSession(session, id);
