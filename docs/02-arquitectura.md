@@ -71,7 +71,7 @@ src/
 │   │            sub-herramientas fusionadas son pestañas por ruta —
 │   │            ver "Navegación" abajo)
 │   ├── admin/                      # panel de administración (Fase 2): resumen, usuarios, costes
-│   ├── (marketing — Fase 4)       # web pública: home, precios, legales
+│   ├── (marketing)/               # web pública (Fase 4): home, precios, contacto, legales
 │   └── api/
 │       ├── auth/[...nextauth]/
 │       ├── perfil/                 # DELETE cuenta (cascada)

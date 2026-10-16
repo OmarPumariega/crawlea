@@ -5,6 +5,7 @@ import AuthPanel from "@/components/auth/AuthPanel";
 
 export const metadata = {
   title: "Acceso · Crawlea",
+  robots: { index: false },
 };
 
 export default async function AccesoPage() {

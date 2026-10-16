@@ -5,6 +5,7 @@ import AuthPanel from "@/components/auth/AuthPanel";
 
 export const metadata = {
   title: "Crear cuenta · Crawlea",
+  robots: { index: false },
 };
 
 export default async function RegistroPage() {

@@ -31,7 +31,8 @@ Estado de la transición (fases aprobadas):
   ingresos hasta que exista Stripe.
 - **Fase 3 — pendiente:** Stripe (checkout, webhooks, portal) + gating de módulos
   por plan (por ahora el plan free incluye todos los módulos: no hay vía de pago).
-- **Fase 4 — pendiente:** web pública en `/` (home, precios, contacto, legales).
+- **Fase 4 — hecha:** web pública en `/` (home, precios, contacto, legales con huecos
+  pendientes de textos de Omar, sitemap/robots/OG, CSP).
 - **Fase 5 — pendiente:** dominio crawlea.com (compra en trámite), OAuth de Google
   verificado, quitar `NEXTAUTH_URL` horneado del Dockerfile.
 

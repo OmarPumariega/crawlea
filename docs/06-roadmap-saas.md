@@ -24,7 +24,7 @@ ya tomadas — se actualiza en el mismo commit que el cambio de fase.
 | 1 — Fundación multi-usuario | ✅ **Hecha** | `49e26fb` |
 | 2 — Panel de administración de cuentas | ✅ **Hecha** (pendiente verificar en BD dev) | — |
 | 3 — Suscripciones con Stripe + gating de módulos | ⬜ Pendiente | — |
-| 4 — Web pública (marketing) | ⬜ Pendiente | — |
+| 4 — Web pública (marketing) | ✅ **Hecha** (textos legales pendientes de Omar) | — |
 | 5 — Lanzamiento e infra | 🔶 **En progreso** | — |
 
 Para trabajar en una fase: leer [`00-protocolo-trabajo.md`](./00-protocolo-trabajo.md)
@@ -102,19 +102,27 @@ Objetivo: la gente puede pagar y los módulos se bloquean por plan.
   candados con CTA a `/precios` en `AdminSidebar`/vistas. Excluir del free lo caro
   (backlinks, competidores, geogrid) según el coste real por usuario observado.
 
-## Fase 4 — Web pública (marketing)
+## Fase 4 — Web pública (marketing) (HECHA)
 
-Objetivo: la home del SaaS en `/`.
-
-- Route group `src/app/(marketing)/` con layout propio (header público con
-  «Entrar», footer con legales).
-- `/` home (hero, features por módulo, CTA «Empezar gratis»), `/precios` (renderiza
-  desde `plans.ts` — misma fuente de verdad que el backend), `/contacto` (formulario
-  vía SMTP/nodemailer ya existente), `/legal/{privacidad,terminos,cookies}` (el texto
-  definitivo lo aporta Omar; deben citar a Stripe y Google).
-- SEO de la propia web: metadata/OG, `sitemap.ts`, `robots.ts`, CSP real en
-  `next.config.ts` (hoy solo `frame-ancestors`).
-- La raíz actual (`/` → redirect a `/app`) se sustituye por la home.
+- Route group `src/app/(marketing)/` con header público («Entra» → `/acceso` → `/app`,
+  «Empieza gratis» → `/registro`; con sesión muestra «Ir al panel») y footer con legales.
+  La raíz `/` ya es la home (se eliminó el redirect a `/app`).
+- `/` home (hero, funciones reales por módulo, datos reales, pasos, CTA), `/precios`
+  (renderiza desde `plans.ts`; los CTA de Pro/Business llevan a `/registro` con aviso
+  «Pago disponible próximamente» hasta la Fase 3), `/contacto` (formulario →
+  `POST /api/contacto`: honeypot, rate limit 5/h por IP, envía por el SMTP existente a
+  `ALERT_TO` con reply-to; 503 si no hay SMTP), `/legal/{privacidad,terminos,cookies}`
+  **con huecos marcados** `[...]` — Omar aporta los textos definitivos.
+- Copy según `Guia de comunicación/GUIA-DE-COMUNICACION.md` (sin nombrar competencia,
+  sin promesas; la «formación» de la marca NO se anuncia: no existe aún).
+- SEO: `metadataBase` (de `NEXTAUTH_URL`), metadata + canonical por página, JSON-LD
+  `SoftwareApplication` en la home, `sitemap.ts`, `robots.ts` (bloquea `/app`, `/admin`,
+  `/api`), `opengraph-image.tsx`, `noindex` en `/app`, `/admin`, `/acceso`, `/registro`.
+- CSP real en `next.config.ts` (`'unsafe-inline'` en script/style por Next; sin
+  `form-action` a propósito: rompería el redirect de Google). Verificado sin
+  violaciones en home/precios.
+- Pendiente: textos legales, decidir si se añade cookie banner (hoy solo cookies
+  técnicas → no hace falta), y revisar CSP en producción navegando la herramienta.
 
 ## Fase 5 — Lanzamiento e infra
 

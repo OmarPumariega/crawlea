@@ -44,6 +44,7 @@ async function getTransport(): Promise<nodemailer.Transporter | null> {
 // explícito (avisos por usuario del SaaS); si no viene, ALERT_TO (plataforma).
 export async function sendEmail(params: {
   to?: string;
+  replyTo?: string;
   subject: string;
   text: string;
 }): Promise<boolean> {
@@ -60,6 +61,7 @@ export async function sendEmail(params: {
     await t.sendMail({
       from: from ?? `Crawlea <no-reply@${host}>`,
       to,
+      ...(params.replyTo ? { replyTo: params.replyTo } : {}),
       subject: params.subject,
       text: params.text,
     });

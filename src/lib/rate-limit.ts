@@ -14,6 +14,12 @@ export const loginEmailLimiter = new RateLimiterMemory({
   blockDuration: 900,
 });
 
+// Formulario público de contacto: 5 mensajes por hora y por IP.
+export const contactIpLimiter = new RateLimiterMemory({
+  points: 5,
+  duration: 3600,
+});
+
 /**
  * Devuelve la IP real del cliente leyendo X-Forwarded-For (cabecera que
  * inyecta Traefik en producción). Fallback "unknown" si no está presente.

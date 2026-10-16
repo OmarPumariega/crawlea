@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 // Identidad tipográfica Crawlea: Manrope (geométrica, humana, la de las
@@ -14,9 +15,17 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Crawlea — Panel SEO",
-  description:
-    "Herramienta SEO todo-en-uno con datos reales: keywords, auditoría técnica, rank tracking, contenido y geogrid local.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: "Crawlea · El SEO esencial, a tu alcance", template: "%s" },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "es_ES",
+    title: "Crawlea · El SEO esencial, a tu alcance",
+    description: SITE_DESCRIPTION,
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({

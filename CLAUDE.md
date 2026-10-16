@@ -26,7 +26,7 @@ registro con Google OAuth (credentials queda solo para el admin de la plataforma
 aislamiento por usuario en todas las rutas y páginas (`src/lib/auth-guards.ts`),
 panel en `/app`, perfil `/app/perfil`, planes con límites (`src/lib/plans.ts`) y
 conexión Google por usuario. Panel de administración de cuentas en `/admin` (F2: resumen,
-usuarios, costes por cuenta). Pendiente: Stripe + gating de módulos (F3), web pública (F4) y dominio/OAuth verificado (F5).
+usuarios, costes por cuenta). Web pública en `/` (F4). Pendiente: Stripe + gating de módulos (F3) y OAuth verificado (F5).
 Alrededor de cada proyecto cuelgan, módulo a módulo: keyword research,
 títulos/metas, schema, rank tracking, integraciones Google, generación de
 contenido, auditoría técnica y geogrid local SEO — los 9 módulos del spec están

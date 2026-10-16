@@ -28,7 +28,7 @@ aparece y se entra como admin con contraseña — suficiente para la mayoría de
 
 | Ruta | Qué es |
 |---|---|
-| `/` | Redirige a `/app` (será la home pública en la Fase 4) |
+| `/` · `/precios` · `/contacto` · `/legal/*` | Web pública (Fase 4) |
 | `/acceso` · `/registro` | Login y registro públicos (Google + acceso interno) |
 | `/app` | La herramienta (requiere sesión) |
 | `/admin` · `/admin/usuarios` · `/admin/costes` | Panel de administración de la plataforma (solo role admin, Fase 2) |

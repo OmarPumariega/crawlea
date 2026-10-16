@@ -3,6 +3,10 @@ import { requireSession, isAdmin } from "@/lib/auth-guards";
 import Providers from "@/components/Providers";
 import PlatformShell from "@/components/admin/PlatformShell";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Administración · Crawlea", robots: { index: false } };
+
 // Panel de administración de la plataforma: solo role admin. El middleware ya
 // filtra por JWT; aquí se revalida contra BD (cuenta activa) y el rol.
 export default async function AdminPlatformLayout({ children }: { children: React.ReactNode }) {

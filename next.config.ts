@@ -7,6 +7,26 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
 ];
 
+// CSP real (Fase 4). Next.js inyecta scripts y estilos en línea, así que
+// script-src/style-src necesitan 'unsafe-inline' (un nonce por petición
+// exigiría renderizado dinámico de toda la web). Lo que sí se restringe: orígenes
+// externos (solo imágenes https para avatares de Google y teselas de OpenStreetMap,
+// y conexiones al propio origen), base-uri, objetos y framing. No se pone
+// form-action: el acceso con Google hace un POST same-origin que redirige a
+// accounts.google.com y Chrome bloquearía esa redirección.
+const isDev = process.env.NODE_ENV !== "production";
+const csp = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'self'",
+].join("; ");
+
 const nextConfig: NextConfig = {
   // El build corre en un VPS Contabo compartido y muy cargado. Limitar los
   // CPUs de Next reduce los workers de Turbopack/SSG y, por tanto, el pico de
@@ -20,7 +40,7 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: [
           ...securityHeaders,
-          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+          { key: "Content-Security-Policy", value: csp },
         ],
       },
     ];
