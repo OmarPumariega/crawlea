@@ -6,15 +6,14 @@ export const LEGAL_VERSION = "2026-10-16";
 export const LEGAL_UPDATED_LABEL = "16 de octubre de 2026";
 
 export const COMPANY = {
-  nombre: "[NOMBRE O RAZÓN SOCIAL DEL TITULAR]",
-  nif: "[NIF/CIF]",
-  domicilio: "[DOMICILIO COMPLETO: calle, código postal, localidad, provincia]",
+  nombre: "Omar González Fernández",
+  nif: "53521144Y",
+  domicilio: "Pintor Manuel Medina, N21 3H, 33211 Gijón, Asturias (España)",
   email: "info@crawlea.com",
-  telefono: "[TELÉFONO, opcional]",
-  registro: "[DATOS DEL REGISTRO MERCANTIL, solo si es sociedad]",
+  telefono: "+34 611 77 12 25",
+  registro: "No aplica (titular persona física)",
   web: "https://crawlea.com",
   marca: "Crawlea",
-  jurisdiccion: "[CIUDAD DE LOS TRIBUNALES, p. ej. Madrid]",
-  proveedorCorreo: "[PROVEEDOR DE CORREO/SMTP]",
-  ubicacionHosting: "[PAÍS DEL SERVIDOR]",
+  jurisdiccion: "Gijón",
+  ubicacionHosting: "Contabo GmbH, servidor en la Unión Europea",
 };
