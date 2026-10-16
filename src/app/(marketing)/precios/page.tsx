@@ -13,7 +13,8 @@ export const metadata: Metadata = {
 };
 
 // Renderiza desde plans.ts: misma fuente de verdad que el backend.
-export default function PreciosPage() {
+export default async function PreciosPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
+  const { plan } = await searchParams;
   return (
     <>
       <PageHero kicker="Precios" title="SEO claro, a un precio justo" text="Empieza gratis y sube de plan cuando lo necesites. Sin tarjeta para empezar." />
@@ -21,7 +22,7 @@ export default function PreciosPage() {
       <section className="bg-background">
         <div className="mx-auto max-w-[1360px] px-5 sm:px-8 lg:px-10">
           <Reveal className="relative z-10 -mt-12">
-            <PricingCards />
+            <PricingCards autoPlan={plan} />
           </Reveal>
         </div>
 

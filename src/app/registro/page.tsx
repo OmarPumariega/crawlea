@@ -9,11 +9,11 @@ export const metadata = {
   robots: { index: false },
 };
 
-export default async function RegistroPage({ searchParams }: { searchParams: Promise<{ web?: string }> }) {
-  const { web } = await searchParams;
+export default async function RegistroPage({ searchParams }: { searchParams: Promise<{ web?: string; plan?: string }> }) {
+  const { web, plan } = await searchParams;
   // Ya autenticado: directo al panel.
   const session = await getServerSession(authOptions);
-  if (session) redirect(signupCallback(web));
+  if (session) redirect(signupCallback(web, plan));
 
-  return <AuthPanel variant="registro" callbackUrl={signupCallback(web)} />;
+  return <AuthPanel variant="registro" callbackUrl={signupCallback(web, plan)} />;
 }

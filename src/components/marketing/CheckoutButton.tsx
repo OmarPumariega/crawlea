@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { track } from "@/lib/analytics/track";
 
@@ -11,14 +11,17 @@ export default function CheckoutButton({
   priceEur,
   className,
   children,
+  autoStart = false,
 }: {
   plan: string;
+  autoStart?: boolean;
   priceEur: number;
   className: string;
   children: React.ReactNode;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const started = useRef(false);
 
   async function go() {
     setError("");
@@ -38,6 +41,15 @@ export default function CheckoutButton({
       setLoading(false);
     }
   }
+
+  // Vuelta del registro con ?plan=: lanza el pago una sola vez.
+  useEffect(() => {
+    if (autoStart && !started.current) {
+      started.current = true;
+      void go();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart]);
 
   return (
     <>
