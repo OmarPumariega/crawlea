@@ -29,8 +29,11 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
   },
   twitter: { card: "summary_large_image" },
-  // Verificación de propiedad en Google Search Console (etiqueta HTML).
-  verification: { google: "jbtVyWGW-TXSxVUq6qAd0P-X63bmave40kcdpy2cXAo" },
+  // Verificación de propiedad en Google Search Console y Bing Webmaster Tools.
+  verification: {
+    google: "jbtVyWGW-TXSxVUq6qAd0P-X63bmave40kcdpy2cXAo",
+    other: { "msvalidate.01": "5635DAAF544D90B2C1596C7D3C3F5674" },
+  },
 };
 
 // Async + connection(): el ID de GTM es una variable de RUNTIME (GTM_ID), no de
