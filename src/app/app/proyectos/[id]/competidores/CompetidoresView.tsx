@@ -105,43 +105,43 @@ function OnPageReportDetail({ analysis }: { analysis: OnPageAnalysisData }) {
     <div className="mt-2 space-y-2 text-xs">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div className="bg-background rounded-lg p-2">
-          <p className="text-gray-400">Palabras</p>
-          <p className="font-semibold text-gray-900">{analysis.wordCount ?? "—"}</p>
+          <p className="text-ink-faint">Palabras</p>
+          <p className="font-semibold text-ink">{analysis.wordCount ?? "—"}</p>
         </div>
         <div className="bg-background rounded-lg p-2">
-          <p className="text-gray-400">Caracteres</p>
-          <p className="font-semibold text-gray-900">{analysis.characterCount ?? "—"}</p>
+          <p className="text-ink-faint">Caracteres</p>
+          <p className="font-semibold text-ink">{analysis.characterCount ?? "—"}</p>
         </div>
         <div className="bg-background rounded-lg p-2" title="DataForSEO no da recuento de frases; se estima sobre un fragmento del texto (primeros ~3000 caracteres), no la página completa — por eso puede parecer bajo frente al recuento de palabras.">
-          <p className="text-gray-400">Frases (muestra)</p>
-          <p className="font-semibold text-gray-900">{analysis.sentenceCount ?? "—"}</p>
+          <p className="text-ink-faint">Frases (muestra)</p>
+          <p className="font-semibold text-ink">{analysis.sentenceCount ?? "—"}</p>
         </div>
         <div className="bg-background rounded-lg p-2">
-          <p className="text-gray-400">Puntuación on-page</p>
-          <p className="font-semibold text-gray-900">{analysis.onPageScore != null ? `${Math.round(analysis.onPageScore)}/100` : "—"}</p>
+          <p className="text-ink-faint">Puntuación on-page</p>
+          <p className="font-semibold text-ink">{analysis.onPageScore != null ? `${Math.round(analysis.onPageScore)}/100` : "—"}</p>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 text-gray-600">
-        <span>Título: <strong className="text-gray-900">{analysis.titleLength ?? "—"}</strong> car.</span>
-        <span>Meta descripción: <strong className="text-gray-900">{analysis.descriptionLength ?? "—"}</strong> car.</span>
-        <span>Imágenes: <strong className="text-gray-900">{analysis.imagesCount ?? "—"}</strong></span>
-        <span>Enlaces internos: <strong className="text-gray-900">{analysis.internalLinksCount ?? "—"}</strong></span>
-        <span>Enlaces externos: <strong className="text-gray-900">{analysis.externalLinksCount ?? "—"}</strong></span>
+      <div className="flex flex-wrap gap-3 text-ink-soft">
+        <span>Título: <strong className="text-ink">{analysis.titleLength ?? "—"}</strong> car.</span>
+        <span>Meta descripción: <strong className="text-ink">{analysis.descriptionLength ?? "—"}</strong> car.</span>
+        <span>Imágenes: <strong className="text-ink">{analysis.imagesCount ?? "—"}</strong></span>
+        <span>Enlaces internos: <strong className="text-ink">{analysis.internalLinksCount ?? "—"}</strong></span>
+        <span>Enlaces externos: <strong className="text-ink">{analysis.externalLinksCount ?? "—"}</strong></span>
         {analysis.hasBrokenLinks === true && (
-          <span className="text-red-600 font-medium">Tiene enlaces rotos</span>
+          <span className="text-alert-ink font-medium">Tiene enlaces rotos</span>
         )}
       </div>
 
       {htagLevels.length > 0 && (
         <div className="space-y-1">
-          <p className="text-gray-500 font-medium">Jerarquía de encabezados</p>
+          <p className="text-ink-soft font-medium">Jerarquía de encabezados</p>
           <ul className="space-y-0.5">
             {htagLevels.map((level) => (
               <li key={level} className="flex items-start gap-1.5">
-                <span className="text-[10px] font-mono px-1 rounded bg-gray-100 text-gray-500 shrink-0 mt-0.5 uppercase">{level}</span>
-                <span className="text-gray-700">
-                  {(htags[level] ?? []).join("  ·  ") || <span className="text-gray-300">—</span>}
+                <span className="text-[10px] font-mono px-1 rounded bg-surface-muted text-ink-soft shrink-0 mt-0.5 uppercase">{level}</span>
+                <span className="text-ink-soft">
+                  {(htags[level] ?? []).join("  ·  ") || <span className="text-ink-faint">—</span>}
                 </span>
               </li>
             ))}
@@ -151,10 +151,10 @@ function OnPageReportDetail({ analysis }: { analysis: OnPageAnalysisData }) {
 
       {analysis.issues && analysis.issues.length > 0 && (
         <div className="space-y-1">
-          <p className="text-gray-500 font-medium">Incidencias detectadas ({analysis.issues.length})</p>
+          <p className="text-ink-soft font-medium">Incidencias detectadas ({analysis.issues.length})</p>
           <div className="flex flex-wrap gap-1">
             {analysis.issues.map((issue) => (
-              <span key={issue} className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">
+              <span key={issue} className="text-[10px] px-1.5 py-0.5 rounded bg-accent-tint text-accent-ink">
                 {onPageIssueLabel(issue)}
               </span>
             ))}
@@ -163,8 +163,8 @@ function OnPageReportDetail({ analysis }: { analysis: OnPageAnalysisData }) {
       )}
 
       {analysis.readability?.fleschKincaidReadabilityIndex != null && (
-        <p className="text-gray-500">
-          Índice de legibilidad (Flesch-Kincaid): <strong className="text-gray-900">{analysis.readability.fleschKincaidReadabilityIndex.toFixed(1)}</strong>
+        <p className="text-ink-soft">
+          Índice de legibilidad (Flesch-Kincaid): <strong className="text-ink">{analysis.readability.fleschKincaidReadabilityIndex.toFixed(1)}</strong>
         </p>
       )}
     </div>
@@ -227,19 +227,19 @@ function OnPageButton({ projectId, url }: { projectId: string; url: string }) {
           type="button"
           onClick={() => (analysis ? setExpanded((v) => !v) : handleAnalyze())}
           disabled={analyzing || checkingExisting}
-          className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+          className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded bg-surface-muted text-ink-soft hover:bg-surface-muted disabled:opacity-50"
           title={analysis ? "Ver informe on-page" : `Analizar página (~$${onPageAnalysisCostUsd().toFixed(4)}, gratis si ya se analizó hace menos de 7 días)`}
         >
           {analyzing ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileSearch className="h-3 w-3" />}
           {analysis ? (expanded ? "Ocultar informe on-page" : "Ver informe on-page") : "Analizar página"}
         </button>
         {analysis && (
-          <span className="text-[10px] text-gray-400">
+          <span className="text-[10px] text-ink-faint">
             {new Date(analysis.fetchedAt).toLocaleDateString("es-ES")}
           </span>
         )}
       </div>
-      {error && <p className="text-[11px] text-red-600 mt-1">{error}</p>}
+      {error && <p className="text-[11px] text-alert-ink mt-1">{error}</p>}
       {expanded && analysis && <OnPageReportDetail analysis={analysis} />}
     </div>
   );
@@ -293,7 +293,7 @@ function fmtCpc(v: number | null | undefined): string {
 // tiraba. Aquí sirve para descartar keywords que pican solo en una época o,
 // al revés, para detectar oportunidades estacionales. Null → "—".
 function SeasonalitySparkline({ points }: { points: number[] | null | undefined }) {
-  if (!points || points.length < 2) return <span className="text-gray-300">—</span>;
+  if (!points || points.length < 2) return <span className="text-ink-faint">—</span>;
   const W = 44;
   const H = 16;
   const min = Math.min(...points);
@@ -304,7 +304,7 @@ function SeasonalitySparkline({ points }: { points: number[] | null | undefined 
   const pts = points.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
   const title = `Estacionalidad 12m · pico ${max.toLocaleString("es-ES")} · actual ${points[points.length - 1].toLocaleString("es-ES")}`;
   return (
-    <svg width={W} height={H} className="text-gray-400" role="img" aria-label={title}>
+    <svg width={W} height={H} className="text-ink-faint" role="img" aria-label={title}>
       <title>{title}</title>
       <polyline points={pts} fill="none" stroke="currentColor" strokeWidth={1.25} />
     </svg>
@@ -321,10 +321,10 @@ function difficulty(score: number | null | undefined): { label: string; cls: str
   // JSON (ausente → undefined, no null) — chequear solo `=== null` dejaba
   // pasar undefined y caía siempre en la rama "Baja", igual que el bug ya
   // corregido en fmtCpc.
-  if (score == null) return { label: "?", cls: "bg-gray-100 text-gray-400" };
-  if (score >= 67) return { label: `${score} · Alta`, cls: "bg-red-50 text-red-700" };
-  if (score >= 34) return { label: `${score} · Media`, cls: "bg-amber-50 text-amber-700" };
-  return { label: `${score} · Baja`, cls: "bg-emerald-50 text-emerald-700" };
+  if (score == null) return { label: "?", cls: "bg-surface-muted text-ink-faint" };
+  if (score >= 67) return { label: `${score} · Alta`, cls: "bg-alert-tint text-alert-ink" };
+  if (score >= 34) return { label: `${score} · Media`, cls: "bg-brand-100 text-brand-700" };
+  return { label: `${score} · Baja`, cls: "bg-surface-muted text-ink-soft" };
 }
 
 // Un snapshot puede existir en BD (el "Analizar" se pidió y respondió con
@@ -353,7 +353,7 @@ function TrafficSparkline({ points }: { points: number[] }) {
   const y = (v: number) => H - ((v - min) / range) * H;
   const pts = points.map((v, i) => `${x(i)},${y(v)}`).join(" ");
   return (
-    <svg width={W} height={H} className="text-gray-300">
+    <svg width={W} height={H} className="text-ink-faint">
       <polyline points={pts} fill="none" stroke="currentColor" strokeWidth={1.5} />
     </svg>
   );
@@ -364,27 +364,27 @@ function VisibilityKpis({ snapshot, trend }: { snapshot: Snapshot; trend?: numbe
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div>
-        <p className="text-[13px] font-medium text-gray-500">Tráfico orgánico (est. mensual)</p>
-        <p className="text-[28px] font-bold tracking-tight text-gray-900 tabular-nums mt-1 leading-none">{fmtTraffic(snapshot?.organicTraffic ?? null)}</p>
+        <p className="text-[13px] font-medium text-ink-soft">Tráfico orgánico (est. mensual)</p>
+        <p className="text-[28px] font-bold tracking-tight text-ink tabular-nums mt-1 leading-none">{fmtTraffic(snapshot?.organicTraffic ?? null)}</p>
       </div>
       <div>
-        <p className="text-[13px] font-medium text-gray-500">Keywords orgánicas</p>
-        <p className="text-[28px] font-bold tracking-tight text-gray-900 tabular-nums mt-1 leading-none">{snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</p>
+        <p className="text-[13px] font-medium text-ink-soft">Keywords orgánicas</p>
+        <p className="text-[28px] font-bold tracking-tight text-ink tabular-nums mt-1 leading-none">{snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</p>
       </div>
       {snapshot?.positionBuckets ? (
         <div className="space-y-1">
-          <div className="text-sm text-gray-500">Fuerza del dominio</div>
+          <div className="text-sm text-ink-soft">Fuerza del dominio</div>
           <PositionDistribution buckets={snapshot.positionBuckets} avgPosition={snapshot.avgPosition} />
         </div>
       ) : trend && trend.length >= 2 ? (
         <div className="flex flex-col items-start">
           <TrafficSparkline points={trend} />
-          <span className="text-[11px] text-gray-400 flex items-center gap-0.5">
+          <span className="text-[11px] text-ink-faint flex items-center gap-0.5">
             <TrendingUp className="h-3 w-3" /> {trend.length} análisis
           </span>
         </div>
       ) : (
-        <div className="flex items-center text-xs text-gray-400">Sin tendencia todavía</div>
+        <div className="flex items-center text-xs text-ink-faint">Sin tendencia todavía</div>
       )}
     </div>
   );
@@ -418,24 +418,24 @@ function KeywordChips({ keywords, colorClass }: { keywords: TopKeyword[]; colorC
 function TopKeywords({ keywords, title }: { keywords: TopKeyword[] | null; title: string }) {
   const [search, setSearch] = useState("");
   if (!keywords || keywords.length === 0) {
-    return <p className="text-xs text-gray-400">{title}: sin datos aún.</p>;
+    return <p className="text-xs text-ink-faint">{title}: sin datos aún.</p>;
   }
   const q = search.trim().toLowerCase();
   const filtered = q ? keywords.filter((k) => k.keyword.toLowerCase().includes(q)) : keywords;
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <p className="text-xs text-gray-500">{title} ({keywords.length})</p>
+        <p className="text-xs text-ink-soft">{title} ({keywords.length})</p>
         <input
           type="text" value={search} onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar keyword..."
-          className="px-3 py-1.5 border border-line rounded-full text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 w-44 bg-white transition-colors"
+          className="px-3 py-1.5 border border-line rounded-full text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 w-44 bg-surface transition-colors"
         />
       </div>
       {filtered.length === 0 ? (
-        <p className="text-xs text-gray-400">Sin resultados para &laquo;{search}&raquo;.</p>
+        <p className="text-xs text-ink-faint">Sin resultados para &laquo;{search}&raquo;.</p>
       ) : (
-        <KeywordChips keywords={filtered} colorClass="bg-background text-gray-600" />
+        <KeywordChips keywords={filtered} colorClass="bg-background text-ink-soft" />
       )}
     </div>
   );
@@ -453,22 +453,22 @@ function ContentGapList({ items, contentGapAt, projectId }: { items: TopKeyword[
   return (
     <div className="pt-2 border-t border-line space-y-1.5">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-ink-soft">
           Content gap ({items.length}) — ranquea por estas y tú no
           {contentGapAt ? ` · ${new Date(contentGapAt).toLocaleDateString("es-ES")}` : ""}
         </p>
         <input
           type="text" value={search} onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar keyword..."
-          className="px-3 py-1.5 border border-line rounded-full text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 w-44 bg-white transition-colors"
+          className="px-3 py-1.5 border border-line rounded-full text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 w-44 bg-surface transition-colors"
         />
       </div>
       {filtered.length === 0 ? (
-        <p className="text-xs text-gray-400">Sin resultados para &laquo;{search}&raquo;.</p>
+        <p className="text-xs text-ink-faint">Sin resultados para &laquo;{search}&raquo;.</p>
       ) : (
         <div className="max-h-80 overflow-y-auto border border-line rounded-xl">
           <table className="w-full text-xs">
-            <thead className="sticky top-0 bg-background text-left text-gray-400">
+            <thead className="sticky top-0 bg-background text-left text-ink-faint">
               <tr>
                 <th className="py-1.5 pl-2 pr-2 font-medium">Keyword</th>
                 <th className="py-1.5 px-2 font-medium text-right">Vol.</th>
@@ -486,26 +486,26 @@ function ContentGapList({ items, contentGapAt, projectId }: { items: TopKeyword[
                 const hasDetail = Boolean(k.description || k.title || k.url);
                 return (
                   <Fragment key={i}>
-                    <tr className="border-t border-gray-50 hover:bg-background/60">
-                      <td className="py-1.5 pl-2 pr-2 text-gray-900 font-medium">{k.keyword}</td>
-                      <td className="py-1.5 px-2 text-right text-gray-600 tabular-nums">
+                    <tr className="border-t border-line hover:bg-background/60">
+                      <td className="py-1.5 pl-2 pr-2 text-ink font-medium">{k.keyword}</td>
+                      <td className="py-1.5 px-2 text-right text-ink-soft tabular-nums">
                         {k.volume != null ? k.volume.toLocaleString("es-ES") : "—"}
                       </td>
                       <td className="py-1.5 px-2 text-center">
                         <SeasonalitySparkline points={k.monthlySearches} />
                       </td>
-                      <td className="py-1.5 px-2 text-right text-gray-600 tabular-nums">{fmtCpc(k.cpc)}</td>
+                      <td className="py-1.5 px-2 text-right text-ink-soft tabular-nums">{fmtCpc(k.cpc)}</td>
                       <td className="py-1.5 px-2 text-right">
                         <span className={cn("inline-block px-1.5 py-0.5 rounded font-medium", dif.cls)}>{dif.label}</span>
                       </td>
-                      <td className="py-1.5 px-2 text-right text-gray-600 tabular-nums">
+                      <td className="py-1.5 px-2 text-right text-ink-soft tabular-nums">
                         {k.position != null ? `#${k.position}` : "—"}
                       </td>
                       <td className="py-1.5 pr-2 pl-2 text-right">
                         {hasDetail && (
                           <button
                             onClick={() => setExpanded(isOpen ? null : `${i}-${k.keyword}`)}
-                            className="text-gray-400 hover:text-gray-700"
+                            className="text-ink-faint hover:text-ink-soft"
                             title="Ver cómo lo posiciona el competidor"
                           >
                             {isOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
@@ -514,16 +514,16 @@ function ContentGapList({ items, contentGapAt, projectId }: { items: TopKeyword[
                       </td>
                     </tr>
                     {isOpen && hasDetail && (
-                      <tr className="border-t border-gray-50 bg-emerald-50/40">
+                      <tr className="border-t border-line bg-accent-tint/40">
                         <td colSpan={7} className="px-3 py-2 space-y-1">
-                          {k.title && <p className="text-xs font-medium text-gray-800">{k.title}</p>}
+                          {k.title && <p className="text-xs font-medium text-ink">{k.title}</p>}
                           {k.description && (
-                            <p className="text-xs text-gray-600 leading-relaxed">{k.description}</p>
+                            <p className="text-xs text-ink-soft leading-relaxed">{k.description}</p>
                           )}
                           {k.url && (
                             <a
                               href={k.url} target="_blank" rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-[11px] text-indigo-600 hover:underline"
+                              className="inline-flex items-center gap-1 text-[11px] text-accent-ink hover:underline"
                             >
                               <span className="truncate max-w-md">{k.url}</span>
                               <ExternalLink className="h-3 w-3 shrink-0" />
@@ -872,7 +872,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
     showNotice(`${d.added ?? 0} añadidas a seguimiento${d.skipped ? ` · ${d.skipped} ya seguidas` : ""} (manual — pulsa «Comprobar» para ver posición).`);
   }
 
-  if (loading) return <Loader2 className="h-5 w-5 animate-spin text-gray-400" />;
+  if (loading) return <Loader2 className="h-5 w-5 animate-spin text-ink-faint" />;
 
   // Comparativa arriba del todo (mismo patrón que Backlinks): proyecto +
   // todos los competidores trackeados, analizados o no, para ver de un
@@ -893,21 +893,21 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       {/* Ubicación de todos los análisis de esta sesión (propio dominio,
           competidores y content gap) — un negocio local no compite igual a
           nivel nacional que en su ciudad. */}
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 space-y-1.5">
-        <label className="block text-sm font-medium text-gray-700">
-          Ubicación de análisis <span className="text-gray-400 font-normal">(opcional)</span>
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 space-y-1.5">
+        <label className="block text-sm font-medium text-ink-soft">
+          Ubicación de análisis <span className="text-ink-faint font-normal">(opcional)</span>
         </label>
         <div className="max-w-sm">
           <LocationPicker value={location} onChange={setLocation} />
         </div>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-ink-faint">
           Se aplica a &laquo;Analizar&raquo; y &laquo;Gap&raquo; de abajo. Sin elegir nada, España
           (nacional).
         </p>
       </div>
 
-      {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-      {notice && <p className="text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg">{notice}</p>}
+      {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
+      {notice && <p className="text-sm text-accent-ink bg-accent-tint px-3 py-2 rounded-lg">{notice}</p>}
       {importNotice && (
         <ImportSuccessNotice
           message={importNotice.message}
@@ -918,19 +918,19 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       )}
 
       {/* Aviso de coste estimado por acción (como en geogrid/rank tracking) */}
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-gray-600">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-ink-soft">
         <span>Coste estimado por acción:</span>
-        <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-gray-400" /> Analizar visibilidad <strong className="text-gray-900">~${analyzeCost.toFixed(2)}</strong></span>
-        <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-gray-400" /> Content gap <strong className="text-gray-900">~${gapCost.toFixed(2)}</strong></span>
+        <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-ink-faint" /> Analizar visibilidad <strong className="text-ink">~${analyzeCost.toFixed(2)}</strong></span>
+        <span className="inline-flex items-center gap-1"><Target className="h-3.5 w-3.5 text-ink-faint" /> Content gap <strong className="text-ink">~${gapCost.toFixed(2)}</strong></span>
       </div>
 
       {comparisonRows.length > 1 && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Comparativa frente a la competencia</h3>
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4">
+          <h3 className="text-sm font-semibold text-ink mb-3">Comparativa frente a la competencia</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
                   <th className="py-1.5 pr-2 font-medium">Dominio</th>
                   <th className="py-1.5 px-2 font-medium text-right">Tráfico</th>
                   <th className="py-1.5 px-2 font-medium text-right">Keywords</th>
@@ -942,25 +942,25 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                 {comparisonRows.map((r, i) => {
                   const useful = hasUsefulSnapshot(r.snapshot);
                   return (
-                    <tr key={i} className="border-t border-gray-50">
-                      <td className="py-1.5 pr-2 text-gray-900 font-medium">
-                        {r.domain} {r.isOwn && <span className="text-[10px] text-emerald-700 font-semibold">· TÚ</span>}
+                    <tr key={i} className="border-t border-line">
+                      <td className="py-1.5 pr-2 text-ink font-medium">
+                        {r.domain} {r.isOwn && <span className="text-[10px] text-accent-ink font-semibold">· TÚ</span>}
                       </td>
                       {useful ? (
                         <>
-                          <td className="py-1.5 px-2 text-right tabular-nums text-gray-600">{fmtTraffic(r.snapshot?.organicTraffic)}</td>
-                          <td className="py-1.5 px-2 text-right tabular-nums text-gray-600">{r.snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</td>
-                          <td className="py-1.5 px-2 text-right tabular-nums text-gray-600">{r.snapshot?.avgPosition?.toFixed(1) ?? "—"}</td>
+                          <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{fmtTraffic(r.snapshot?.organicTraffic)}</td>
+                          <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{r.snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</td>
+                          <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{r.snapshot?.avgPosition?.toFixed(1) ?? "—"}</td>
                           <td className="py-1.5 pl-2">
                             {r.snapshot?.positionBuckets ? (
                               <PositionDistribution buckets={r.snapshot.positionBuckets} avgPosition={r.snapshot.avgPosition} />
                             ) : (
-                              <span className="text-gray-300">—</span>
+                              <span className="text-ink-faint">—</span>
                             )}
                           </td>
                         </>
                       ) : (
-                        <td colSpan={4} className="py-1.5 px-2 text-gray-400 text-xs">Sin analizar</td>
+                        <td colSpan={4} className="py-1.5 px-2 text-ink-faint text-xs">Sin analizar</td>
                       )}
                     </tr>
                   );
@@ -972,21 +972,21 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       )}
 
       {/* Visibilidad del propio dominio */}
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-900">Tu visibilidad {data?.projectDomain ? `· ${data.projectDomain}` : ""}</h3>
+          <h3 className="text-sm font-semibold text-ink">Tu visibilidad {data?.projectDomain ? `· ${data.projectDomain}` : ""}</h3>
           <button
             onClick={() => data?.projectDomain && handleAnalyze(data.projectDomain)}
             disabled={!data?.projectDomain || analyzingDomain === data?.projectDomain}
-            className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+            className="flex items-center gap-2 px-3 py-1.5 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
             title={`Coste estimado ~$${analyzeCost.toFixed(2)}`}
           >
             {analyzingDomain === data?.projectDomain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            Analizar <span className="text-gray-300 font-normal">~${analyzeCost.toFixed(2)}</span>
+            Analizar <span className="text-ink-faint font-normal">~${analyzeCost.toFixed(2)}</span>
           </button>
         </div>
         {!data?.projectDomain ? (
-          <p className="text-sm text-amber-600 flex items-center gap-1.5">
+          <p className="text-sm text-accent-ink flex items-center gap-1.5">
             <AlertTriangle className="h-4 w-4" /> Define el dominio del proyecto en su ficha para analizar su visibilidad.
           </p>
         ) : (
@@ -1001,9 +1001,9 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       </div>
 
       {/* Añadir competidor */}
-      <form onSubmit={handleAdd} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 flex items-end gap-3">
+      <form onSubmit={handleAdd} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 flex items-end gap-3">
         <div className="flex-1 space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Añadir competidor</label>
+          <label className="block text-sm font-medium text-ink-soft">Añadir competidor</label>
           <input
             type="text"
             value={addDomain}
@@ -1013,7 +1013,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
             className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
         </div>
-        <button type="submit" className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800">
+        <button type="submit" className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700">
           <Plus className="h-4 w-4" /> Añadir
         </button>
       </form>
@@ -1025,11 +1025,11 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
         const pendingAnalyze = data.competitors.filter((c) => !hasUsefulSnapshot(c.snapshot)).length;
         const pendingGap = data.competitors.filter((c) => !c.contentGap || c.contentGap.length === 0).length;
         return (
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 flex flex-wrap items-center gap-3">
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 flex flex-wrap items-center gap-3">
             <button
               onClick={handleAnalyzeAll}
               disabled={pendingAnalyze === 0 || bulkAnalyzing}
-              className="flex items-center gap-2 px-3 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
             >
               {bulkAnalyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
               {bulkAnalyzeProgress
@@ -1039,7 +1039,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
             <button
               onClick={handleGapAll}
               disabled={pendingGap === 0 || bulkGapping}
-              className="flex items-center gap-2 px-3 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
             >
               {bulkGapping ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
               {bulkGapProgress
@@ -1052,26 +1052,26 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
 
       {/* Lista de competidores */}
       <div className="space-y-3">
-        {data?.competitors.length === 0 && <p className="text-sm text-gray-500">Aún no hay competidores. Añade uno para espiar su visibilidad.</p>}
+        {data?.competitors.length === 0 && <p className="text-sm text-ink-soft">Aún no hay competidores. Añade uno para espiar su visibilidad.</p>}
         {data?.competitors.map((c) => (
-          <div key={c.id} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+          <div key={c.id} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-gray-900 truncate">{c.domain}</p>
-                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1 text-xs text-gray-500">
-                  <span>Tráfico: <strong className="text-gray-700">{fmtTraffic(c.snapshot?.organicTraffic ?? null)}</strong></span>
-                  <span>Keywords: <strong className="text-gray-700">{c.snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</strong></span>
+                <p className="text-sm font-semibold text-ink truncate">{c.domain}</p>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1 text-xs text-ink-soft">
+                  <span>Tráfico: <strong className="text-ink-soft">{fmtTraffic(c.snapshot?.organicTraffic ?? null)}</strong></span>
+                  <span>Keywords: <strong className="text-ink-soft">{c.snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</strong></span>
                   {c.snapshot && <span>· {new Date(c.snapshot.fetchedAt).toLocaleDateString("es-ES")}</span>}
                 </div>
                 {!c.snapshot && (
-                  <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1 mt-2">
+                  <p className="text-[11px] text-accent-ink bg-accent-tint border border-brand-100 rounded-lg px-2 py-1 mt-2">
                     Aún sin analizar. Pulsa <strong>Analizar</strong> a la derecha (cuesta{' '}
                     {analyzeCost.toFixed(2)}$) o <strong>Analizar todos</strong> arriba para
                     procesar de una vez todos los competidores pendientes.
                   </p>
                 )}
                 {c.snapshot && !hasUsefulSnapshot(c.snapshot) && (
-                  <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1 mt-2">
+                  <p className="text-[11px] text-accent-ink bg-accent-tint border border-brand-100 rounded-lg px-2 py-1 mt-2">
                     Analizado el {new Date(c.snapshot.fetchedAt).toLocaleDateString("es-ES")}, pero
                     DataForSEO no encontró presencia orgánica medible para este dominio (puede ser
                     normal en dominios muy pequeños o nuevos). Cuenta como pendiente en
@@ -1083,22 +1083,22 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                 <button
                   onClick={() => handleAnalyze(c.domain)}
                   disabled={analyzingDomain === c.domain}
-                  className="flex items-center gap-1 px-2.5 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
+                  className="flex items-center gap-1 px-2.5 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
                   title={`Analizar visibilidad · coste estimado ~$${analyzeCost.toFixed(2)}`}
                 >
                   {analyzingDomain === c.domain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                  Analizar <span className="text-gray-400 font-normal">~${analyzeCost.toFixed(2)}</span>
+                  Analizar <span className="text-ink-faint font-normal">~${analyzeCost.toFixed(2)}</span>
                 </button>
                 <button
                   onClick={() => handleGap(c.id)}
                   disabled={gapId === c.id}
-                  className="flex items-center gap-1 px-2.5 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
+                  className="flex items-center gap-1 px-2.5 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
                   title={`Content gap · coste estimado ~$${gapCost.toFixed(2)}`}
                 >
                   {gapId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Target className="h-3.5 w-3.5" />}
-                  Gap <span className="text-gray-400 font-normal">~${gapCost.toFixed(2)}</span>
+                  Gap <span className="text-ink-faint font-normal">~${gapCost.toFixed(2)}</span>
                 </button>
-                <button onClick={() => setConfirmRemoveId(c.id)} className="p-1.5 text-gray-300 hover:text-red-600" title="Eliminar">
+                <button onClick={() => setConfirmRemoveId(c.id)} className="p-1.5 text-ink-faint hover:text-alert-ink" title="Eliminar">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -1116,7 +1116,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                 <button
                   onClick={() => handleImportToStudy(c)}
                   disabled={importingId === c.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
                   title="Crear un estudio (Módulo 1) con las keywords de este competidor"
                 >
                   {importingId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowDownToLine className="h-3.5 w-3.5" />}
@@ -1125,13 +1125,13 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                 <button
                   onClick={() => handleAddToTracking(c)}
                   disabled={trackingId === c.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
                   title="Añadir estas keywords a Rank Tracking (manual)"
                 >
                   {trackingId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Crosshair className="h-3.5 w-3.5" />}
                   Añadir a seguimiento
                 </button>
-                <span className="text-[11px] text-gray-400">{collectKeywords(c).length} keywords</span>
+                <span className="text-[11px] text-ink-faint">{collectKeywords(c).length} keywords</span>
               </div>
             )}
           </div>

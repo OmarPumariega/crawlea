@@ -125,7 +125,7 @@ export default function CopilotWidget() {
     return (
       <button
         onClick={() => setWidgetState("open")}
-        className="fixed bottom-5 right-5 z-40 h-14 w-14 rounded-full bg-brand text-white shadow-[0_10px_30px_-8px_rgba(14,107,79,0.6)] flex items-center justify-center hover:bg-brand-strong transition-colors"
+        className="fixed bottom-5 right-5 z-40 h-14 w-14 rounded-full bg-brand text-white shadow-[0_10px_30px_-8px_rgba(79,92,245,0.6)] flex items-center justify-center hover:bg-brand-strong transition-colors"
         aria-label="Abrir Copilot"
       >
         <Bot className="h-6 w-6" />
@@ -137,7 +137,7 @@ export default function CopilotWidget() {
     return (
       <button
         onClick={() => setWidgetState("open")}
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 bg-brand text-white rounded-full pl-4 pr-3.5 py-2.5 shadow-[0_10px_30px_-8px_rgba(14,107,79,0.6)] hover:bg-brand-strong transition-colors max-w-[280px]"
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 bg-brand text-white rounded-full pl-4 pr-3.5 py-2.5 shadow-[0_10px_30px_-8px_rgba(79,92,245,0.6)] hover:bg-brand-strong transition-colors max-w-[280px]"
       >
         <Bot className="h-4 w-4 shrink-0" />
         <span className="text-sm font-medium truncate">{activeThreadTitle}</span>
@@ -147,34 +147,34 @@ export default function CopilotWidget() {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-40 w-[380px] max-w-[calc(100vw-2rem)] h-[560px] max-h-[calc(100vh-6rem)] bg-white rounded-2xl border border-line shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed bottom-5 right-5 z-40 w-[380px] max-w-[calc(100vw-2rem)] h-[560px] max-h-[calc(100vh-6rem)] bg-surface rounded-2xl border border-line shadow-2xl flex flex-col overflow-hidden">
       <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-line shrink-0">
-        <Bot className="h-4 w-4 text-gray-500 shrink-0" />
+        <Bot className="h-4 w-4 text-ink-soft shrink-0" />
         <div className="relative flex-1 min-w-0">
           <button
             onClick={() => setShowThreadList((v) => !v)}
-            className="flex items-center gap-1 text-sm font-medium text-gray-900 hover:text-gray-600 max-w-full"
+            className="flex items-center gap-1 text-sm font-medium text-ink hover:text-ink-soft max-w-full"
           >
             <span className="truncate">{activeThreadTitle}</span>
             <ChevronDown className="h-3.5 w-3.5 shrink-0" />
           </button>
           {showThreadList && (
-            <div className="absolute top-full left-0 mt-1 w-72 max-h-64 overflow-y-auto bg-white border border-line rounded-xl shadow-lg z-10 p-1">
+            <div className="absolute top-full left-0 mt-1 w-72 max-h-64 overflow-y-auto bg-surface border border-line rounded-xl shadow-lg z-10 p-1">
               <button
                 onClick={() => {
                   newThread();
                   setShowThreadList(false);
                 }}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm text-gray-700 hover:bg-background"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm text-ink-soft hover:bg-background"
               >
                 <Plus className="h-3.5 w-3.5" /> Nuevo hilo
               </button>
               {loadingThreads ? (
                 <div className="flex justify-center py-3">
-                  <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                  <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
                 </div>
               ) : threads.length === 0 ? (
-                <p className="text-xs text-gray-400 px-2 py-3 text-center">Aún no hay conversaciones.</p>
+                <p className="text-xs text-ink-faint px-2 py-3 text-center">Aún no hay conversaciones.</p>
               ) : (
                 threads.map((t) => (
                   <div key={t.id} className="group flex items-center gap-1">
@@ -185,15 +185,15 @@ export default function CopilotWidget() {
                       }}
                       className={cn(
                         "flex-1 min-w-0 flex items-center gap-2 px-2 py-1.5 rounded-lg text-left text-sm",
-                        activeThreadId === t.id ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-background"
+                        activeThreadId === t.id ? "bg-surface-muted text-ink" : "text-ink-soft hover:bg-background"
                       )}
                     >
-                      <MessageSquare className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                      <MessageSquare className="h-3.5 w-3.5 shrink-0 text-ink-faint" />
                       <span className="truncate">{t.title}</span>
                     </button>
                     <button
                       onClick={() => setConfirmDeleteId(t.id)}
-                      className="shrink-0 p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100"
+                      className="shrink-0 p-1 text-ink-faint hover:text-alert-ink opacity-0 group-hover:opacity-100"
                       title="Borrar hilo"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -204,19 +204,19 @@ export default function CopilotWidget() {
             </div>
           )}
         </div>
-        <button onClick={newThread} className="p-1 text-gray-400 hover:text-gray-900 shrink-0" title="Nuevo hilo">
+        <button onClick={newThread} className="p-1 text-ink-faint hover:text-ink shrink-0" title="Nuevo hilo">
           <Plus className="h-4 w-4" />
         </button>
         <button
           onClick={() => setWidgetState("minimized")}
-          className="p-1 text-gray-400 hover:text-gray-900 shrink-0"
+          className="p-1 text-ink-faint hover:text-ink shrink-0"
           title="Minimizar"
         >
           <Minus className="h-4 w-4" />
         </button>
         <button
           onClick={() => setWidgetState("closed")}
-          className="p-1 text-gray-400 hover:text-gray-900 shrink-0"
+          className="p-1 text-ink-faint hover:text-ink shrink-0"
           title="Cerrar"
         >
           <X className="h-4 w-4" />
@@ -226,12 +226,12 @@ export default function CopilotWidget() {
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
         {loadingMessages ? (
           <div className="flex justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+            <Loader2 className="h-5 w-5 animate-spin text-ink-faint" />
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-4">
-            <Bot className="h-8 w-8 text-gray-300 mb-2" />
-            <p className="text-sm text-gray-500">
+            <Bot className="h-8 w-8 text-ink-faint mb-2" />
+            <p className="text-sm text-ink-soft">
               Pregunta sobre el posicionamiento, la auditoría, las keywords o los costes de este
               proyecto. Las respuestas se basan en datos reales.
             </p>
@@ -242,7 +242,7 @@ export default function CopilotWidget() {
               <div
                 className={cn(
                   "max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap leading-relaxed",
-                  m.role === "user" ? "bg-brand text-white rounded-br-sm" : "bg-background text-gray-900 rounded-bl-sm border border-line"
+                  m.role === "user" ? "bg-brand text-white rounded-br-sm" : "bg-background text-ink rounded-bl-sm border border-line"
                 )}
               >
                 {m.content}
@@ -252,15 +252,15 @@ export default function CopilotWidget() {
         )}
         {sending && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-3 py-2.5">
-              <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+            <div className="bg-surface-muted rounded-2xl rounded-bl-sm px-3 py-2.5">
+              <Loader2 className="h-4 w-4 animate-spin text-ink-soft" />
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {error && <div className="px-3 py-1.5 text-xs text-red-600 border-t border-line shrink-0">{error}</div>}
+      {error && <div className="px-3 py-1.5 text-xs text-alert-ink border-t border-line shrink-0">{error}</div>}
 
       <form onSubmit={handleSend} className="border-t border-line p-2.5 flex items-end gap-1.5 shrink-0">
         <textarea
@@ -274,12 +274,12 @@ export default function CopilotWidget() {
           }}
           rows={1}
           placeholder="Escribe tu pregunta…"
-          className="flex-1 resize-none rounded-lg border border-line px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent max-h-24"
+          className="flex-1 resize-none rounded-lg border border-line px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-brand-900 focus:border-transparent max-h-24"
         />
         <button
           type="submit"
           disabled={!input.trim() || sending}
-          className="shrink-0 flex items-center justify-center rounded-lg bg-gray-900 text-white px-2.5 py-1.5 text-sm hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="shrink-0 flex items-center justify-center rounded-lg bg-brand-900 text-white px-2.5 py-1.5 text-sm hover:bg-brand-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </button>

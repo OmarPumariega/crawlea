@@ -34,15 +34,15 @@ export default function GoogleConnectionCard({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
       {justConnected && (
-        <div className="flex items-center gap-2 text-sm bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg">
+        <div className="flex items-center gap-2 text-sm bg-accent-tint text-accent-ink px-3 py-2 rounded-lg">
           <CheckCircle2 className="h-4 w-4" />
           Conectado correctamente.
         </div>
       )}
       {errorMessage && (
-        <div className="flex items-center gap-2 text-sm bg-red-50 text-red-600 px-3 py-2 rounded-lg">
+        <div className="flex items-center gap-2 text-sm bg-alert-tint text-alert-ink px-3 py-2 rounded-lg">
           <AlertTriangle className="h-4 w-4" />
           {errorMessage}
         </div>
@@ -51,42 +51,42 @@ export default function GoogleConnectionCard({
       {connection ? (
         <div className="space-y-3">
           <div>
-            <p className="text-sm text-gray-500">Conectado como</p>
-            <p className="text-base font-medium text-gray-900">{connection.googleEmail}</p>
+            <p className="text-sm text-ink-soft">Conectado como</p>
+            <p className="text-base font-medium text-ink">{connection.googleEmail}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500 mb-1">Permisos concedidos</p>
-            <ul className="text-sm text-gray-700 list-disc list-inside">
+            <p className="text-sm text-ink-soft mb-1">Permisos concedidos</p>
+            <ul className="text-sm text-ink-soft list-disc list-inside">
               {connection.scope.split(" ").filter(Boolean).map((scope) => (
                 <li key={scope}>{SCOPE_LABELS[scope] ?? scope}</li>
               ))}
             </ul>
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-ink-faint">
             Conectado desde {new Date(connection.connectedAt).toLocaleString("es-ES")}
           </p>
 
           {!confirmingDisconnect ? (
             <button
               onClick={() => setConfirmingDisconnect(true)}
-              className="text-sm text-gray-400 hover:text-red-600"
+              className="text-sm text-ink-faint hover:text-alert-ink"
             >
               Desconectar
             </button>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">¿Seguro que quieres desconectar?</span>
+              <span className="text-sm text-ink-soft">¿Seguro que quieres desconectar?</span>
               <button
                 onClick={handleDisconnect}
                 disabled={disconnecting}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-alert rounded-lg hover:bg-alert disabled:opacity-50"
               >
                 {disconnecting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 Sí, desconectar
               </button>
               <button
                 onClick={() => setConfirmingDisconnect(false)}
-                className="px-3 py-1.5 text-sm text-gray-600 border border-line rounded-xl hover:bg-background"
+                className="px-3 py-1.5 text-sm text-ink-soft border border-line rounded-xl hover:bg-background"
               >
                 Cancelar
               </button>
@@ -95,12 +95,12 @@ export default function GoogleConnectionCard({
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ink-soft">
             Todavía no hay ninguna cuenta de Google conectada.
           </p>
           <a
             href="/api/google/oauth/authorize"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700"
           >
             Conectar con Google
           </a>

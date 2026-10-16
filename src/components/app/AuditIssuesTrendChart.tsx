@@ -18,7 +18,7 @@ type AuditRun = {
   categoryScores: CategoryScores | null;
 };
 
-const COLOR = "#f97316"; // naranja — mismo tono que el icono de incidencia
+const COLOR = "#4f5cf5"; // serie en brand-500, la rampa de la guía de estilo
 
 // Suma de los conteos ya persistidos en cada categoría (sin canonical +
 // noindex + enlaces rotos + páginas con issue on-page + imágenes sin alt).
@@ -81,19 +81,19 @@ export default function AuditIssuesTrendChart({ runs }: { runs: AuditRun[] }) {
   const labelStep = Math.max(1, Math.ceil(n / 6));
 
   return (
-    <div ref={wrapRef} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+    <div ref={wrapRef} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
       <div className="flex items-center gap-2 mb-3">
-        <AlertCircle className="h-4 w-4 text-gray-400" />
-        <h3 className="text-sm font-semibold text-gray-900">Incidencias detectadas por ejecución</h3>
+        <AlertCircle className="h-4 w-4 text-ink-faint" />
+        <h3 className="text-sm font-semibold text-ink">Incidencias detectadas por ejecución</h3>
       </div>
 
       {n === 0 ? (
-        <p className="py-12 text-center text-sm text-gray-400">Aún no hay auditorías completadas</p>
+        <p className="py-12 text-center text-sm text-ink-faint">Aún no hay auditorías completadas</p>
       ) : (
         <div className="w-full">
           <svg width={w} height={H} viewBox={`0 0 ${w} ${H}`} role="img" aria-label="Incidencias por ejecución">
             {[0, maxV].map((v) => (
-              <text key={v} x={PAD_L - 6} y={y(v) + 3} textAnchor="end" className="fill-gray-400" fontSize={9}>
+              <text key={v} x={PAD_L - 6} y={y(v) + 3} textAnchor="end" className="fill-ink-faint" fontSize={9}>
                 {v}
               </text>
             ))}
@@ -108,7 +108,7 @@ export default function AuditIssuesTrendChart({ runs }: { runs: AuditRun[] }) {
             ))}
             {points.map((p, i) =>
               i % labelStep === 0 || i === n - 1 ? (
-                <text key={`l-${p.id}`} x={x(i)} y={H - 6} textAnchor="middle" className="fill-gray-400" fontSize={9}>
+                <text key={`l-${p.id}`} x={x(i)} y={H - 6} textAnchor="middle" className="fill-ink-faint" fontSize={9}>
                   {fmtShort(p.date)}
                 </text>
               ) : null
@@ -117,7 +117,7 @@ export default function AuditIssuesTrendChart({ runs }: { runs: AuditRun[] }) {
         </div>
       )}
       {n === 1 && (
-        <p className="mt-1 text-xs text-gray-400">Necesita al menos 2 auditorías para ver la evolución</p>
+        <p className="mt-1 text-xs text-ink-faint">Necesita al menos 2 auditorías para ver la evolución</p>
       )}
     </div>
   );

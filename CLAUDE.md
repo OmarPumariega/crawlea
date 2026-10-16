@@ -46,7 +46,9 @@ infraestructura (colas, caché, tablas de coste) para módulos que todavía no e
 
 ## Stack tecnológico
 
-- **Next.js 16** (App Router) + TypeScript + Tailwind 4 — reutiliza patrones ya
+- **Next.js 16** (App Router) + TypeScript + Tailwind 4 (tokens CSS-first de la
+  guía de estilo en `src/app/crawlea.css`) + **Manrope** + **modo oscuro** vía
+  `next-themes` (`data-theme`, toggle en la cabecera) — reutiliza patrones ya
   validados en producción por el autor en otros proyectos (auth, cifrado,
   Docker/Traefik/Coolify)
 - **PostgreSQL + Prisma** (adapter `PrismaPg`) — sin pgvector, esta app no usa embeddings
@@ -462,6 +464,19 @@ sitio; ver el apartado "Copilot" más abajo.
   system prompt, varios hilos por proyecto con historial (`CopilotThread`), lógica
   extraída a `src/lib/copilot/useCopilotThreads.ts`. No tiene tool-calling — no puede
   modificar datos del proyecto.
+
+## Convenciones de UI (guía de estilo)
+
+**Antes de crear o modificar cualquier componente, lee
+[`Guia de estilo/GUIA-DE-ESTILO.md`](./Guia%20de%20estilo/GUIA-DE-ESTILO.md).**
+Es la fuente de verdad visual: rampa índigo como único acento, neutros teñidos
+de azul, coral (`alert`) SOLO para avisos/errores y bajadas de posición (no hay
+verde ni amarillo en la interfaz), tipografía Manrope, tarjetas radio 20px con
+sombra casi imperceptible, modo oscuro obligatorio (usa `bg-surface`/`text-ink`/
+`border-line`, nunca colores fijos). Los tokens están en `src/app/crawlea.css`;
+los alias de la identidad anterior (`bg-brand`, `text-signal`, `bg-sidebar`,
+`bg-background`...) se definen en `globals.css` apuntando a la nueva paleta y se
+retiran gradualmente a medida que las vistas adopten los tokens canónicos.
 
 ## Seguridad
 

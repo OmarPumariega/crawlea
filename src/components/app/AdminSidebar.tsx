@@ -259,7 +259,7 @@ export default function AdminSidebar({
         {/* Marca */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4">
           <Logo />
-          <button className="md:hidden text-gray-400 hover:text-gray-900 transition-colors" onClick={onClose} aria-label="Cerrar menú">
+          <button className="md:hidden text-ink-faint hover:text-ink transition-colors" onClick={onClose} aria-label="Cerrar menú">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -267,12 +267,12 @@ export default function AdminSidebar({
         {/* Buscador de navegación: filtra módulos y secciones al escribir */}
         <div className="px-4 pb-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-faint pointer-events-none" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar módulo…"
-              className="w-full bg-white border border-line rounded-xl pl-9 pr-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+              className="w-full bg-surface border border-line rounded-xl pl-9 pr-3 py-2 text-sm text-ink placeholder:text-ink-faint outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
             />
           </div>
         </div>
@@ -301,7 +301,7 @@ export default function AdminSidebar({
               lista (1 clic), y mantiene el módulo activo al cambiar. */}
           {projectId && navFiltered && (
             <div className="space-y-4">
-              <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
                 Proyecto
               </p>
               <ProjectSwitcher projects={projects} currentId={projectId} onSelect={switchProject} />
@@ -330,7 +330,7 @@ export default function AdminSidebar({
                         aria-expanded={isOpen}
                         className={cn(
                           "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold transition-colors",
-                          groupHasActive ? "text-gray-800" : "text-gray-400 hover:text-gray-700"
+                          groupHasActive ? "text-ink" : "text-ink-faint hover:text-ink-soft"
                         )}
                       >
                         <GIcon className="h-4 w-4 shrink-0" />
@@ -375,7 +375,7 @@ export default function AdminSidebar({
               <Link
                 href="/app/proyectos"
                 onClick={onClose}
-                className="block px-3 pt-1 text-[13px] text-gray-400 hover:text-brand transition-colors"
+                className="block px-3 pt-1 text-[13px] text-ink-faint hover:text-brand transition-colors"
               >
                 Gestionar proyectos →
               </Link>
@@ -385,7 +385,7 @@ export default function AdminSidebar({
           {searching &&
             navItemsFiltered.length === 0 &&
             (!navFiltered || (navFiltered.top.length === 0 && navFiltered.groups.length === 0 && navFiltered.bottom.length === 0)) && (
-              <p className="px-3 text-sm text-gray-400">Sin resultados para “{query}”.</p>
+              <p className="px-3 text-sm text-ink-faint">Sin resultados para “{query}”.</p>
             )}
         </nav>
 
@@ -411,16 +411,16 @@ export default function AdminSidebar({
               )}
             </Link>
             <Link href="/app/perfil" className="min-w-0 flex-1 group">
-              <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-brand transition-colors">
+              <p className="text-sm font-semibold text-ink truncate group-hover:text-brand transition-colors">
                 {session?.user?.name || nombre}
               </p>
-              <p className="text-xs text-gray-400 truncate">
+              <p className="text-xs text-ink-faint truncate">
                 {session?.user?.role === "admin" ? "Plataforma" : "Mi cuenta"}
               </p>
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/acceso" })}
-              className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+              className="p-2 text-ink-faint hover:text-alert-ink rounded-lg hover:bg-alert-tint transition-colors"
               aria-label="Cerrar sesión"
               title="Cerrar sesión"
             >
@@ -454,8 +454,8 @@ function NavLink({
       className={cn(
         "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
         active
-          ? "bg-brand text-white shadow-[0_6px_16px_-6px_rgba(14,107,79,0.5)]"
-          : "text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-[0_1px_3px_rgba(26,29,26,0.06)]"
+          ? "bg-brand text-white shadow-[0_6px_16px_-6px_rgba(79,92,245,0.5)]"
+          : "text-ink-soft hover:bg-surface hover:text-ink hover:shadow-[0_1px_3px_rgba(17,20,43,0.06)]"
       )}
     >
       <span
@@ -497,11 +497,11 @@ function ModuleLink({
         "flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium transition-all",
         indent,
         active
-          ? "bg-brand text-white shadow-[0_6px_16px_-6px_rgba(14,107,79,0.5)]"
-          : "text-gray-500 hover:bg-white hover:text-gray-900"
+          ? "bg-brand text-white shadow-[0_6px_16px_-6px_rgba(79,92,245,0.5)]"
+          : "text-ink-soft hover:bg-surface hover:text-ink"
       )}
     >
-      <Icon className={cn("h-4 w-4 shrink-0", active ? "" : "text-gray-400")} />
+      <Icon className={cn("h-4 w-4 shrink-0", active ? "" : "text-ink-faint")} />
       <span className="truncate">{m.label}</span>
     </Link>
   );

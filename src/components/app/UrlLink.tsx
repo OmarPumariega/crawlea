@@ -24,7 +24,7 @@ export default function UrlLink({
       title={url}
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "inline-flex items-center gap-1 min-w-0 text-indigo-600 hover:text-indigo-800 hover:underline",
+        "inline-flex items-center gap-1 min-w-0 text-accent-ink hover:text-accent-ink hover:underline",
         className
       )}
     >

@@ -80,28 +80,28 @@ export default function AuditTechnicalDetails({
   const sitemapUrlSample = (run?.sitemapUrls ?? []).slice(0, 10);
 
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
       <div className="flex items-center gap-2">
-        <FileText className="h-4 w-4 text-gray-500" />
-        <h3 className="text-sm font-semibold text-gray-900">Detalle técnico</h3>
+        <FileText className="h-4 w-4 text-ink-soft" />
+        <h3 className="text-sm font-semibold text-ink">Detalle técnico</h3>
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center gap-2 text-sm text-ink-soft">
           <Loader2 className="h-4 w-4 animate-spin" />
           Cargando detalle técnico...
         </div>
       ) : error ? (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-alert-ink">{error}</p>
       ) : run ? (
         <div className="space-y-4">
           {/* robots.txt */}
           <section className="space-y-2">
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
               robots.txt
             </h4>
             {run.robotsBlocked && (
-              <div className="flex items-center gap-2 text-sm bg-amber-50 text-amber-700 px-3 py-2 rounded-lg">
+              <div className="flex items-center gap-2 text-sm bg-accent-tint text-accent-ink px-3 py-2 rounded-lg">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
                 El robots.txt bloquea el rastreo.
               </div>
@@ -111,21 +111,21 @@ export default function AuditTechnicalDetails({
                 {run.robotsContent}
               </pre>
             ) : (
-              <p className="text-sm text-gray-500">No se encontró robots.txt.</p>
+              <p className="text-sm text-ink-soft">No se encontró robots.txt.</p>
             )}
           </section>
 
           {/* sitemap.xml */}
           <section className="space-y-2">
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
               sitemap.xml
             </h4>
             {run.sitemapFound ? (
               <div className="space-y-2">
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-ink-soft">
                   Sitemap encontrado
                   {run.sitemapUrlCount !== null && run.sitemapUrlCount !== undefined && (
-                    <span className="text-gray-500">
+                    <span className="text-ink-soft">
                       {" "}
                       · {run.sitemapUrlCount.toLocaleString("es-ES")} URLs
                     </span>
@@ -136,7 +136,7 @@ export default function AuditTechnicalDetails({
                     <button
                       type="button"
                       onClick={() => setShowSitemapUrls((v) => !v)}
-                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900"
+                      className="flex items-center gap-1 text-xs text-ink-soft hover:text-ink"
                     >
                       {showSitemapUrls ? (
                         <ChevronUp className="h-3.5 w-3.5" />
@@ -158,23 +158,23 @@ export default function AuditTechnicalDetails({
                 )}
               </div>
             ) : run.sitemapFound === false ? (
-              <p className="text-sm text-red-600">No se encontró sitemap.xml.</p>
+              <p className="text-sm text-alert-ink">No se encontró sitemap.xml.</p>
             ) : (
-              <p className="text-sm text-gray-500">No se comprobó el sitemap.</p>
+              <p className="text-sm text-ink-soft">No se comprobó el sitemap.</p>
             )}
           </section>
 
           {/* Enlaces externos */}
           <section className="space-y-2">
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
               Enlaces externos
             </h4>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-ink-soft">
               {totalExternalLinks.toLocaleString("es-ES")} enlace
               {totalExternalLinks === 1 ? "" : "s"} externo
               {totalExternalLinks === 1 ? "" : "s"}
               {uniqueDomainCount > 0 && (
-                <span className="text-gray-500">
+                <span className="text-ink-soft">
                   {" "}
                   · {uniqueDomainCount} dominio{uniqueDomainCount === 1 ? "" : "s"}
                   {uniqueDomainCount > 15 ? " (top 15)" : ""}
@@ -191,24 +191,24 @@ export default function AuditTechnicalDetails({
                 </thead>
                 <tbody>
                   {topDomains.map(([domain, count]) => (
-                    <tr key={domain} className="border-b border-gray-50 last:border-0">
+                    <tr key={domain} className="border-b border-line last:border-0">
                       <td className="py-1.5 pr-3 font-mono text-xs break-all">
                         <a
                           href={`https://${domain}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-indigo-600 hover:text-indigo-800 hover:underline"
+                          className="text-accent-ink hover:text-accent-ink hover:underline"
                         >
                           {domain}
                         </a>
                       </td>
-                      <td className="py-1.5 pl-3 text-gray-700 text-right tabular-nums">{count}</td>
+                      <td className="py-1.5 pl-3 text-ink-soft text-right tabular-nums">{count}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             ) : (
-              <p className="text-sm text-gray-500">Sin enlaces externos detectados.</p>
+              <p className="text-sm text-ink-soft">Sin enlaces externos detectados.</p>
             )}
           </section>
         </div>

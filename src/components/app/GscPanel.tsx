@@ -130,16 +130,16 @@ function shortUrl(url: string): string {
 
 function PositionTrend({ current, prev }: { current: number; prev: number | null }) {
   if (prev == null) {
-    return <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">—</span>;
+    return <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-muted text-ink-soft">—</span>;
   }
   const delta = prev - current;
   if (Math.abs(delta) < 0.1) {
-    return <Minus className="inline h-3 w-3 text-gray-400" />;
+    return <Minus className="inline h-3 w-3 text-ink-faint" />;
   }
   const improved = delta > 0;
   return (
     <span
-      className={cn("inline-flex items-center gap-0.5 text-xs", improved ? "text-emerald-600" : "text-red-500")}
+      className={cn("inline-flex items-center gap-0.5 text-xs", improved ? "text-accent-ink" : "text-alert-ink")}
       title={`Periodo anterior: posición ${prev.toFixed(1)}`}
     >
       {improved ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
@@ -150,10 +150,10 @@ function PositionTrend({ current, prev }: { current: number; prev: number | null
 
 function Kpi({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 flex flex-col">
-      <p className="text-[13px] font-medium text-gray-500">{label}</p>
-      <p className="text-3xl font-bold tracking-tight text-gray-900 tabular-nums mt-2 leading-none">{value}</p>
-      {sub && <p className="text-[11px] text-gray-400 mt-2">{sub}</p>}
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 flex flex-col">
+      <p className="text-[13px] font-medium text-ink-soft">{label}</p>
+      <p className="text-3xl font-bold tracking-tight text-ink tabular-nums mt-2 leading-none">{value}</p>
+      {sub && <p className="text-[11px] text-ink-faint mt-2">{sub}</p>}
     </div>
   );
 }
@@ -161,7 +161,7 @@ function Kpi({ label, value, sub }: { label: string; value: string; sub?: string
 function MonthlyChart({ points }: { points: GscMonthPoint[] }) {
   const [metric, setMetric] = useState<"clicks" | "impressions">("clicks");
   if (points.length === 0) {
-    return <p className="text-sm text-gray-500">Sin datos suficientes para la evolución.</p>;
+    return <p className="text-sm text-ink-soft">Sin datos suficientes para la evolución.</p>;
   }
   const max = Math.max(...points.map((p) => p[metric]), 1);
   return (
@@ -175,8 +175,8 @@ function MonthlyChart({ points }: { points: GscMonthPoint[] }) {
             className={cn(
               "rounded-xl px-3 py-1.5 text-sm font-medium transition-colors",
               metric === m
-                ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
-                : "text-gray-500 hover:text-gray-800"
+                ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]"
+                : "text-ink-soft hover:text-ink"
             )}
           >
             {m === "clicks" ? "Clics" : "Impresiones"}
@@ -192,16 +192,16 @@ function MonthlyChart({ points }: { points: GscMonthPoint[] }) {
           return (
             <div key={p.month} className="flex-1 flex flex-col items-center gap-1 min-w-0">
               <div
-                className={cn("w-full rounded-t", metric === "clicks" ? "bg-brand" : "bg-gray-400")}
+                className={cn("w-full rounded-t", metric === "clicks" ? "bg-brand" : "bg-ink-faint")}
                 style={{ height: `${h}px` }}
                 title={`${monthLabel(p.month)}: ${fmtInt(p[metric])} ${metric === "clicks" ? "clics" : "impresiones"}`}
               />
-              <span className="text-[9px] text-gray-400 truncate w-full text-center">{monthLabel(p.month)}</span>
+              <span className="text-[9px] text-ink-faint truncate w-full text-center">{monthLabel(p.month)}</span>
             </div>
           );
         })}
       </div>
-      <p className="text-[11px] text-gray-400">Evolución de los últimos 12 meses (independiente del periodo seleccionado).</p>
+      <p className="text-[11px] text-ink-faint">Evolución de los últimos 12 meses (independiente del periodo seleccionado).</p>
     </div>
   );
 }
@@ -262,8 +262,8 @@ export default function GscPanel({ projectId }: { projectId: string }) {
     setImportResult({ ok: true, message: `Estudio creado con ${Math.min(IMPORT_LIMIT, data.topQueries.length)} queries reales.` });
   }
 
-  if (loading) return <Loader2 className="h-5 w-5 animate-spin text-gray-400" />;
-  if (error) return <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{error}</p>;
+  if (loading) return <Loader2 className="h-5 w-5 animate-spin text-ink-faint" />;
+  if (error) return <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">{error}</p>;
   if (!data) return null;
 
   const t = data.totals;
@@ -281,8 +281,8 @@ export default function GscPanel({ projectId }: { projectId: string }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h3 className="text-lg font-bold tracking-tight text-gray-900">Rendimiento en Search Console</h3>
-          <p className="text-xs text-gray-500">Datos reales de Google · periodo: {rangeLabel}</p>
+          <h3 className="text-lg font-bold tracking-tight text-ink">Rendimiento en Search Console</h3>
+          <p className="text-xs text-ink-soft">Datos reales de Google · periodo: {rangeLabel}</p>
         </div>
         <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
           {RANGE_OPTIONS.map((r) => (
@@ -293,8 +293,8 @@ export default function GscPanel({ projectId }: { projectId: string }) {
               className={cn(
                 "rounded-xl px-3 py-1.5 text-sm font-medium transition-colors",
                 range === r.key
-                  ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
-                  : "text-gray-500 hover:text-gray-800"
+                  ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]"
+                  : "text-ink-soft hover:text-ink"
               )}
             >
               {r.label}
@@ -310,8 +310,8 @@ export default function GscPanel({ projectId }: { projectId: string }) {
         <Kpi label="Posición media" value={fmtPos(t.position)} />
       </div>
 
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
-        <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">Evolución (12 meses)</h4>
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
+        <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint mb-3">Evolución (12 meses)</h4>
         <MonthlyChart points={data.timeseries} />
       </div>
 
@@ -319,13 +319,13 @@ export default function GscPanel({ projectId }: { projectId: string }) {
       {(data.byDevice.length > 0 || data.byCountry.length > 0) && (
         <div className="grid md:grid-cols-2 gap-4">
           {data.byDevice.length > 0 && (
-            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
-              <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Por dispositivo</h4>
+            <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
+              <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Por dispositivo</h4>
               <div className="space-y-1.5">
                 {data.byDevice.map((d) => (
                   <div key={d.key} className="flex items-center justify-between gap-2 text-sm">
-                    <span className="text-gray-700">{DEVICE_LABEL[d.key] ?? d.key}</span>
-                    <span className="text-gray-500 tabular-nums">
+                    <span className="text-ink-soft">{DEVICE_LABEL[d.key] ?? d.key}</span>
+                    <span className="text-ink-soft tabular-nums">
                       {fmtInt(d.clicks)} clics · {fmtPct(d.ctr)} CTR · pos. {fmtPos(d.position)}
                     </span>
                   </div>
@@ -334,13 +334,13 @@ export default function GscPanel({ projectId }: { projectId: string }) {
             </div>
           )}
           {data.byCountry.length > 0 && (
-            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
-              <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Por país (top 10)</h4>
+            <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
+              <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Por país (top 10)</h4>
               <div className="space-y-1.5">
                 {data.byCountry.slice(0, 10).map((c) => (
                   <div key={c.key} className="flex items-center justify-between gap-2 text-sm">
-                    <span className="text-gray-700">{c.key}</span>
-                    <span className="text-gray-500 tabular-nums">
+                    <span className="text-ink-soft">{c.key}</span>
+                    <span className="text-ink-soft tabular-nums">
                       {fmtInt(c.clicks)} clics · {fmtInt(c.impressions)} imp.
                     </span>
                   </div>
@@ -353,9 +353,9 @@ export default function GscPanel({ projectId }: { projectId: string }) {
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Top queries */}
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
+            <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
               Queries que traen tráfico ({data.topQueries.length})
             </h4>
             <button
@@ -370,7 +370,7 @@ export default function GscPanel({ projectId }: { projectId: string }) {
             </button>
           </div>
           {importResult && (
-            <p className={cn("text-xs px-2.5 py-1.5 rounded-xl", importResult.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600")}>
+            <p className={cn("text-xs px-2.5 py-1.5 rounded-xl", importResult.ok ? "bg-accent-tint text-accent-ink" : "bg-alert-tint text-alert-ink")}>
               {importResult.ok && <Check className="inline h-3.5 w-3.5 mr-1" />}
               {importResult.message}
               {importResult.ok && (
@@ -381,7 +381,7 @@ export default function GscPanel({ projectId }: { projectId: string }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
                   <th className="py-1.5 pr-3 font-medium">Query</th>
                   <SortTh col="clicks" sort={qSort} onSort={toggleQSort} />
                   <SortTh col="impressions" sort={qSort} onSort={toggleQSort} />
@@ -391,14 +391,14 @@ export default function GscPanel({ projectId }: { projectId: string }) {
               </thead>
               <tbody>
                 {sortedQueries.slice(0, queriesShown).map((q) => (
-                  <tr key={q.query} className="border-b border-gray-50 last:border-0">
-                    <td className="py-1.5 pr-3 text-gray-900 truncate max-w-[160px]">{q.query}</td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums text-gray-700">{fmtInt(q.clicks)}</td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums text-gray-500">{fmtInt(q.impressions)}</td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums text-gray-500">{fmtPct(q.ctr)}</td>
+                  <tr key={q.query} className="border-b border-line last:border-0">
+                    <td className="py-1.5 pr-3 text-ink truncate max-w-[160px]">{q.query}</td>
+                    <td className="py-1.5 pr-3 text-right tabular-nums text-ink-soft">{fmtInt(q.clicks)}</td>
+                    <td className="py-1.5 pr-3 text-right tabular-nums text-ink-soft">{fmtInt(q.impressions)}</td>
+                    <td className="py-1.5 pr-3 text-right tabular-nums text-ink-soft">{fmtPct(q.ctr)}</td>
                     <td className="py-1.5 text-right">
                       <span className="inline-flex items-center gap-1 justify-end">
-                        <span className="tabular-nums text-gray-700">{fmtPos(q.position)}</span>
+                        <span className="tabular-nums text-ink-soft">{fmtPos(q.position)}</span>
                         <PositionTrend current={q.position} prev={q.prevPosition} />
                       </span>
                     </td>
@@ -411,7 +411,7 @@ export default function GscPanel({ projectId }: { projectId: string }) {
             <button
               type="button"
               onClick={() => setShowAllQueries((v) => !v)}
-              className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900"
+              className="inline-flex items-center gap-1 text-xs text-ink-soft hover:text-ink"
             >
               <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showAllQueries ? "rotate-180" : "")} />
               {showAllQueries ? "Ver menos" : `Ver las ${data.topQueries.length} queries`}
@@ -420,14 +420,14 @@ export default function GscPanel({ projectId }: { projectId: string }) {
         </div>
 
         {/* Top pages */}
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
-          <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
+          <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
             Páginas que más trafican ({data.topPages.length})
           </h4>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
                   <th className="py-1.5 pr-3 font-medium">Página</th>
                   <SortTh col="clicks" sort={pSort} onSort={togglePSort} />
                   <SortTh col="impressions" sort={pSort} onSort={togglePSort} />
@@ -437,18 +437,18 @@ export default function GscPanel({ projectId }: { projectId: string }) {
               </thead>
               <tbody>
                 {sortedPages.slice(0, pagesShown).map((p) => (
-                  <tr key={p.page} className="border-b border-gray-50 last:border-0">
-                    <td className="py-1.5 pr-3 text-gray-900 truncate max-w-[180px]" title={p.page}>
+                  <tr key={p.page} className="border-b border-line last:border-0">
+                    <td className="py-1.5 pr-3 text-ink truncate max-w-[180px]" title={p.page}>
                       <Link href={p.page} target="_blank" rel="noreferrer" className="hover:underline">
                         {shortUrl(p.page)}
                       </Link>
                     </td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums text-gray-700">{fmtInt(p.clicks)}</td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums text-gray-500">{fmtInt(p.impressions)}</td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums text-gray-500">{fmtPct(p.ctr)}</td>
+                    <td className="py-1.5 pr-3 text-right tabular-nums text-ink-soft">{fmtInt(p.clicks)}</td>
+                    <td className="py-1.5 pr-3 text-right tabular-nums text-ink-soft">{fmtInt(p.impressions)}</td>
+                    <td className="py-1.5 pr-3 text-right tabular-nums text-ink-soft">{fmtPct(p.ctr)}</td>
                     <td className="py-1.5 text-right">
                       <span className="inline-flex items-center gap-1 justify-end">
-                        <span className="tabular-nums text-gray-700">{fmtPos(p.position)}</span>
+                        <span className="tabular-nums text-ink-soft">{fmtPos(p.position)}</span>
                         <PositionTrend current={p.position} prev={p.prevPosition} />
                       </span>
                     </td>
@@ -461,7 +461,7 @@ export default function GscPanel({ projectId }: { projectId: string }) {
             <button
               type="button"
               onClick={() => setShowAllPages((v) => !v)}
-              className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900"
+              className="inline-flex items-center gap-1 text-xs text-ink-soft hover:text-ink"
             >
               <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showAllPages ? "rotate-180" : "")} />
               {showAllPages ? "Ver menos" : `Ver las ${data.topPages.length} páginas`}

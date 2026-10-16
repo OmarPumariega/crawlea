@@ -133,10 +133,10 @@ const CATEGORY_LABELS: { key: keyof CategoryScores; label: string }[] = [
 ];
 
 function scoreTone(score: number | null): string {
-  if (score == null) return "text-gray-400";
-  if (score >= 80) return "text-emerald-600";
-  if (score >= 50) return "text-amber-600";
-  return "text-red-600";
+  if (score == null) return "text-ink-faint";
+  if (score >= 80) return "text-accent-ink";
+  if (score >= 50) return "text-ink-soft";
+  return "text-alert-ink";
 }
 function fmtDate(d: Date | null): string {
   return d ? new Date(d).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "—";
@@ -159,15 +159,15 @@ function difficulty(
   index: number | null | undefined
 ): { label: string; cls: string } {
   if (competition === "HIGH" || (competition == null && index != null && index >= 67)) {
-    return { label: "Alta", cls: "bg-red-50 text-red-700" };
+    return { label: "Alta", cls: "bg-alert-tint text-alert-ink" };
   }
   if (competition === "LOW" || (competition == null && index != null && index < 34)) {
-    return { label: "Baja", cls: "bg-emerald-50 text-emerald-700" };
+    return { label: "Baja", cls: "bg-accent-tint text-accent-ink" };
   }
   if (competition === "MEDIUM" || index != null) {
-    return { label: "Media", cls: "bg-amber-50 text-amber-700" };
+    return { label: "Media", cls: "bg-accent-tint text-accent-ink" };
   }
-  return { label: "—", cls: "bg-gray-100 text-gray-400" };
+  return { label: "—", cls: "bg-surface-muted text-ink-faint" };
 }
 function fmtInt(n: number): string {
   return Math.round(n).toLocaleString("es-ES");
@@ -175,8 +175,8 @@ function fmtInt(n: number): string {
 
 function SectionTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900 border-b border-line pb-2 mb-4">
-      <span className="text-gray-400 print:text-black">{icon}</span>
+    <h2 className="flex items-center gap-2 text-base font-semibold text-ink border-b border-line pb-2 mb-4">
+      <span className="text-ink-faint print:text-black">{icon}</span>
       {children}
     </h2>
   );
@@ -184,9 +184,9 @@ function SectionTitle({ icon, children }: { icon: React.ReactNode; children: Rea
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="break-inside-avoid">
-      <div className="text-xl font-semibold text-gray-900 tabular-nums print:text-black">{value}</div>
-      <div className="text-xs text-gray-500">{label}</div>
-      {sub && <div className="text-[11px] text-gray-400">{sub}</div>}
+      <div className="text-xl font-semibold text-ink tabular-nums print:text-black">{value}</div>
+      <div className="text-xs text-ink-soft">{label}</div>
+      {sub && <div className="text-[11px] text-ink-faint">{sub}</div>}
     </div>
   );
 }
@@ -251,10 +251,10 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
   const renderTasks = () => (
     <section className="space-y-4">
       <SectionTitle icon={<ClipboardCheck className="h-4 w-4" />}>
-        Trabajos realizados <span className="text-gray-400 font-normal text-sm">({data.monthLabel})</span>
+        Trabajos realizados <span className="text-ink-faint font-normal text-sm">({data.monthLabel})</span>
       </SectionTitle>
       {data.tasks.length === 0 ? (
-        <p className="text-sm text-gray-500">Sin tareas completadas registradas este mes.</p>
+        <p className="text-sm text-ink-soft">Sin tareas completadas registradas este mes.</p>
       ) : (
         <ul className="space-y-2">
           {data.tasks.map((t) => {
@@ -262,8 +262,8 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             const sub = t.issueType ? `${t.affectedUrls.length} página${t.affectedUrls.length === 1 ? "" : "s"} corregida${t.affectedUrls.length === 1 ? "" : "s"}` : null;
             return (
               <li key={t.id} className="flex items-start justify-between gap-3 text-sm border-b border-line pb-2 last:border-0">
-                <div className="min-w-0"><p className="text-gray-900">{label}</p>{sub && <p className="text-xs text-gray-400">{sub}</p>}</div>
-                <span className="text-xs text-gray-400 shrink-0 whitespace-nowrap">{fmtDate(t.completedAt)}</span>
+                <div className="min-w-0"><p className="text-ink">{label}</p>{sub && <p className="text-xs text-ink-faint">{sub}</p>}</div>
+                <span className="text-xs text-ink-faint shrink-0 whitespace-nowrap">{fmtDate(t.completedAt)}</span>
               </li>
             );
           })}
@@ -275,25 +275,25 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
   const renderAudit = () => (
     <section className="space-y-4">
       <SectionTitle icon={<Gauge className="h-4 w-4" />}>
-        Salud técnica <span className="text-gray-400 font-normal text-sm">(Auditoría)</span>
+        Salud técnica <span className="text-ink-faint font-normal text-sm">(Auditoría)</span>
       </SectionTitle>
       {!data.audit || data.audit.overallScore == null ? (
-        <p className="text-sm text-gray-500">Sin auditorías completadas hasta este mes.</p>
+        <p className="text-sm text-ink-soft">Sin auditorías completadas hasta este mes.</p>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             <div className="break-inside-avoid">
               <div className={`text-3xl font-bold tabular-nums print:text-black ${scoreTone(data.audit.overallScore)}`}>
-                {data.audit.overallScore}<span className="text-base font-medium text-gray-400">/100</span>
+                {data.audit.overallScore}<span className="text-base font-medium text-ink-faint">/100</span>
               </div>
-              <div className="text-xs text-gray-500">Puntuación global</div>
+              <div className="text-xs text-ink-soft">Puntuación global</div>
             </div>
             {CATEGORY_LABELS.map(({ key, label }) => {
               const cat = data.audit!.categoryScores?.[key];
               return <Stat key={key} label={label} value={cat ? `${cat.score}/${cat.max}` : "—"} sub={key === "rendimiento" && !cat ? "sin dato PSI" : undefined} />;
             })}
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-ink-faint">
             {data.audit.pagesCrawled} página{data.audit.pagesCrawled === 1 ? "" : "s"} rastreada{data.audit.pagesCrawled === 1 ? "" : "s"} · Auditoría completada el {fmtDate(data.audit.completedAt)}
           </p>
 
@@ -312,7 +312,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                   <Stat label="CLS" value={clsX >= 0 ? (clsX / 1000).toFixed(2) : "—"} />
                   <Stat label="INP" value={inp >= 0 ? `${inp}ms` : "—"} />
                 </div>
-                <p className="text-xs text-gray-400">Core Web Vitals sobre la home (móvil) · Google PageSpeed Insights.</p>
+                <p className="text-xs text-ink-faint">Core Web Vitals sobre la home (móvil) · Google PageSpeed Insights.</p>
               </>
             );
           })()}
@@ -334,10 +334,10 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
   const renderRank = () => (
     <section className="space-y-4">
       <SectionTitle icon={<Target className="h-4 w-4" />}>
-        Posicionamiento <span className="text-gray-400 font-normal text-sm">(Rank tracking, estado actual)</span>
+        Posicionamiento <span className="text-ink-faint font-normal text-sm">(Rank tracking, estado actual)</span>
       </SectionTitle>
       {data.rank.keywords.length === 0 ? (
-        <p className="text-sm text-gray-500">Sin keywords en seguimiento.</p>
+        <p className="text-sm text-ink-soft">Sin keywords en seguimiento.</p>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -347,31 +347,31 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-gray-400 border-b border-line">
+              <thead><tr className="text-left text-ink-faint border-b border-line">
                 <th className="py-2 pr-4 font-medium">Keyword</th><th className="py-2 pr-4 font-medium">Dispositivo</th>
                 <th className="py-2 pr-4 font-medium text-right">Última</th><th className="py-2 pr-2 font-medium"></th><th className="py-2 pr-4 font-medium text-right">Mejor</th><th className="py-2 pr-4 font-medium">Chequeo</th>
               </tr></thead>
               <tbody>
                 {data.rank.topRank.map((k, i) => (
                   <tr key={i} className="border-b border-line last:border-0">
-                    <td className="py-2 pr-4 text-gray-900">{k.keyword}</td>
-                    <td className="py-2 pr-4 text-gray-500">{k.device === "mobile" ? "Móvil" : "Escritorio"}</td>
-                    <td className="py-2 pr-4 text-right tabular-nums text-gray-900">{k.lastPosition ?? "—"}</td>
+                    <td className="py-2 pr-4 text-ink">{k.keyword}</td>
+                    <td className="py-2 pr-4 text-ink-soft">{k.device === "mobile" ? "Móvil" : "Escritorio"}</td>
+                    <td className="py-2 pr-4 text-right tabular-nums text-ink">{k.lastPosition ?? "—"}</td>
                     <td className={cn(
                       "py-2 pr-2 text-center",
-                      k.trend === "up" && "text-emerald-600",
-                      k.trend === "down" && "text-red-600",
-                      k.trend === "same" && "text-gray-400"
+                      k.trend === "up" && "text-accent-ink",
+                      k.trend === "down" && "text-alert-ink",
+                      k.trend === "same" && "text-ink-faint"
                     )} title={k.trend === "up" ? "Mejora" : k.trend === "down" ? "Empeora" : k.trend === "same" ? "Sin cambios" : "Sin histórico suficiente"}>
                       {k.trend === "up" ? "↑" : k.trend === "down" ? "↓" : k.trend === "same" ? "→" : ""}
                     </td>
-                    <td className="py-2 pr-4 text-right tabular-nums font-medium text-gray-900">{k.bestPosition ?? "—"}</td>
-                    <td className="py-2 pr-4 text-gray-400">{fmtDate(k.lastCheckedAt)}</td>
+                    <td className="py-2 pr-4 text-right tabular-nums font-medium text-ink">{k.bestPosition ?? "—"}</td>
+                    <td className="py-2 pr-4 text-ink-faint">{fmtDate(k.lastCheckedAt)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {data.rank.keywords.length > 10 && <p className="text-xs text-gray-400 mt-2">Mostrando las 10 mejores de {data.rank.keywords.length} keywords.</p>}
+            {data.rank.keywords.length > 10 && <p className="text-xs text-ink-faint mt-2">Mostrando las 10 mejores de {data.rank.keywords.length} keywords.</p>}
           </div>
         </>
       )}
@@ -381,17 +381,17 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
   const renderKeywords = () => (
     <section className="space-y-4">
       <SectionTitle icon={<Search className="h-4 w-4" />}>
-        Investigación de keywords <span className="text-gray-400 font-normal text-sm">(Estudios, estado actual)</span>
+        Investigación de keywords <span className="text-ink-faint font-normal text-sm">(Estudios, estado actual)</span>
       </SectionTitle>
       <div className="grid grid-cols-2 gap-4">
         <Stat label="Estudios guardados" value={String(data.keywords.studyCount)} />
         <Stat label="Keywords investigadas" value={String(data.keywords.keywordTotal)} />
       </div>
-      {data.keywords.studyCount === 0 && <p className="text-sm text-gray-500">Aún no hay estudios de keywords para este proyecto.</p>}
+      {data.keywords.studyCount === 0 && <p className="text-sm text-ink-soft">Aún no hay estudios de keywords para este proyecto.</p>}
       {data.keywords.top.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-gray-400 border-b border-line">
+            <thead><tr className="text-left text-ink-faint border-b border-line">
               <th className="py-2 pr-4 font-medium">Keyword</th>
               <th className="py-2 pr-4 font-medium text-right">Volumen</th>
               <th className="py-2 pr-4 font-medium text-right">Dificultad</th>
@@ -400,15 +400,15 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             <tbody>
               {data.keywords.top.map((k, i) => (
                 <tr key={i} className="border-b border-line last:border-0">
-                  <td className="py-2 pr-4 text-gray-900">{k.keyword}</td>
-                  <td className="py-2 pr-4 text-right tabular-nums text-gray-700">{k.searchVolume ?? "—"}</td>
-                  <td className="py-2 pr-4 text-right tabular-nums text-gray-700">{k.difficulty ?? "—"}</td>
-                  <td className="py-2 text-right tabular-nums font-medium text-gray-900">{k.priority}</td>
+                  <td className="py-2 pr-4 text-ink">{k.keyword}</td>
+                  <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{k.searchVolume ?? "—"}</td>
+                  <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{k.difficulty ?? "—"}</td>
+                  <td className="py-2 text-right tabular-nums font-medium text-ink">{k.priority}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className="text-xs text-gray-400 mt-2">Top {data.keywords.top.length} del estudio &laquo;General&raquo; por prioridad.</p>
+          <p className="text-xs text-ink-faint mt-2">Top {data.keywords.top.length} del estudio &laquo;General&raquo; por prioridad.</p>
         </div>
       )}
     </section>
@@ -422,12 +422,12 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       <li key={node.path || "root"} style={{ marginLeft: depth * 16 }} className="py-0.5">
         {node.page ? (
           <>
-            <span className="text-gray-900">{node.page.h1 || node.page.navLabel}</span>
-            <span className="text-gray-400 font-mono text-xs ml-2">/{node.path}</span>
-            {node.volume > 0 && <span className="text-gray-400 text-xs ml-2">· vol. {node.volume}</span>}
+            <span className="text-ink">{node.page.h1 || node.page.navLabel}</span>
+            <span className="text-ink-faint font-mono text-xs ml-2">/{node.path}</span>
+            {node.volume > 0 && <span className="text-ink-faint text-xs ml-2">· vol. {node.volume}</span>}
           </>
         ) : (
-          <span className="text-gray-500 text-xs uppercase tracking-wide">{node.segment}/</span>
+          <span className="text-ink-soft text-xs uppercase tracking-wide">{node.segment}/</span>
         )}
         {node.children.length > 0 && (
           <ul className="space-y-0.5">
@@ -441,16 +441,16 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
   const renderArquitectura = () => (
     <section className="space-y-4">
       <SectionTitle icon={<Network className="h-4 w-4" />}>
-        Arquitectura de URLs <span className="text-gray-400 font-normal text-sm">(última estructura generada)</span>
+        Arquitectura de URLs <span className="text-ink-faint font-normal text-sm">(última estructura generada)</span>
       </SectionTitle>
       {!data.arquitectura || data.arquitectura.pageCount === 0 ? (
-        <p className="text-sm text-gray-500">Sin arquitectura de URLs generada. Créala desde Keywords → Arquitectura.</p>
+        <p className="text-sm text-ink-soft">Sin arquitectura de URLs generada. Créala desde Keywords → Arquitectura.</p>
       ) : (
         <div className="text-sm">
           <ul className="space-y-0.5">
             {data.arquitectura.tree.children.map((child) => renderTreeNode(child, 0))}
           </ul>
-          <p className="text-xs text-gray-400 mt-2">
+          <p className="text-xs text-ink-faint mt-2">
             {data.arquitectura.pageCount} páginas · estructura del {fmtDate(data.arquitectura.updatedAt)}.
           </p>
         </div>
@@ -460,16 +460,16 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
   const renderTitulosMeta = () => (
     <section className="space-y-4">
-      <SectionTitle icon={<Type className="h-4 w-4" />}>Título y Meta <span className="text-gray-400 font-normal text-sm">(últimas generaciones)</span></SectionTitle>
+      <SectionTitle icon={<Type className="h-4 w-4" />}>Título y Meta <span className="text-ink-faint font-normal text-sm">(últimas generaciones)</span></SectionTitle>
       {data["titulos-meta"].length === 0 ? (
-        <p className="text-sm text-gray-500">Sin generaciones de título/meta todavía.</p>
+        <p className="text-sm text-ink-soft">Sin generaciones de título/meta todavía.</p>
       ) : (
         <ul className="space-y-2 text-sm">
           {data["titulos-meta"].map((g, i) => (
             <li key={i} className="border-b border-line pb-2 last:border-0">
-              <p className="text-xs text-gray-400">{g.url}</p>
-              <p className="text-gray-900">{g.variants[0]?.title ?? "—"}</p>
-              <p className="text-xs text-gray-500">{g.variants[0]?.description}</p>
+              <p className="text-xs text-ink-faint">{g.url}</p>
+              <p className="text-ink">{g.variants[0]?.title ?? "—"}</p>
+              <p className="text-xs text-ink-soft">{g.variants[0]?.description}</p>
             </li>
           ))}
         </ul>
@@ -479,16 +479,16 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
   const renderSchema = () => (
     <section className="space-y-4">
-      <SectionTitle icon={<Code2 className="h-4 w-4" />}>Schema <span className="text-gray-400 font-normal text-sm">(últimas generaciones)</span></SectionTitle>
+      <SectionTitle icon={<Code2 className="h-4 w-4" />}>Schema <span className="text-ink-faint font-normal text-sm">(últimas generaciones)</span></SectionTitle>
       {data.schema.length === 0 ? (
-        <p className="text-sm text-gray-500">Sin generaciones de schema todavía.</p>
+        <p className="text-sm text-ink-soft">Sin generaciones de schema todavía.</p>
       ) : (
         <ul className="space-y-1 text-sm">
           {data.schema.map((g, i) => (
             <li key={i} className="flex items-center justify-between gap-2 border-b border-line pb-1 last:border-0">
-              <span className="text-gray-900 truncate">{g.selectedType}</span>
-              <span className="text-xs text-gray-400 truncate">{g.url}</span>
-              <span className={g.valid ? "text-[10px] text-emerald-600" : "text-[10px] text-amber-600"}>{g.valid ? "válido" : "avisos"}</span>
+              <span className="text-ink truncate">{g.selectedType}</span>
+              <span className="text-xs text-ink-faint truncate">{g.url}</span>
+              <span className={g.valid ? "text-[10px] text-accent-ink" : "text-[10px] text-accent-ink"}>{g.valid ? "válido" : "avisos"}</span>
             </li>
           ))}
         </ul>
@@ -498,15 +498,15 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
   const renderContenido = () => (
     <section className="space-y-4">
-      <SectionTitle icon={<PenLine className="h-4 w-4" />}>Contenido <span className="text-gray-400 font-normal text-sm">(últimas generaciones)</span></SectionTitle>
+      <SectionTitle icon={<PenLine className="h-4 w-4" />}>Contenido <span className="text-ink-faint font-normal text-sm">(últimas generaciones)</span></SectionTitle>
       {data.contenido.length === 0 ? (
-        <p className="text-sm text-gray-500">Sin contenidos generados todavía.</p>
+        <p className="text-sm text-ink-soft">Sin contenidos generados todavía.</p>
       ) : (
         <ul className="space-y-1 text-sm">
           {data.contenido.map((g, i) => (
             <li key={i} className="flex items-center justify-between gap-2 border-b border-line pb-1 last:border-0">
-              <span className="text-gray-900 truncate">{g.topic}</span>
-              <span className="text-xs text-gray-400">{fmtDate(g.createdAt)}</span>
+              <span className="text-ink truncate">{g.topic}</span>
+              <span className="text-xs text-ink-faint">{fmtDate(g.createdAt)}</span>
             </li>
           ))}
         </ul>
@@ -517,10 +517,10 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
   const renderGoogle = () => (
     <section className="space-y-4">
       <SectionTitle icon={<Globe className="h-4 w-4" />}>
-        Google (Search Console) <span className="text-gray-400 font-normal text-sm">(snapshot {data.google?.month ?? "—"}, últimos {data.google?.rangeDays ?? "—"} días)</span>
+        Google (Search Console) <span className="text-ink-faint font-normal text-sm">(snapshot {data.google?.month ?? "—"}, últimos {data.google?.rangeDays ?? "—"} días)</span>
       </SectionTitle>
       {!data.google ? (
-        <p className="text-sm text-gray-500">Sin datos de Search Console. Conecta la propiedad desde el módulo Google.</p>
+        <p className="text-sm text-ink-soft">Sin datos de Search Console. Conecta la propiedad desde el módulo Google.</p>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -531,29 +531,29 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           </div>
           {data.google.topQueries.length > 0 && (
             <ul className="text-sm space-y-1">
-              <p className="text-xs text-gray-400">Top queries reales:</p>
+              <p className="text-xs text-ink-faint">Top queries reales:</p>
               {data.google.topQueries.map((q, i) => (
                 <li key={i} className="flex items-center justify-between gap-2 border-b border-line pb-1 last:border-0">
-                  <span className="text-gray-900 truncate">{q.query}</span>
-                  <span className="text-xs text-gray-400">{fmtInt(q.clicks)} clics · pos. {q.position.toFixed(1)}</span>
+                  <span className="text-ink truncate">{q.query}</span>
+                  <span className="text-xs text-ink-faint">{fmtInt(q.clicks)} clics · pos. {q.position.toFixed(1)}</span>
                 </li>
               ))}
             </ul>
           )}
           {data.google.ga4 && (
             <div className="pt-3 border-t border-line space-y-3">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Google Analytics (GA4)</p>
+              <p className="text-xs font-semibold text-ink-soft uppercase tracking-wide">Google Analytics (GA4)</p>
               <div className="grid grid-cols-2 gap-4">
                 <Stat label="Sesiones" value={fmtInt(data.google.ga4.sessions)} />
                 <Stat label="Conversiones" value={fmtInt(data.google.ga4.conversions)} />
               </div>
               {data.google.ga4.topChannels.length > 0 && (
                 <ul className="text-sm space-y-1">
-                  <p className="text-xs text-gray-400">Canales de tráfico principales:</p>
+                  <p className="text-xs text-ink-faint">Canales de tráfico principales:</p>
                   {data.google.ga4.topChannels.map((c, i) => (
                     <li key={i} className="flex items-center justify-between gap-2 border-b border-line pb-1 last:border-0">
-                      <span className="text-gray-900">{c.channel}</span>
-                      <span className="text-xs text-gray-400">{fmtInt(c.sessions)} sesiones</span>
+                      <span className="text-ink">{c.channel}</span>
+                      <span className="text-xs text-ink-faint">{fmtInt(c.sessions)} sesiones</span>
                     </li>
                   ))}
                 </ul>
@@ -568,18 +568,18 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
   const renderCanibalizaciones = () => (
     <section className="space-y-4">
       <SectionTitle icon={<GitBranch className="h-4 w-4" />}>
-        Canibalizaciones <span className="text-gray-400 font-normal text-sm">(últimos 90 días, Search Console)</span>
+        Canibalizaciones <span className="text-ink-faint font-normal text-sm">(últimos 90 días, Search Console)</span>
       </SectionTitle>
       {!data.canibalizaciones || data.canibalizaciones.count === 0 ? (
-        <p className="text-sm text-gray-500">No se detectan canibalizaciones o no hay conexión con Search Console.</p>
+        <p className="text-sm text-ink-soft">No se detectan canibalizaciones o no hay conexión con Search Console.</p>
       ) : (
         <>
           <Stat label="Queries canibalizadas" value={String(data.canibalizaciones.count)} />
           <ul className="text-sm space-y-1">
             {data.canibalizaciones.top.map((c, i) => (
               <li key={i} className="flex items-center justify-between gap-2 border-b border-line pb-1 last:border-0">
-                <span className="text-gray-900 truncate">“{c.query}”</span>
-                <span className="text-xs text-gray-400">{c.urls} URLs · {fmtInt(c.clicks)} clics</span>
+                <span className="text-ink truncate">“{c.query}”</span>
+                <span className="text-xs text-ink-faint">{c.urls} URLs · {fmtInt(c.clicks)} clics</span>
               </li>
             ))}
           </ul>
@@ -592,19 +592,19 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
     if (!data.project.isLocalBusiness) return null;
     return (
       <section className="space-y-4">
-        <SectionTitle icon={<MapPin className="h-4 w-4" />}>SEO Local <span className="text-gray-400 font-normal text-sm">(Geogrid)</span></SectionTitle>
+        <SectionTitle icon={<MapPin className="h-4 w-4" />}>SEO Local <span className="text-ink-faint font-normal text-sm">(Geogrid)</span></SectionTitle>
         {!data.geogrid || data.geogrid.foundCount == null ? (
-          <p className="text-sm text-gray-500">Sin geogrids completados hasta este mes.</p>
+          <p className="text-sm text-ink-soft">Sin geogrids completados hasta este mes.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <GeogridMap centerLat={data.geogrid.centerLat} centerLng={data.geogrid.centerLng} radiusKm={data.geogrid.radiusKm} points={(data.geogrid.points ?? []).map((p) => ({ row: p.row, col: p.col, lat: p.lat, lng: p.lng, position: p.position, title: null }))} keyword={data.geogrid.keyword} />
-              <div className="flex flex-wrap items-center gap-2 text-[10px] text-gray-400">
-                <span className="flex items-center gap-0.5"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Top 3</span>
-                <span className="flex items-center gap-0.5"><span className="h-2.5 w-2.5 rounded-full bg-amber-500" /> 4–10</span>
-                <span className="flex items-center gap-0.5"><span className="h-2.5 w-2.5 rounded-full bg-orange-400" /> 11–20</span>
-                <span className="flex items-center gap-0.5"><span className="h-2.5 w-2.5 rounded-full bg-red-500" /> +20</span>
-                <span className="flex items-center gap-0.5"><span className="h-2.5 w-2.5 rounded-full bg-gray-400" /> No aparece</span>
+              <div className="flex flex-wrap items-center gap-2 text-[10px] text-ink-faint">
+                <span className="flex items-center gap-0.5"><span className="h-2.5 w-2.5 rounded-full bg-brand-500" /> Top 3</span>
+                <span className="flex items-center gap-0.5"><span className="h-2.5 w-2.5 rounded-full bg-brand-300" /> 4–10</span>
+                <span className="flex items-center gap-0.5"><span className="h-2.5 w-2.5 rounded-full bg-brand-100" /> 11–20</span>
+                <span className="flex items-center gap-0.5"><span className="h-2.5 w-2.5 rounded-full bg-alert" /> +20</span>
+                <span className="flex items-center gap-0.5"><span className="h-2.5 w-2.5 rounded-full bg-ink-faint" /> No aparece</span>
               </div>
             </div>
             <div className="space-y-4">
@@ -613,7 +613,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                 <Stat label="Posición media" value={data.geogrid.averagePosition != null ? data.geogrid.averagePosition.toFixed(1) : "—"} />
                 <Stat label="Rejilla" value={`${data.geogrid.gridSize}×${data.geogrid.gridSize}`} sub={`radio ${data.geogrid.radiusKm} km`} />
               </div>
-              <p className="text-xs text-gray-400">«{data.geogrid.keyword}» · Geogrid completado el {fmtDate(data.geogrid.completedAt)}</p>
+              <p className="text-xs text-ink-faint">«{data.geogrid.keyword}» · Geogrid completado el {fmtDate(data.geogrid.completedAt)}</p>
             </div>
           </div>
         )}
@@ -623,9 +623,9 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
   const renderLinks = () => (
     <section className="space-y-4">
-      <SectionTitle icon={<Network className="h-4 w-4" />}>Enlaces internos <span className="text-gray-400 font-normal text-sm">(PageRank, última auditoría)</span></SectionTitle>
+      <SectionTitle icon={<Network className="h-4 w-4" />}>Enlaces internos <span className="text-ink-faint font-normal text-sm">(PageRank, última auditoría)</span></SectionTitle>
       {!data.links || data.links.pages.length === 0 ? (
-        <p className="text-sm text-gray-500">Sin grafo de enlaces disponible. Ejecuta una auditoría para analizar el enlazado interno.</p>
+        <p className="text-sm text-ink-soft">Sin grafo de enlaces disponible. Ejecuta una auditoría para analizar el enlazado interno.</p>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -635,17 +635,17 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-gray-400 border-b border-line">
+              <thead><tr className="text-left text-ink-faint border-b border-line">
                 <th className="py-2 pr-4 font-medium">URL</th><th className="py-2 pr-4 font-medium text-right">PageRank</th>
                 <th className="py-2 pr-4 font-medium text-right">Entrantes</th><th className="py-2 pr-4 font-medium text-right">Salientes</th>
               </tr></thead>
               <tbody>
                 {data.links.pages.map((p) => (
                   <tr key={p.url} className="border-b border-line last:border-0">
-                    <td className="py-2 pr-4 text-gray-900 max-w-[320px] truncate">{p.url}</td>
-                    <td className="py-2 pr-4 text-right tabular-nums text-gray-900">{(p.pagerank * 100).toFixed(2)}%</td>
-                    <td className="py-2 pr-4 text-right tabular-nums text-gray-500">{p.incoming}</td>
-                    <td className="py-2 pr-4 text-right tabular-nums text-gray-500">{p.outgoing}</td>
+                    <td className="py-2 pr-4 text-ink max-w-[320px] truncate">{p.url}</td>
+                    <td className="py-2 pr-4 text-right tabular-nums text-ink">{(p.pagerank * 100).toFixed(2)}%</td>
+                    <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{p.incoming}</td>
+                    <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{p.outgoing}</td>
                   </tr>
                 ))}
               </tbody>
@@ -658,11 +658,11 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
   const renderCompetitors = () => (
     <section className="space-y-4">
-      <SectionTitle icon={<Target className="h-4 w-4" />}>Competidores <span className="text-gray-400 font-normal text-sm">(Visibilidad, último análisis)</span></SectionTitle>
+      <SectionTitle icon={<Target className="h-4 w-4" />}>Competidores <span className="text-ink-faint font-normal text-sm">(Visibilidad, último análisis)</span></SectionTitle>
 
       {data.competitors.own && (
         <div className="space-y-2 break-inside-avoid">
-          <p className="text-sm font-medium text-gray-700">
+          <p className="text-sm font-medium text-ink-soft">
             Tu visibilidad {data.project.domain ? `· ${data.project.domain}` : ""}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -674,7 +674,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             />
             {data.competitors.own.positionBuckets ? (
               <div className="space-y-1">
-                <div className="text-xs text-gray-500">Fuerza del dominio</div>
+                <div className="text-xs text-ink-soft">Fuerza del dominio</div>
                 <PositionDistribution buckets={data.competitors.own.positionBuckets} avgPosition={data.competitors.own.avgPosition} />
               </div>
             ) : null}
@@ -682,9 +682,9 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           {data.competitors.own.topKeywords && data.competitors.own.topKeywords.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {data.competitors.own.topKeywords.map((k, i) => (
-                <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-background text-gray-600">
+                <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-background text-ink-soft">
                   {k.keyword}
-                  {k.position != null && <span className="text-gray-400">· #{k.position}</span>}
+                  {k.position != null && <span className="text-ink-faint">· #{k.position}</span>}
                 </span>
               ))}
             </div>
@@ -693,22 +693,22 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       )}
 
       {data.competitors.items.length === 0 ? (
-        <p className="text-sm text-gray-500">Sin competidores trackeados.</p>
+        <p className="text-sm text-ink-soft">Sin competidores trackeados.</p>
       ) : (
         <div className="space-y-4">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-gray-400 border-b border-line">
+              <thead><tr className="text-left text-ink-faint border-b border-line">
                 <th className="py-2 pr-4 font-medium">Dominio</th><th className="py-2 pr-4 font-medium text-right">Tráfico orgánico</th>
                 <th className="py-2 pr-4 font-medium text-right">Keywords</th><th className="py-2 pr-4 font-medium">Análisis</th>
               </tr></thead>
               <tbody>
                 {data.competitors.items.map((c) => (
                   <tr key={c.domain} className="border-b border-line last:border-0">
-                    <td className="py-2 pr-4 text-gray-900">{c.domain}</td>
-                    <td className="py-2 pr-4 text-right tabular-nums text-gray-900">{fmtTraffic(c.organicTraffic)}</td>
-                    <td className="py-2 pr-4 text-right tabular-nums text-gray-500">{c.organicKeywords?.toLocaleString("es-ES") ?? "—"}</td>
-                    <td className="py-2 pr-4 text-gray-400">{fmtDate(c.fetchedAt)}</td>
+                    <td className="py-2 pr-4 text-ink">{c.domain}</td>
+                    <td className="py-2 pr-4 text-right tabular-nums text-ink">{fmtTraffic(c.organicTraffic)}</td>
+                    <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{c.organicKeywords?.toLocaleString("es-ES") ?? "—"}</td>
+                    <td className="py-2 pr-4 text-ink-faint">{fmtDate(c.fetchedAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -728,15 +728,15 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
               <div key={c.domain} className="space-y-2 break-inside-avoid">
                 {c.topKeywords && c.topKeywords.length > 0 && (
                   <div>
-                    <p className="text-xs text-gray-500 mb-1.5">
+                    <p className="text-xs text-ink-soft mb-1.5">
                       Top keywords de {c.domain} ({c.topKeywords.length})
                       {c.fetchedAt ? ` · ${fmtDate(c.fetchedAt)}` : ""}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {c.topKeywords.map((k, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-background text-gray-600">
+                        <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-background text-ink-soft">
                           {k.keyword}
-                          {k.position != null && <span className="text-gray-400">· #{k.position}</span>}
+                          {k.position != null && <span className="text-ink-faint">· #{k.position}</span>}
                         </span>
                       ))}
                     </div>
@@ -744,13 +744,13 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                 )}
                 {gap.length > 0 && (
                   <div>
-                    <p className="text-xs text-gray-500 mb-1.5">
+                    <p className="text-xs text-ink-soft mb-1.5">
                       Content gap con {c.domain} ({c.contentGap?.length ?? 0}) — ranquea por estas y tú no
                       {c.contentGapAt ? ` · ${fmtDate(c.contentGapAt)}` : ""}
                       {(c.contentGap?.length ?? 0) > 15 ? " · top 15 por volumen" : ""}
                     </p>
                     <table className="w-full text-xs">
-                      <thead><tr className="text-left text-gray-300 border-b border-line">
+                      <thead><tr className="text-left text-ink-faint border-b border-line">
                         <th className="py-1.5 pr-2 font-medium">Keyword</th>
                         <th className="py-1.5 px-2 font-medium text-right">Vol.</th>
                         <th className="py-1.5 px-2 font-medium text-right">CPC</th>
@@ -761,18 +761,18 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                         {gap.map((k, i) => {
                           const dif = difficulty(k.competition, k.competitionIndex);
                           return (
-                            <tr key={i} className="border-b border-gray-50 align-top">
-                              <td className="py-1.5 pr-2 text-gray-900 font-medium">{k.keyword}</td>
-                              <td className="py-1.5 px-2 text-right tabular-nums text-gray-600">{k.volume != null ? k.volume.toLocaleString("es-ES") : "—"}</td>
-                              <td className="py-1.5 px-2 text-right tabular-nums text-gray-600">{fmtCpc(k.cpc)}</td>
+                            <tr key={i} className="border-b border-line align-top">
+                              <td className="py-1.5 pr-2 text-ink font-medium">{k.keyword}</td>
+                              <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{k.volume != null ? k.volume.toLocaleString("es-ES") : "—"}</td>
+                              <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{fmtCpc(k.cpc)}</td>
                               <td className="py-1.5 px-2 text-right">
                                 <span className={cn("inline-block px-1.5 py-0.5 rounded font-medium", dif.cls)}>{dif.label}</span>
                               </td>
-                              <td className="py-1.5 px-2 text-gray-500">
+                              <td className="py-1.5 px-2 text-ink-soft">
                                 {k.description ? (
                                   <span className="line-clamp-2">{k.description}</span>
                                 ) : (
-                                  <span className="text-gray-300">—</span>
+                                  <span className="text-ink-faint">—</span>
                                 )}
                               </td>
                             </tr>
@@ -796,14 +796,14 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
   const renderBacklinks = () => (
     <section className="space-y-4">
       <SectionTitle icon={<Anchor className="h-4 w-4" />}>
-        Backlinks <span className="text-gray-400 font-normal text-sm">(último análisis)</span>
+        Backlinks <span className="text-ink-faint font-normal text-sm">(último análisis)</span>
       </SectionTitle>
       {!data.backlinks ? (
-        <p className="text-sm text-gray-500">Sin backlinks analizados todavía. Ejecuta un análisis desde el módulo Backlinks.</p>
+        <p className="text-sm text-ink-soft">Sin backlinks analizados todavía. Ejecuta un análisis desde el módulo Backlinks.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-gray-400 border-b border-line">
+            <thead><tr className="text-left text-ink-faint border-b border-line">
               <th className="py-2 pr-4 font-medium">Dominio</th>
               <th className="py-2 pr-4 font-medium text-right">Autoridad</th>
               <th className="py-2 pr-4 font-medium text-right">Backlinks</th>
@@ -812,26 +812,26 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             <tbody>
               {data.backlinks.own && (
                 <tr className="border-b border-line">
-                  <td className="py-2 pr-4 text-gray-900 font-medium">
-                    {data.project.domain} <span className="text-[10px] text-emerald-700 font-semibold">· TÚ</span>
+                  <td className="py-2 pr-4 text-ink font-medium">
+                    {data.project.domain} <span className="text-[10px] text-accent-ink font-semibold">· TÚ</span>
                   </td>
-                  <td className="py-2 pr-4 text-right tabular-nums text-gray-900">{data.backlinks.own.rank ?? "—"}</td>
-                  <td className="py-2 pr-4 text-right tabular-nums text-gray-500">{data.backlinks.own.backlinksTotal?.toLocaleString("es-ES") ?? "—"}</td>
-                  <td className="py-2 text-right tabular-nums text-gray-500">{data.backlinks.own.referringDomains?.toLocaleString("es-ES") ?? "—"}</td>
+                  <td className="py-2 pr-4 text-right tabular-nums text-ink">{data.backlinks.own.rank ?? "—"}</td>
+                  <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{data.backlinks.own.backlinksTotal?.toLocaleString("es-ES") ?? "—"}</td>
+                  <td className="py-2 text-right tabular-nums text-ink-soft">{data.backlinks.own.referringDomains?.toLocaleString("es-ES") ?? "—"}</td>
                 </tr>
               )}
               {data.backlinks.competitors.map((c) => (
                 <tr key={c.domain} className="border-b border-line last:border-0">
-                  <td className="py-2 pr-4 text-gray-900">{c.domain}</td>
-                  <td className="py-2 pr-4 text-right tabular-nums text-gray-900">{c.rank ?? "—"}</td>
-                  <td className="py-2 pr-4 text-right tabular-nums text-gray-500">{c.backlinksTotal?.toLocaleString("es-ES") ?? "—"}</td>
-                  <td className="py-2 text-right tabular-nums text-gray-500">{c.referringDomains?.toLocaleString("es-ES") ?? "—"}</td>
+                  <td className="py-2 pr-4 text-ink">{c.domain}</td>
+                  <td className="py-2 pr-4 text-right tabular-nums text-ink">{c.rank ?? "—"}</td>
+                  <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{c.backlinksTotal?.toLocaleString("es-ES") ?? "—"}</td>
+                  <td className="py-2 text-right tabular-nums text-ink-soft">{c.referringDomains?.toLocaleString("es-ES") ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
           {data.backlinks.own && (
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="text-xs text-ink-faint mt-2">
               {data.backlinks.own.brokenBacklinks != null && <>{data.backlinks.own.brokenBacklinks} backlinks rotos · </>}
               actualizado el {fmtDate(data.backlinks.own.fetchedAt)}.
             </p>
@@ -843,28 +843,28 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
   const renderTfidf = () => (
     <section className="space-y-4">
-      <SectionTitle icon={<Hash className="h-4 w-4" />}>TF-IDF <span className="text-gray-400 font-normal text-sm">(términos, temas y encabezados del top-10 orgánico)</span></SectionTitle>
+      <SectionTitle icon={<Hash className="h-4 w-4" />}>TF-IDF <span className="text-ink-faint font-normal text-sm">(términos, temas y encabezados del top-10 orgánico)</span></SectionTitle>
       {data.tfidf.length === 0 ? (
-        <p className="text-sm text-gray-500">Sin estudios TF-IDF todavía.</p>
+        <p className="text-sm text-ink-soft">Sin estudios TF-IDF todavía.</p>
       ) : (
         <div className="space-y-6">
           {data.tfidf.map((t) => (
             <div key={t.keyword} className="space-y-3 break-inside-avoid">
-              <p className="text-sm font-medium text-gray-700">
-                «{t.keyword}» <span className="text-gray-400 font-normal">· {fmtDate(t.updatedAt)}</span>
+              <p className="text-sm font-medium text-ink-soft">
+                «{t.keyword}» <span className="text-ink-faint font-normal">· {fmtDate(t.updatedAt)}</span>
               </p>
 
               {t.competitors.length > 0 && (
                 <div>
-                  <p className="text-xs text-gray-500 mb-1.5">Cómo lo muestran tus competidores en Google (top-10) — referencia de copy</p>
+                  <p className="text-xs text-ink-soft mb-1.5">Cómo lo muestran tus competidores en Google (top-10) — referencia de copy</p>
                   <table className="w-full text-xs">
                     <tbody>
                       {t.competitors.map((c, i) => (
-                        <tr key={i} className="border-b border-gray-50 align-top">
-                          <td className="py-1.5 pr-2 text-gray-400 tabular-nums w-8 shrink-0">#{c.position ?? i + 1}</td>
+                        <tr key={i} className="border-b border-line align-top">
+                          <td className="py-1.5 pr-2 text-ink-faint tabular-nums w-8 shrink-0">#{c.position ?? i + 1}</td>
                           <td className="py-1.5 pr-2 space-y-0.5">
-                            <p className="text-gray-900 font-medium line-clamp-1">{c.title || c.url}</p>
-                            {c.description && <p className="text-gray-500 line-clamp-2">{c.description}</p>}
+                            <p className="text-ink font-medium line-clamp-1">{c.title || c.url}</p>
+                            {c.description && <p className="text-ink-soft line-clamp-2">{c.description}</p>}
                           </td>
                         </tr>
                       ))}
@@ -875,11 +875,11 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
               {t.terms.length > 0 && (
                 <div>
-                  <p className="text-xs text-gray-500 mb-1.5">Términos TF-IDF ({t.terms.length})</p>
+                  <p className="text-xs text-ink-soft mb-1.5">Términos TF-IDF ({t.terms.length})</p>
                   <div className="flex flex-wrap gap-1.5">
                     {t.terms.map((term, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-background text-gray-600">
-                        {term.term} <span className="text-gray-400">· {term.tfidf.toFixed(2)}</span>
+                      <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-background text-ink-soft">
+                        {term.term} <span className="text-ink-faint">· {term.tfidf.toFixed(2)}</span>
                       </span>
                     ))}
                   </div>
@@ -888,11 +888,11 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
               {t.headingTerms.length > 0 && (
                 <div>
-                  <p className="text-xs text-gray-500 mb-1.5">Palabras más frecuentes en encabezados ({t.headingTerms.length})</p>
+                  <p className="text-xs text-ink-soft mb-1.5">Palabras más frecuentes en encabezados ({t.headingTerms.length})</p>
                   <div className="flex flex-wrap gap-1.5">
                     {t.headingTerms.map((h, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-700">
-                        {h.term} <span className="text-indigo-400">· {h.count}</span>
+                      <span key={i} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-accent-tint text-accent-ink">
+                        {h.term} <span className="text-accent-ink">· {h.count}</span>
                       </span>
                     ))}
                   </div>
@@ -901,17 +901,17 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
               {t.topics.length > 0 && (
                 <div>
-                  <p className="text-xs text-gray-500 mb-1.5">Temas (H2/H3) del top-10 ({t.topics.length})</p>
+                  <p className="text-xs text-ink-soft mb-1.5">Temas (H2/H3) del top-10 ({t.topics.length})</p>
                   <table className="w-full text-sm">
-                    <thead><tr className="text-left text-gray-400 border-b border-line">
+                    <thead><tr className="text-left text-ink-faint border-b border-line">
                       <th className="py-1.5 pr-4 font-medium">Encabezado</th>
                       <th className="py-1.5 pr-4 font-medium text-right">Páginas que lo cubren</th>
                     </tr></thead>
                     <tbody>
                       {t.topics.map((topic, i) => (
                         <tr key={i} className="border-b border-line last:border-0">
-                          <td className="py-1.5 pr-4 text-gray-900">{topic.text}</td>
-                          <td className="py-1.5 pr-4 text-right tabular-nums text-gray-500">{topic.coverage}</td>
+                          <td className="py-1.5 pr-4 text-ink">{topic.text}</td>
+                          <td className="py-1.5 pr-4 text-right tabular-nums text-ink-soft">{topic.coverage}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -921,8 +921,8 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
               {t.sources.length > 0 && (
                 <div>
-                  <p className="text-xs text-gray-500 mb-1.5">URLs analizadas ({t.sources.length})</p>
-                  <ul className="text-xs text-gray-500 space-y-0.5">
+                  <p className="text-xs text-ink-soft mb-1.5">URLs analizadas ({t.sources.length})</p>
+                  <ul className="text-xs text-ink-soft space-y-0.5">
                     {t.sources.map((url) => (
                       <li key={url} className="truncate">{url}</li>
                     ))}
@@ -938,7 +938,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
   const renderCosts = () => (
     <section className="space-y-4">
-      <SectionTitle icon={<Wallet className="h-4 w-4" />}>Coste del mes <span className="text-gray-400 font-normal text-sm">({data.monthLabel})</span></SectionTitle>
+      <SectionTitle icon={<Wallet className="h-4 w-4" />}>Coste del mes <span className="text-ink-faint font-normal text-sm">({data.monthLabel})</span></SectionTitle>
       <div className="grid grid-cols-1 gap-4">
         <Stat label="Gasto en APIs" value={`${data.costs.monthCost.toFixed(2)}$`} sub="DataForSEO + OpenRouter" />
       </div>
@@ -997,27 +997,27 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       <aside className="lg:sticky lg:top-6 self-start space-y-4 print:hidden">
         {/* Navegación de mes a ancho completo (antes compartía fila con el
             botón de imprimir y se cortaba en el aside estrecho). */}
-        <div className="flex items-center gap-1 bg-white border border-line rounded-xl px-1 py-1 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
-          <Link href={data.prevHref} className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-background rounded-lg transition-colors" title="Mes anterior"><ChevronLeft className="h-4 w-4" /></Link>
-          <span className="flex-1 text-sm font-medium text-gray-900 px-2 text-center">{data.monthLabel}</span>
+        <div className="flex items-center gap-1 bg-surface border border-line rounded-xl px-1 py-1 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
+          <Link href={data.prevHref} className="p-1.5 text-ink-soft hover:text-ink hover:bg-background rounded-lg transition-colors" title="Mes anterior"><ChevronLeft className="h-4 w-4" /></Link>
+          <span className="flex-1 text-sm font-medium text-ink px-2 text-center">{data.monthLabel}</span>
           {data.nextHref === null ? (
-            <span className="p-1.5 text-gray-300"><ChevronRight className="h-4 w-4" /></span>
+            <span className="p-1.5 text-ink-faint"><ChevronRight className="h-4 w-4" /></span>
           ) : (
-            <Link href={data.nextHref} className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-background rounded-lg transition-colors" title="Mes siguiente"><ChevronRight className="h-4 w-4" /></Link>
+            <Link href={data.nextHref} className="p-1.5 text-ink-soft hover:text-ink hover:bg-background rounded-lg transition-colors" title="Mes siguiente"><ChevronRight className="h-4 w-4" /></Link>
           )}
         </div>
         <PrintButton className="w-full" projectName={data.project.name} />
 
         {/* Panel de control: secciones activables + reordenables */}
-        <div className="bg-white rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+        <div className="bg-surface rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
           <div className="flex items-center justify-between gap-3 mb-3">
-            <h3 className="text-lg font-bold tracking-tight text-gray-900">Secciones del informe</h3>
+            <h3 className="text-lg font-bold tracking-tight text-ink">Secciones del informe</h3>
             <button type="button" onClick={save} disabled={saving} className="shrink-0 bg-brand text-white text-sm font-medium rounded-xl px-4 py-2 hover:bg-brand-strong transition-colors disabled:opacity-50">
               {saving ? "Guardando…" : "Guardar configuración"}
             </button>
           </div>
           {saved && <Pill tone="success" className="mb-3">Configuración guardada</Pill>}
-          <p className="text-xs text-gray-400 mb-3">
+          <p className="text-xs text-ink-faint mb-3">
             Activa o desactiva cada sección y reordénala con las flechas ↑ ↓ — las activadas se
             agrupan siempre arriba.
           </p>
@@ -1031,7 +1031,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             type="button"
             onClick={reset}
             disabled={resetting || saving}
-            className="mt-3 w-full border-t border-line pt-3 text-xs text-gray-500 hover:text-gray-900 transition-colors disabled:opacity-50"
+            className="mt-3 w-full border-t border-line pt-3 text-xs text-ink-soft hover:text-ink transition-colors disabled:opacity-50"
             title="Borra el override de este proyecto y cae al default configurado en Configuración → Informe"
           >
             {resetting ? "Restableciendo…" : "Restablecer al default global"}
@@ -1040,14 +1040,14 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       </aside>
 
       {/* Hoja del informe — se renderizan las secciones activadas, en el orden elegido */}
-      <div className="bg-white rounded-xl border border-line px-8 py-10 space-y-8 print:border-0 print:rounded-none print:px-0 print:py-0">
+      <div className="bg-surface rounded-xl border border-line px-8 py-10 space-y-8 print:border-0 print:rounded-none print:px-0 print:py-0">
         <div className="border-b border-line pb-5">
-          <div className="flex items-center gap-2 text-gray-400 mb-1">
+          <div className="flex items-center gap-2 text-ink-faint mb-1">
             <FileText className="h-4 w-4" />
             <span className="text-xs uppercase tracking-wide font-medium">Informe SEO</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">{data.project.name}</h1>
-          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-ink">{data.project.name}</h1>
+          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-soft">
             {data.project.domain && <span>{data.project.domain}</span>}
             <span>Periodo: {data.monthLabel}</span>
             <span>Generado el {data.generationDate}</span>
@@ -1058,7 +1058,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           <div key={key}>{dispatch[key]()}</div>
         ))}
 
-        <footer className="border-t border-line pt-4 text-xs text-gray-400 print:text-black">
+        <footer className="border-t border-line pt-4 text-xs text-ink-faint print:text-black">
           Informe generado por Crawlea
           {!data.isCurrentMonth && " · Informe de un mes anterior — los datos de estado (salud técnica, SEO local) reflejan la última medición hasta el fin de ese mes."}
         </footer>

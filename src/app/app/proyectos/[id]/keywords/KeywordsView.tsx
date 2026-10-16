@@ -105,9 +105,9 @@ const INTENT_TONES: Record<string, PillTone> = {
   navegacional: "neutral",
 };
 const COMPETITION_STYLES: Record<string, string> = {
-  HIGH: "text-red-600",
-  MEDIUM: "text-amber-600",
-  LOW: "text-emerald-600",
+  HIGH: "text-alert-ink",
+  MEDIUM: "text-accent-ink",
+  LOW: "text-accent-ink",
 };
 const LIMITS = [10, 30, 50, 100];
 
@@ -121,7 +121,7 @@ function fmtCpc(v: number | string | null): string {
 // tracking: rápido de leer, sin librería de gráficos. El título del <svg>
 // ofrece el detalle (pico mes/dato) al hacer hover. Null/sin datos → "—".
 function SeasonalitySparkline({ points }: { points: number[] | null | undefined }) {
-  if (!points || points.length < 2) return <span className="text-gray-300">—</span>;
+  if (!points || points.length < 2) return <span className="text-ink-faint">—</span>;
   const W = 48;
   const H = 18;
   const min = Math.min(...points);
@@ -139,7 +139,7 @@ function SeasonalitySparkline({ points }: { points: number[] | null | undefined 
     `Actual: ${points[last].toLocaleString("es-ES")} · ` +
     months[((new Date().getMonth() - (last - peakIdx)) % 12 + 12) % 12];
   return (
-    <svg width={W} height={H} className="text-gray-400" role="img" aria-label={label}>
+    <svg width={W} height={H} className="text-ink-faint" role="img" aria-label={label}>
       <title>{label}</title>
       <polyline points={pts} fill="none" stroke="currentColor" strokeWidth={1.25} />
     </svg>
@@ -172,21 +172,21 @@ function StructureTree({ nodes, depth }: { nodes: TreeNode[]; depth: number }) {
     <ul className={cn(depth > 0 && "pl-4 border-l border-line ml-1.5")}>
       {nodes.map((node) => (
         <li key={node.path} className="space-y-1.5">
-          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">{node.segment}</div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">{node.segment}</div>
           {node.page && (
-            <div className="ml-5 bg-white border border-line rounded-xl p-3.5 space-y-2 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
-              <p className="text-sm font-medium text-gray-900">{node.page.h1}</p>
+            <div className="ml-5 bg-surface border border-line rounded-xl p-3.5 space-y-2 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
+              <p className="text-sm font-medium text-ink">{node.page.h1}</p>
               {node.page.headings.length > 0 && (
-                <ul className="text-xs text-gray-500 space-y-0.5 pl-3">
+                <ul className="text-xs text-ink-soft space-y-0.5 pl-3">
                   {node.page.headings.map((h, i) => (
                     <li key={i} className="border-l border-line pl-2">{h}</li>
                   ))}
                 </ul>
               )}
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-mono text-[10px] uppercase tracking-wide text-gray-400">{node.page.navLabel}</span>
+                <span className="font-mono text-[10px] uppercase tracking-wide text-ink-faint">{node.page.navLabel}</span>
                 {node.page.keywords.map((k, i) => (
-                  <span key={i} className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-background text-gray-500">{k}</span>
+                  <span key={i} className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-background text-ink-soft">{k}</span>
                 ))}
               </div>
             </div>
@@ -478,7 +478,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
       <div className="space-y-6">
         <button
           onClick={() => setCurrent(null)}
-          className="flex items-center gap-1 -ml-1 px-1.5 py-1 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-background transition-colors"
+          className="flex items-center gap-1 -ml-1 px-1.5 py-1 rounded-lg text-sm text-ink-soft hover:text-ink hover:bg-background transition-colors"
         >
           <ArrowLeft className="h-4 w-4" /> Volver a estudios
         </button>
@@ -486,8 +486,8 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         <div>
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight text-gray-900">{current.name}</h2>
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400 mt-2 tabular-nums">
+              <h2 className="text-xl font-semibold tracking-tight text-ink">{current.name}</h2>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint mt-2 tabular-nums">
                 {current.keywords.length} keywords · {current.languageCode.toUpperCase()}/{current.locationCode} · {new Date(current.createdAt).toLocaleDateString("es-ES")}
               </p>
             </div>
@@ -495,7 +495,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               <button
                 onClick={startEdit}
                 disabled={deletingStudy}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-background disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-lg text-ink-faint hover:text-ink hover:bg-background disabled:opacity-50 transition-colors"
                 title="Editar estudio"
               >
                 <Pencil className="h-4 w-4" />
@@ -503,7 +503,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               <button
                 onClick={handleDeleteStudy}
                 disabled={deletingStudy}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                className="p-1.5 rounded-lg text-ink-faint hover:text-alert-ink hover:bg-alert-tint disabled:opacity-50 transition-colors"
                 title="Eliminar estudio"
               >
                 {deletingStudy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -511,40 +511,40 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
             </div>
           </div>
           {current.notes && !editing && (
-            <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{current.notes}</p>
+            <p className="text-sm text-ink-soft mt-2 whitespace-pre-wrap">{current.notes}</p>
           )}
         </div>
 
         {/* Panel inline de edición del estudio */}
         {editing && (
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
             <div className="space-y-1.5">
-              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Nombre del estudio</label>
+              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Nombre del estudio</label>
               <input
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 maxLength={120}
-                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Notas</label>
+              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Notas</label>
               <textarea
                 value={editNotes}
                 onChange={(e) => setEditNotes(e.target.value)}
                 rows={4}
                 maxLength={2000}
                 placeholder="Notas internas sobre este estudio (opcional)..."
-                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Ubicación de la búsqueda</label>
+              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Ubicación de la búsqueda</label>
               <div className="max-w-sm">
                 <LocationPicker value={editLocation} onChange={setEditLocation} />
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-ink-faint">
                 Cambiarla aquí NO recalcula en bloque las keywords ya cacheadas, pero el siguiente
                 “Lanzar / re-procesar análisis” propagará la nueva ubicación al Rank Tracking
                 (reemplazando las keywords viejas sin histórico).
@@ -562,7 +562,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               <button
                 onClick={() => setEditing(false)}
                 disabled={savingStudy}
-                className="border border-line bg-white text-gray-700 text-sm rounded-xl px-4 py-2 hover:bg-background transition-colors disabled:opacity-50"
+                className="border border-line bg-surface text-ink-soft text-sm rounded-xl px-4 py-2 hover:bg-background transition-colors disabled:opacity-50"
               >
                 Cancelar
               </button>
@@ -571,22 +571,22 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         )}
 
         {/* Buscar keywords relacionadas (Planificador) */}
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
-          <h3 className="text-lg font-bold tracking-tight text-gray-900">Buscar keywords relacionadas</h3>
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
+          <h3 className="text-lg font-bold tracking-tight text-ink">Buscar keywords relacionadas</h3>
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[200px] space-y-1.5">
-              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Keyword semilla</label>
+              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Keyword semilla</label>
               <input
                 type="text"
                 value={seed}
                 onChange={(e) => setSeed(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="abogado de familia"
-                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Nº resultados</label>
+              <label className="block font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">Nº resultados</label>
               <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
                 {LIMITS.map((n) => (
                   <button
@@ -596,8 +596,8 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                     className={cn(
                       "rounded-xl px-3 py-1.5 text-xs font-medium transition-colors",
                       limit === n
-                        ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
-                        : "text-gray-500 hover:text-gray-800"
+                        ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]"
+                        : "text-ink-soft hover:text-ink"
                     )}
                   >
                     {n}
@@ -614,16 +614,16 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               Buscar
             </button>
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-ink-faint">
             Coste estimado de la búsqueda: ~${suggestionsCostUsd(limit).toFixed(2)} (las que añadas después son gratis, ya cacheadas).
           </p>
 
-          {suggError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{suggError}</p>}
+          {suggError && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">{suggError}</p>}
 
           {suggestions.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">{suggestions.length} sugerencias</p>
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">{suggestions.length} sugerencias</p>
                 <button
                   onClick={() => addItems(suggestions)}
                   className="flex items-center gap-1 text-xs font-medium text-brand hover:text-brand-strong"
@@ -634,7 +634,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               <div className="max-h-80 overflow-auto rounded-xl border border-line">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                    <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
                       <th className="py-2.5 px-3 pl-4 font-medium rounded-tl-lg">Keyword</th>
                       <th className="py-2.5 px-3 font-medium w-20">Volumen</th>
                       <th className="py-2.5 px-3 font-medium w-14">Tend.</th>
@@ -650,26 +650,26 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                       const already = inStudy.has(s.keyword);
                       return (
                         <tr key={s.keyword} className="border-b border-line/60 last:border-0 hover:bg-black/[0.025] transition-colors">
-                          <td className="py-2.5 px-3 pl-4 text-gray-900">{s.keyword}</td>
-                          <td className="py-2.5 px-3 text-gray-600 tabular-nums w-20">
-                            {s.searchVolume === null ? <span className="text-gray-300">—</span> : s.searchVolume.toLocaleString("es-ES")}
+                          <td className="py-2.5 px-3 pl-4 text-ink">{s.keyword}</td>
+                          <td className="py-2.5 px-3 text-ink-soft tabular-nums w-20">
+                            {s.searchVolume === null ? <span className="text-ink-faint">—</span> : s.searchVolume.toLocaleString("es-ES")}
                           </td>
                           <td className="py-2.5 px-3 w-14">
                             <SeasonalitySparkline points={s.monthlySearches} />
                           </td>
                           <td className="py-2.5 px-3 w-16">
-                            <span className={cn("text-xs font-medium", COMPETITION_STYLES[s.competition ?? ""] ?? "text-gray-400")}>
+                            <span className={cn("text-xs font-medium", COMPETITION_STYLES[s.competition ?? ""] ?? "text-ink-faint")}>
                               {s.competition ?? "—"}
                             </span>
                           </td>
-                          <td className="py-2.5 px-3 text-gray-600 tabular-nums w-20">{fmtCpc(s.cpc)}</td>
+                          <td className="py-2.5 px-3 text-ink-soft tabular-nums w-20">{fmtCpc(s.cpc)}</td>
                           <td className="py-2.5 px-3 w-24">
                             {(() => {
                               const dif = difficultyBadge(s.difficulty);
                               return dif ? (
                                 <Pill tone={dif.tone} className="px-1.5 text-[11px]">{dif.label}</Pill>
                               ) : (
-                                <span className="text-gray-300 text-xs">—</span>
+                                <span className="text-ink-faint text-xs">—</span>
                               );
                             })()}
                           </td>
@@ -684,7 +684,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                             <button
                               onClick={() => addItems([s])}
                               disabled={already}
-                              className="p-1 rounded-md text-gray-400 hover:text-gray-900 hover:bg-background disabled:text-brand disabled:cursor-default transition-colors"
+                              className="p-1 rounded-md text-ink-faint hover:text-ink hover:bg-background disabled:text-brand disabled:cursor-default transition-colors"
                               title={already ? "Ya en el estudio" : "Añadir al estudio"}
                             >
                               <Plus className="h-4 w-4" />
@@ -701,12 +701,12 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         </div>
 
         {/* Pegar lista (alternativa) */}
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
           <button
             onClick={() => setShowPaste((v) => !v)}
-            className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-ink transition-colors"
           >
-            <ChevronDown className={cn("h-4 w-4 text-gray-400 transition-transform", showPaste && "rotate-180")} />
+            <ChevronDown className={cn("h-4 w-4 text-ink-faint transition-transform", showPaste && "rotate-180")} />
             O pegar una lista de keywords
           </button>
           {showPaste && (
@@ -716,12 +716,12 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                 onChange={(e) => setPasteText(e.target.value)}
                 rows={5}
                 placeholder={"una keyword por línea"}
-                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors font-mono"
+                className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors font-mono"
               />
               <button
                 onClick={handleResolve}
                 disabled={resolving || !pasteText.trim()}
-                className="inline-flex items-center gap-2 border border-line bg-white text-gray-700 text-sm rounded-xl px-4 py-2 hover:bg-background transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 border border-line bg-surface text-ink-soft text-sm rounded-xl px-4 py-2 hover:bg-background transition-colors disabled:opacity-50"
               >
                 {resolving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                 Añadir al estudio
@@ -731,13 +731,13 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         </div>
 
         {/* Tabla de keywords del estudio */}
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold tracking-tight text-gray-900">Keywords del estudio ({current.keywords.length})</h3>
+            <h3 className="text-lg font-bold tracking-tight text-ink">Keywords del estudio ({current.keywords.length})</h3>
             <button
               onClick={exportCsv}
               disabled={current.keywords.length === 0}
-              className="inline-flex items-center gap-1.5 border border-line bg-white text-gray-700 text-xs font-medium rounded-xl px-3 py-1.5 hover:bg-background transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 border border-line bg-surface text-ink-soft text-xs font-medium rounded-xl px-3 py-1.5 hover:bg-background transition-colors disabled:opacity-50"
               title="Exportar a CSV"
             >
               <Download className="h-3.5 w-3.5" />
@@ -747,16 +747,16 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
 
           {current.keywords.length === 0 ? (
             <div className="py-12 text-center">
-              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-ink-faint">
                 <Search className="h-5 w-5" />
               </div>
-              <p className="text-sm text-gray-500">Aún no hay keywords. Busca relacionadas o pega una lista para empezar.</p>
+              <p className="text-sm text-ink-soft">Aún no hay keywords. Busca relacionadas o pega una lista para empezar.</p>
             </div>
           ) : (
             <div className="overflow-x-auto rounded-xl border border-line">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                  <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
                     <th className="py-2.5 px-3 pl-4 font-medium rounded-tl-lg">Keyword</th>
                     <th className="py-2.5 px-3 font-medium">Volumen</th>
                     <th className="py-2.5 px-3 font-medium">Tend.</th>
@@ -773,26 +773,26 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                 <tbody>
                   {current.keywords.map((kw) => (
                     <tr key={kw.id} className="border-b border-line/60 last:border-0 hover:bg-black/[0.025] transition-colors">
-                      <td className="py-2.5 px-3 pl-4 text-gray-900">{kw.keyword}</td>
-                      <td className="py-2.5 px-3 text-gray-700 tabular-nums">
-                        {kw.searchVolume === null ? <span className="text-gray-300">—</span> : kw.searchVolume.toLocaleString("es-ES")}
+                      <td className="py-2.5 px-3 pl-4 text-ink">{kw.keyword}</td>
+                      <td className="py-2.5 px-3 text-ink-soft tabular-nums">
+                        {kw.searchVolume === null ? <span className="text-ink-faint">—</span> : kw.searchVolume.toLocaleString("es-ES")}
                       </td>
                       <td className="py-2.5 px-3">
                         <SeasonalitySparkline points={kw.monthlySearches} />
                       </td>
                       <td className="py-2.5 px-3">
-                        <span className={cn("text-xs font-medium", COMPETITION_STYLES[kw.competition ?? ""] ?? "text-gray-400")}>
+                        <span className={cn("text-xs font-medium", COMPETITION_STYLES[kw.competition ?? ""] ?? "text-ink-faint")}>
                           {kw.competition ?? "—"}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-gray-600 tabular-nums">{fmtCpc(kw.cpc)}</td>
+                      <td className="py-2.5 px-3 text-ink-soft tabular-nums">{fmtCpc(kw.cpc)}</td>
                       <td className="py-2.5 px-3">
                         {(() => {
                           const dif = difficultyBadge(kw.difficulty);
                           return dif ? (
                             <Pill tone={dif.tone} className="px-1.5 text-[11px]">{dif.label}</Pill>
                           ) : (
-                            <span className="text-gray-300">—</span>
+                            <span className="text-ink-faint">—</span>
                           );
                         })()}
                       </td>
@@ -802,11 +802,11 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                             {kw.intent}
                           </Pill>
                         ) : (
-                          <span className="text-gray-300">—</span>
+                          <span className="text-ink-faint">—</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-gray-700 tabular-nums">
-                        {kw.rankPosition == null ? <span className="text-gray-300">—</span> : `#${kw.rankPosition}`}
+                      <td className="py-2.5 px-3 text-ink-soft tabular-nums">
+                        {kw.rankPosition == null ? <span className="text-ink-faint">—</span> : `#${kw.rankPosition}`}
                       </td>
                       <td className="py-2.5 px-3">
                         {kw.tfidfAvailable ? (
@@ -817,14 +817,14 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                             Ver →
                           </Link>
                         ) : (
-                          <span className="text-gray-300">—</span>
+                          <span className="text-ink-faint">—</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-right text-gray-700 tabular-nums">{kw.priority}</td>
+                      <td className="py-2.5 px-3 text-right text-ink-soft tabular-nums">{kw.priority}</td>
                       <td className="py-2.5 px-3 pr-4 text-right">
                         <button
                           onClick={() => handleRemove(kw.id)}
-                          className="p-1 rounded-md text-gray-300 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          className="p-1 rounded-md text-ink-faint hover:text-alert-ink hover:bg-alert-tint transition-colors"
                           title="Quitar del estudio"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -841,11 +841,11 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         {/* Estructura de URLs — sección propia, no un botón secundario perdido
             en la tabla: es el resultado final del módulo, sobre el que luego
             trabajan Título/Meta y Contenido. */}
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h3 className="text-lg font-bold tracking-tight text-gray-900">Estructura de URLs</h3>
-              <p className="text-xs text-gray-500 mt-1 max-w-md">
+              <h3 className="text-lg font-bold tracking-tight text-ink">Estructura de URLs</h3>
+              <p className="text-xs text-ink-soft mt-1 max-w-md">
                 Propone, vía IA, un árbol de páginas (slug, H1, encabezados) a partir de las
                 keywords de este estudio — listo como brief para Contenido y Título/Meta.
               </p>
@@ -861,15 +861,15 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
           </div>
 
           {current.keywords.length === 0 && (
-            <p className="text-xs text-gray-400">Añade al menos una keyword al estudio para poder generarla.</p>
+            <p className="text-xs text-ink-faint">Añade al menos una keyword al estudio para poder generarla.</p>
           )}
           {structureError && (
-            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{structureError}</p>
+            <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">{structureError}</p>
           )}
 
           {tree.length > 0 ? (
             <div className="pt-2">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint mb-3">
                 Generada con {current.structureModel} · {new Date(current.updatedAt).toLocaleString("es-ES")}
               </p>
               <StructureTree nodes={tree} depth={0} />
@@ -877,7 +877,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
           ) : (
             current.keywords.length > 0 &&
             !generatingStructure && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-ink-soft">
                 Aún no se ha generado. Pulsa &laquo;Generar estructura de URLs&raquo;.
               </p>
             )
@@ -898,34 +898,34 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
 
       {/* Estudios primero (los datos), alta e importación después */}
       <div>
-        <h3 className="text-lg font-bold tracking-tight text-gray-900 mb-3">Estudios</h3>
+        <h3 className="text-lg font-bold tracking-tight text-ink mb-3">Estudios</h3>
         {loadingStudies ? (
-          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+          <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
         ) : studies.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] py-12 text-center">
-            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] py-12 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-ink-faint">
               <FileSearch className="h-5 w-5" />
             </div>
-            <p className="text-sm text-gray-500">Todavía no hay estudios para este proyecto.</p>
+            <p className="text-sm text-ink-soft">Todavía no hay estudios para este proyecto.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {studies.map((s) => (
-              <div key={s.id} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4">
+              <div key={s.id} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4">
                 {listEditId === s.id ? (
                   <div className="space-y-2">
                     <input
                       type="text"
                       value={listEditName}
                       onChange={(e) => setListEditName(e.target.value)}
-                      className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+                      className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                       placeholder="Nombre del estudio"
                     />
                     <textarea
                       value={listEditNotes}
                       onChange={(e) => setListEditNotes(e.target.value)}
                       rows={2}
-                      className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+                      className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                       placeholder="Notas o descripción breve (opcional)..."
                     />
                     <div className="flex gap-2">
@@ -938,7 +938,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                       </button>
                       <button
                         onClick={() => setListEditId(null)}
-                        className="px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors"
+                        className="px-3 py-1.5 text-xs font-medium text-ink-soft hover:text-ink transition-colors"
                       >
                         Cancelar
                       </button>
@@ -959,21 +959,21 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                       <div className="flex items-center justify-between gap-2">
                         <button
                           onClick={() => openStudy(s.id)}
-                          className="text-sm font-semibold text-gray-900 hover:text-brand transition-colors text-left min-w-0 truncate"
+                          className="text-sm font-semibold text-ink hover:text-brand transition-colors text-left min-w-0 truncate"
                         >
                           {s.name}
                         </button>
                         <div className="flex items-center gap-1 shrink-0">
                           <button
                             onClick={(e) => { e.stopPropagation(); startListEdit(s); }}
-                            className="p-1 rounded-md text-gray-300 hover:text-gray-900 hover:bg-background transition-colors"
+                            className="p-1 rounded-md text-ink-faint hover:text-ink hover:bg-background transition-colors"
                             title="Editar nombre y notas"
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleListDelete(s.id, s.name); }}
-                            className="p-1 rounded-md text-gray-300 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            className="p-1 rounded-md text-ink-faint hover:text-alert-ink hover:bg-alert-tint transition-colors"
                             title="Eliminar estudio"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -981,10 +981,10 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                         </div>
                       </div>
                       {s.notes && (
-                        <p className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2">{s.notes}</p>
+                        <p className="text-xs text-ink-soft mt-1 leading-snug line-clamp-2">{s.notes}</p>
                       )}
                       <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                        <span className="inline-flex items-center rounded-full bg-black/[0.04] px-2 py-0.5 text-[11px] font-medium text-gray-500">
+                        <span className="inline-flex items-center rounded-full bg-black/[0.04] px-2 py-0.5 text-[11px] font-medium text-ink-soft">
                           {s.languageCode.toUpperCase()}/{s.locationCode}
                         </span>
                         {s.hasStructure && (
@@ -992,7 +992,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                             estructura
                           </span>
                         )}
-                        <span className="text-[11px] text-gray-400">
+                        <span className="text-[11px] text-ink-faint">
                           {new Date(s.createdAt).toLocaleDateString("es-ES")}
                         </span>
                       </div>
@@ -1005,15 +1005,15 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         )}
       </div>
 
-      <form onSubmit={handleCreateStudy} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 flex items-end gap-3">
+      <form onSubmit={handleCreateStudy} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 flex items-end gap-3">
         <div className="flex-1 space-y-1.5">
-          <label className="block text-sm font-medium text-gray-600">Nuevo estudio</label>
+          <label className="block text-sm font-medium text-ink-soft">Nuevo estudio</label>
           <input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Briefing Q3 — Cliente X"
-            className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+            className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
         </div>
         <button
@@ -1026,11 +1026,11 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
         </button>
       </form>
 
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-2">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-2">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">O sube un CSV con keywords ya investigadas</h3>
-            <p className="text-xs text-gray-500 mt-1 max-w-2xl">
+            <h3 className="text-sm font-semibold text-ink">O sube un CSV con keywords ya investigadas</h3>
+            <p className="text-xs text-ink-soft mt-1 max-w-2xl">
               Columnas: keyword (obligatoria) y, si las tienes, volumen / competencia / cpc / intención.
               También acepta la exportación tal cual de Google Ads Keyword Planner (&laquo;Historial de
               estadísticas de palabras clave&raquo;). Se usan tal cual vengan en el archivo — no se
@@ -1039,7 +1039,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
           </div>
           <label
             className={cn(
-              "inline-flex items-center gap-2 border border-line bg-white text-gray-700 text-sm rounded-xl px-4 py-2 hover:bg-background transition-colors cursor-pointer shrink-0 font-medium",
+              "inline-flex items-center gap-2 border border-line bg-surface text-ink-soft text-sm rounded-xl px-4 py-2 hover:bg-background transition-colors cursor-pointer shrink-0 font-medium",
               importingFile && "opacity-50 pointer-events-none"
             )}
           >
@@ -1058,7 +1058,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
           </label>
         </div>
         {importFileError && (
-          <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{importFileError}</p>
+          <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">{importFileError}</p>
         )}
       </div>
     </div>

@@ -46,7 +46,7 @@ function ToolbarButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "p-1.5 rounded-lg text-gray-500 hover:bg-black/[0.05] hover:text-gray-900 transition-colors disabled:opacity-40 disabled:hover:bg-transparent",
+        "p-1.5 rounded-lg text-ink-soft hover:bg-black/[0.05] hover:text-ink transition-colors disabled:opacity-40 disabled:hover:bg-transparent",
         active && "bg-brand text-white hover:bg-brand-strong hover:text-white"
       )}
     >
@@ -150,7 +150,7 @@ export default function RichTextEditor({
               type="button"
               title="Color de texto"
               disabled={disabled}
-              className="p-1.5 rounded-lg text-gray-500 hover:bg-black/[0.05] hover:text-gray-900 transition-colors disabled:opacity-40"
+              className="p-1.5 rounded-lg text-ink-soft hover:bg-black/[0.05] hover:text-ink transition-colors disabled:opacity-40"
             >
               <Palette className="h-3.5 w-3.5" />
             </button>
@@ -158,7 +158,7 @@ export default function RichTextEditor({
           <Popover.Portal>
             <Popover.Content
               sideOffset={6}
-              className="z-50 bg-white border border-line rounded-xl shadow-[0_8px_24px_rgba(26,29,26,0.12)] p-2 flex items-center gap-1.5"
+              className="z-50 bg-surface border border-line rounded-xl shadow-[0_8px_24px_rgba(17,20,43,0.12)] p-2 flex items-center gap-1.5"
             >
               {COLOR_SWATCHES.map((c) => (
                 <button
@@ -172,14 +172,14 @@ export default function RichTextEditor({
               ))}
               <label
                 title="Color personalizado"
-                className="h-5 w-5 rounded-full border border-dashed border-gray-300 flex items-center justify-center cursor-pointer overflow-hidden relative"
+                className="h-5 w-5 rounded-full border border-dashed border-line flex items-center justify-center cursor-pointer overflow-hidden relative"
               >
                 <input
                   type="color"
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
                 />
-                <Palette className="h-3 w-3 text-gray-400 pointer-events-none" />
+                <Palette className="h-3 w-3 text-ink-faint pointer-events-none" />
               </label>
             </Popover.Content>
           </Popover.Portal>

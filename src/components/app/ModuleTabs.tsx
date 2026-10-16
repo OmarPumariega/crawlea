@@ -27,8 +27,8 @@ export default function ModuleTabs({ tabs }: { tabs: ModuleTab[] }) {
             className={cn(
               "px-3.5 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors",
               active
-                ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
-                : "text-gray-500 hover:text-gray-800"
+                ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]"
+                : "text-ink-soft hover:text-ink"
             )}
           >
             {t.label}

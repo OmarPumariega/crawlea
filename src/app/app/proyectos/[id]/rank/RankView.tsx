@@ -95,13 +95,13 @@ function dayKey(iso: string): string {
 // explicable y con umbrales fijos, nunca una caja negra. "Sin chequeo" (n/s)
 // se distingue de "chequeado pero fuera del depth" (—): son señales distintas.
 function positionCell(position: number | null | undefined, checked: boolean): { bg: string; text: string; label: string } {
-  if (!checked) return { bg: "bg-background", text: "text-gray-300", label: "n/s" };
-  if (position === null || position === undefined) return { bg: "bg-red-50", text: "text-red-500", label: "—" };
-  if (position <= 3) return { bg: "bg-emerald-200", text: "text-emerald-900", label: String(position) };
-  if (position <= 10) return { bg: "bg-emerald-50", text: "text-emerald-700", label: String(position) };
-  if (position <= 20) return { bg: "bg-amber-50", text: "text-amber-700", label: String(position) };
-  if (position <= 50) return { bg: "bg-orange-50", text: "text-orange-700", label: String(position) };
-  return { bg: "bg-red-50", text: "text-red-600", label: String(position) };
+  if (!checked) return { bg: "bg-background", text: "text-ink-faint", label: "n/s" };
+  if (position === null || position === undefined) return { bg: "bg-alert-tint", text: "text-alert-ink", label: "—" };
+  if (position <= 3) return { bg: "bg-brand-100", text: "text-brand-700", label: String(position) };
+  if (position <= 10) return { bg: "bg-accent-tint", text: "text-accent-ink", label: String(position) };
+  if (position <= 20) return { bg: "bg-accent-tint", text: "text-accent-ink", label: String(position) };
+  if (position <= 50) return { bg: "bg-surface-muted", text: "text-ink-soft", label: String(position) };
+  return { bg: "bg-alert-tint", text: "text-alert-ink", label: String(position) };
 }
 
 // Sparkline SVG inline (sin librería de gráficos, mismo principio "sin
@@ -112,7 +112,7 @@ function PositionSparkline({ positions }: { positions: RankPosition[] }) {
     .filter((p) => p.position !== null)
     .map((p) => p.position as number);
   if (data.length < 2) {
-    return <span className="text-xs text-gray-400">Sin histórico suficiente</span>;
+    return <span className="text-xs text-ink-faint">Sin histórico suficiente</span>;
   }
 
   const W = 240;
@@ -128,10 +128,10 @@ function PositionSparkline({ positions }: { positions: RankPosition[] }) {
 
   const points = data.map((v, i) => `${x(i)},${y(v)}`).join(" ");
   return (
-    <svg width={W} height={H} className="text-gray-300">
+    <svg width={W} height={H} className="text-ink-faint">
       <polyline points={points} fill="none" stroke="currentColor" strokeWidth={1.5} />
       {data.map((v, i) => (
-        <circle key={i} cx={x(i)} cy={y(v)} r={2.5} className="fill-gray-700" />
+        <circle key={i} cx={x(i)} cy={y(v)} r={2.5} className="fill-brand-500" />
       ))}
     </svg>
   );
@@ -183,16 +183,16 @@ function TrendIcon({ kw }: { kw: RankKeyword }) {
   // lastPosition ya es [0]; usamos positions para el anterior.
   const prev = kw.positions[1]?.position ?? null;
   if (last === null || prev === null) {
-    return <Minus className="h-3.5 w-3.5 text-gray-300" />;
+    return <Minus className="h-3.5 w-3.5 text-ink-faint" />;
   }
   if (last < prev) {
     // número más bajo = mejor → flecha verde "subiendo"
-    return <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />;
+    return <TrendingUp className="h-3.5 w-3.5 text-accent-ink" />;
   }
   if (last > prev) {
-    return <TrendingDown className="h-3.5 w-3.5 text-red-600" />;
+    return <TrendingDown className="h-3.5 w-3.5 text-alert-ink" />;
   }
-  return <Minus className="h-3.5 w-3.5 text-gray-400" />;
+  return <Minus className="h-3.5 w-3.5 text-ink-faint" />;
 }
 
 export default function RankView({ projectId }: { projectId: string }) {
@@ -711,7 +711,7 @@ export default function RankView({ projectId }: { projectId: string }) {
       <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <h3 className="text-lg font-bold tracking-tight text-gray-900">
+            <h3 className="text-lg font-bold tracking-tight text-ink">
               Keywords en seguimiento
             </h3>
             {keywords.length > 0 && (
@@ -721,12 +721,12 @@ export default function RankView({ projectId }: { projectId: string }) {
             )}
           </div>
           {keywords.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[11px] text-gray-500">
-              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-emerald-200" />Top 3</span>
-              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-emerald-50 border border-emerald-100" />Top 10</span>
-              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-amber-50 border border-amber-100" />11-20</span>
-              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-orange-50 border border-orange-100" />21-50</span>
-              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-red-50 border border-red-100" />&gt;50 / fuera</span>
+            <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[11px] text-ink-soft">
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-brand-100" />Top 3</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-accent-tint border border-brand-100" />Top 10</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-accent-tint border border-brand-100" />11-20</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-surface-muted border border-line" />21-50</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-alert-tint border border-alert-tint" />&gt;50 / fuera</span>
               <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[4px] bg-background border border-line" />sin chequeo</span>
             </div>
           )}
@@ -737,7 +737,7 @@ export default function RankView({ projectId }: { projectId: string }) {
             {/* Distribución de posiciones (R4) — bento: total con barra
                 apilada por tramo + los dos tramos que importan como stat. */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-              <div className="lg:col-span-2 bg-brand text-white rounded-2xl p-5 shadow-[0_10px_30px_-10px_rgba(14,107,79,0.55)]">
+              <div className="lg:col-span-2 bg-brand text-white rounded-2xl p-5 shadow-[0_10px_30px_-10px_rgba(79,92,245,0.55)]">
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-[13px] font-medium text-white/60">Keywords en seguimiento</p>
                   <span className="text-xs text-white/40 tabular-nums">
@@ -750,12 +750,12 @@ export default function RankView({ projectId }: { projectId: string }) {
                 {/* Barra apilada: proporción de keywords por tramo de posición */}
                 <div className="mt-5 h-2.5 rounded-full bg-white/15 overflow-hidden flex" aria-hidden="true">
                   {([
-                    [distribution.top3, "bg-signal"],
-                    [distribution.top10, "bg-emerald-400"],
-                    [distribution.top20, "bg-amber-300"],
-                    [distribution.top50, "bg-orange-400"],
-                    [distribution.worse, "bg-red-400"],
-                    [distribution.none, "bg-white/25"],
+                    [distribution.top3, "bg-white"],
+                    [distribution.top10, "bg-signal"],
+                    [distribution.top20, "bg-brand-300"],
+                    [distribution.top50, "bg-white/30"],
+                    [distribution.worse, "bg-alert"],
+                    [distribution.none, "bg-white/15"],
                   ] as const).map(([v, c], i) => (
                     <div
                       key={i}
@@ -765,12 +765,12 @@ export default function RankView({ projectId }: { projectId: string }) {
                   ))}
                 </div>
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-white/60">
-                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-signal" />Top 3 · {distribution.top3}</span>
-                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-400" />Top 10 · {distribution.top10}</span>
-                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-300" />11-20 · {distribution.top20}</span>
-                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-orange-400" />21-50 · {distribution.top50}</span>
-                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-400" />&gt;50 · {distribution.worse}</span>
-                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-white/25" />sin posicionar · {distribution.none}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-white" />Top 3 · {distribution.top3}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-signal" />Top 10 · {distribution.top10}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-brand-300" />11-20 · {distribution.top20}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-white/30" />21-50 · {distribution.top50}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-alert" />&gt;50 · {distribution.worse}</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-white/15" />sin posicionar · {distribution.none}</span>
                 </div>
               </div>
               <StatHero
@@ -787,30 +787,30 @@ export default function RankView({ projectId }: { projectId: string }) {
 
             {/* Barra de herramientas: búsqueda, filtro por grupo y acciones,
                 todo dentro de una tarjeta cohesiva (antes flotaba suelto). */}
-            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-2.5 flex flex-wrap items-center gap-2">
+            <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-2.5 flex flex-wrap items-center gap-2">
               <div className="relative flex-1 min-w-[200px]">
-                <Search className="h-4 w-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="h-4 w-4 text-ink-faint absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Buscar keyword…"
-                  className="w-full border border-line rounded-full pl-10 pr-4 py-2 text-sm bg-background outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 focus:bg-white transition-colors"
+                  className="w-full border border-line rounded-full pl-10 pr-4 py-2 text-sm bg-background outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 focus:bg-surface transition-colors"
                 />
               </div>
               {groups.length > 0 && (
                 <Select.Root value={groupFilter} onValueChange={setGroupFilter}>
-                  <Select.Trigger className="flex items-center justify-between gap-1.5 min-w-[150px] border border-line rounded-full px-4 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                  <Select.Trigger className="flex items-center justify-between gap-1.5 min-w-[150px] border border-line rounded-full px-4 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                     <Select.Value />
-                    <Select.Icon><ChevronDown className="h-3.5 w-3.5 text-gray-400" /></Select.Icon>
+                    <Select.Icon><ChevronDown className="h-3.5 w-3.5 text-ink-faint" /></Select.Icon>
                   </Select.Trigger>
                   <Select.Portal>
-                    <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                    <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                       <Select.Viewport>
-                        <Select.Item value="__all__" className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Todos los grupos</Select.ItemText></Select.Item>
-                        <Select.Item value="__none__" className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Sin grupo</Select.ItemText></Select.Item>
+                        <Select.Item value="__all__" className="px-3 py-1.5 text-xs text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Todos los grupos</Select.ItemText></Select.Item>
+                        <Select.Item value="__none__" className="px-3 py-1.5 text-xs text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Sin grupo</Select.ItemText></Select.Item>
                         {groups.map((g) => (
-                          <Select.Item key={g} value={g} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{g}</Select.ItemText></Select.Item>
+                          <Select.Item key={g} value={g} className="px-3 py-1.5 text-xs text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{g}</Select.ItemText></Select.Item>
                         ))}
                       </Select.Viewport>
                     </Select.Content>
@@ -837,7 +837,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                 <button
                   type="button"
                   onClick={exportCsv}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 border border-line bg-white text-gray-700 text-sm font-medium rounded-full hover:bg-background transition-colors shrink-0"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 border border-line bg-surface text-ink-soft text-sm font-medium rounded-full hover:bg-background transition-colors shrink-0"
                   title="Exportar la tabla visible a CSV"
                 >
                   <Download className="h-4 w-4" />
@@ -850,28 +850,28 @@ export default function RankView({ projectId }: { projectId: string }) {
 
         {loading ? (
           <div className="py-12 flex justify-center">
-            <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+            <Loader2 className="h-5 w-5 animate-spin text-ink-faint" />
           </div>
         ) : keywords.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] py-12 text-center">
-            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] py-12 text-center">
+            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-ink-faint">
               <Search className="h-5 w-5" />
             </span>
-            <p className="text-sm text-gray-500">Aún no sigues ninguna keyword para este proyecto.</p>
+            <p className="text-sm text-ink-soft">Aún no sigues ninguna keyword para este proyecto.</p>
           </div>
         ) : filteredKeywords.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] py-12 text-center">
-            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] py-12 text-center">
+            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-ink-faint">
               <Search className="h-5 w-5" />
             </span>
-            <p className="text-sm text-gray-500">Ninguna keyword coincide con el filtro actual.</p>
+            <p className="text-sm text-ink-soft">Ninguna keyword coincide con el filtro actual.</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] overflow-x-auto">
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
-                  <SortableTh label="Keyword" sortKey="keyword" active={sortKey} dir={sortDir} onClick={toggleSort} className="pl-4 pr-3 sticky left-0 bg-foreground rounded-tl-lg" />
+                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
+                  <SortableTh label="Keyword" sortKey="keyword" active={sortKey} dir={sortDir} onClick={toggleSort} className="pl-4 pr-3 sticky left-0 bg-brand-900 rounded-tl-lg" />
                   <SortableTh label="Volumen" sortKey="volume" active={sortKey} dir={sortDir} onClick={toggleSort} align="right" className="px-3" />
                   {dateColumns.map((d) => (
                     <SortableTh
@@ -903,7 +903,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                     >
                       <td
                         className={cn(
-                          "py-2.5 pl-4 pr-3 sticky left-0 bg-white group-hover:bg-black/[0.025]",
+                          "py-2.5 pl-4 pr-3 sticky left-0 bg-surface group-hover:bg-black/[0.025]",
                           selectedId === kw.id && "bg-brand/5 group-hover:bg-brand/[0.07]",
                           // Cada <td sticky> abre su propio contexto de apilamiento — sin esto,
                           // el desplegable (z-50) de LocationPicker queda tapado por la fila
@@ -914,16 +914,16 @@ export default function RankView({ projectId }: { projectId: string }) {
                         <div className="flex items-center gap-1.5 text-left min-w-0">
                           <ChevronDown
                             className={cn(
-                              "h-3.5 w-3.5 text-gray-300 shrink-0 transition-transform",
-                              selectedId === kw.id && "rotate-180 text-gray-500"
+                              "h-3.5 w-3.5 text-ink-faint shrink-0 transition-transform",
+                              selectedId === kw.id && "rotate-180 text-ink-soft"
                             )}
                           />
                           <TrendIcon kw={kw} />
-                          <span className="text-gray-900 truncate max-w-[220px]" title={kw.keyword}>
+                          <span className="text-ink truncate max-w-[220px]" title={kw.keyword}>
                             {kw.keyword}
                           </span>
                         </div>
-                        <div className="text-[11px] text-gray-400 pl-5 flex items-center gap-1 flex-wrap">
+                        <div className="text-[11px] text-ink-faint pl-5 flex items-center gap-1 flex-wrap">
                           <span className="whitespace-nowrap">
                             {kw.device === "mobile" ? "Móvil" : "Desktop"} · Top-{kw.depth}
                           </span>
@@ -947,7 +947,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                               </span>
                               <button
                                 onClick={() => setEditingLoc(null)}
-                                className="text-gray-400 hover:text-gray-900"
+                                className="text-ink-faint hover:text-ink"
                                 title="Cerrar"
                               >
                                 <X className="h-3 w-3" />
@@ -959,12 +959,12 @@ export default function RankView({ projectId }: { projectId: string }) {
                                 e.stopPropagation();
                                 setEditingLoc(kw.id);
                               }}
-                              className="inline-flex items-center gap-0.5 text-[11px] text-gray-500 hover:text-gray-900 underline decoration-dotted truncate max-w-[160px]"
+                              className="inline-flex items-center gap-0.5 text-[11px] text-ink-soft hover:text-ink underline decoration-dotted truncate max-w-[160px]"
                               title="Cambiar la ubicación de esta keyword"
                             >
                               <MapPin className="h-3 w-3 shrink-0" />
                               <span className="truncate">{kw.locationName ?? "Nacional"}</span>
-                              <Pencil className="h-2.5 w-2.5 text-gray-300" />
+                              <Pencil className="h-2.5 w-2.5 text-ink-faint" />
                             </button>
                           )}
                         </div>
@@ -972,7 +972,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                           <div className="pl-5 flex items-center gap-1.5 mt-0.5">
                             {kw.competitorPositions.length > 0 && (
                               <span
-                                className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/[0.05] text-gray-500"
+                                className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/[0.05] text-ink-soft"
                                 title="Competidores trackeados en este mismo SERP (gratis, expande la fila para verlos)"
                               >
                                 {kw.competitorPositions.length} competidor{kw.competitorPositions.length === 1 ? "" : "es"}
@@ -982,7 +982,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                               <Link
                                 href={`/app/proyectos/${projectId}/contenido/tfidf?keyword=${encodeURIComponent(kw.keyword)}`}
                                 onClick={(e) => e.stopPropagation()}
-                                className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100 font-medium"
+                                className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent-tint text-accent-ink hover:bg-brand-100 font-medium"
                               >
                                 TF-IDF →
                               </Link>
@@ -990,8 +990,8 @@ export default function RankView({ projectId }: { projectId: string }) {
                           </div>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-right text-gray-600 tabular-nums whitespace-nowrap">
-                        {kw.searchVolume === null ? <span className="text-gray-300">—</span> : kw.searchVolume.toLocaleString("es-ES")}
+                      <td className="py-2.5 px-3 text-right text-ink-soft tabular-nums whitespace-nowrap">
+                        {kw.searchVolume === null ? <span className="text-ink-faint">—</span> : kw.searchVolume.toLocaleString("es-ES")}
                         {kw.group && (
                           <div className="mt-0.5">
                             <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-brand/10 text-brand whitespace-nowrap">{kw.group}</span>
@@ -1014,23 +1014,23 @@ export default function RankView({ projectId }: { projectId: string }) {
                           </td>
                         );
                       })}
-                      <td className="py-2.5 px-3 text-right text-gray-900 font-medium tabular-nums whitespace-nowrap">
-                        {kw.lastPosition === null ? <span className="text-gray-300 font-normal">—</span> : `#${kw.lastPosition}`}
+                      <td className="py-2.5 px-3 text-right text-ink font-medium tabular-nums whitespace-nowrap">
+                        {kw.lastPosition === null ? <span className="text-ink-faint font-normal">—</span> : `#${kw.lastPosition}`}
                       </td>
                       <td className="py-2.5 px-3 text-right tabular-nums whitespace-nowrap">
                         {(() => {
                           const d = deltaFor(kw);
-                          if (d === null) return <span className="text-gray-300">—</span>;
-                          if (d === 0) return <span className="text-gray-400">±0</span>;
+                          if (d === null) return <span className="text-ink-faint">—</span>;
+                          if (d === 0) return <span className="text-ink-faint">±0</span>;
                           return (
-                            <span className={d > 0 ? "text-emerald-600" : "text-red-600"}>
+                            <span className={d > 0 ? "text-accent-ink" : "text-alert-ink"}>
                               {d > 0 ? "+" : ""}
                               {d}
                             </span>
                           );
                         })()}
                       </td>
-                      <td className="py-2.5 px-3 text-right text-gray-500 tabular-nums whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-right text-ink-soft tabular-nums whitespace-nowrap">
                         {kw.bestPosition === null ? "—" : `#${kw.bestPosition}`}
                       </td>
                       <td className="py-2.5 pr-4 pl-3" onClick={(e) => e.stopPropagation()}>
@@ -1038,14 +1038,14 @@ export default function RankView({ projectId }: { projectId: string }) {
                           <button
                             onClick={() => handleCheck(kw.id)}
                             disabled={checkingId === kw.id}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 transition-colors disabled:opacity-50"
+                            className="p-1.5 rounded-lg text-ink-faint hover:text-ink transition-colors disabled:opacity-50"
                             title="Comprobar ahora"
                           >
                             {checkingId === kw.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                           </button>
                           <button
                             onClick={() => handleDelete(kw.id)}
-                            className="p-1.5 rounded-lg text-gray-300 hover:text-red-600 transition-colors"
+                            className="p-1.5 rounded-lg text-ink-faint hover:text-alert-ink transition-colors"
                             title="Eliminar"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -1059,7 +1059,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                           <div className="space-y-3">
                             <div className="flex flex-wrap items-center gap-4">
                               <div className="flex items-center gap-2">
-                                <label className="text-xs text-gray-500">Grupo:</label>
+                                <label className="text-xs text-ink-soft">Grupo:</label>
                                 <input
                                   type="text"
                                   defaultValue={kw.group ?? ""}
@@ -1068,21 +1068,21 @@ export default function RankView({ projectId }: { projectId: string }) {
                                   }}
                                   placeholder="Sin grupo"
                                   maxLength={60}
-                                  className="border border-line rounded-xl px-2 py-1 text-xs bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors w-32"
+                                  className="border border-line rounded-xl px-2 py-1 text-xs bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors w-32"
                                 />
                               </div>
                               <div className="flex items-center gap-2">
-                                <label className="text-xs text-gray-500">Frecuencia:</label>
+                                <label className="text-xs text-ink-soft">Frecuencia:</label>
                                 <Select.Root value={kw.frequency} onValueChange={(v) => handleFrequency(kw.id, v)}>
-                                  <Select.Trigger className="flex items-center justify-between gap-1 border border-line rounded-xl px-2 py-1 text-xs bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                                  <Select.Trigger className="flex items-center justify-between gap-1 border border-line rounded-xl px-2 py-1 text-xs bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                                     <Select.Value />
-                                    <ChevronDown className="h-3 w-3 text-gray-400" />
+                                    <ChevronDown className="h-3 w-3 text-ink-faint" />
                                   </Select.Trigger>
                                   <Select.Portal>
-                                    <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                                    <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                                       <Select.Viewport>
                                         {Object.entries(RANK_FREQUENCY_LABELS).map(([v, l]) => (
-                                          <Select.Item key={v} value={v} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{l}</Select.ItemText></Select.Item>
+                                          <Select.Item key={v} value={v} className="px-3 py-1.5 text-xs text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{l}</Select.ItemText></Select.Item>
                                         ))}
                                       </Select.Viewport>
                                     </Select.Content>
@@ -1090,17 +1090,17 @@ export default function RankView({ projectId }: { projectId: string }) {
                                 </Select.Root>
                               </div>
                               <div className="flex items-center gap-2">
-                                <label className="text-xs text-gray-500">Profundidad:</label>
+                                <label className="text-xs text-ink-soft">Profundidad:</label>
                                 <Select.Root value={String(kw.depth)} onValueChange={(v) => handleDepth(kw.id, Number(v))}>
-                                  <Select.Trigger className="flex items-center justify-between gap-1 border border-line rounded-xl px-2 py-1 text-xs bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                                  <Select.Trigger className="flex items-center justify-between gap-1 border border-line rounded-xl px-2 py-1 text-xs bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                                     <Select.Value />
-                                    <ChevronDown className="h-3 w-3 text-gray-400" />
+                                    <ChevronDown className="h-3 w-3 text-ink-faint" />
                                   </Select.Trigger>
                                   <Select.Portal>
-                                    <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                                    <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                                       <Select.Viewport>
                                         {DEPTHS.map((d) => (
-                                          <Select.Item key={d} value={String(d)} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Top-{d}</Select.ItemText></Select.Item>
+                                          <Select.Item key={d} value={String(d)} className="px-3 py-1.5 text-xs text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Top-{d}</Select.ItemText></Select.Item>
                                         ))}
                                       </Select.Viewport>
                                     </Select.Content>
@@ -1108,7 +1108,7 @@ export default function RankView({ projectId }: { projectId: string }) {
                                 </Select.Root>
                               </div>
                               <div className="flex items-center gap-2 min-w-[220px]">
-                                <label className="text-xs text-gray-500 shrink-0">Ubicación:</label>
+                                <label className="text-xs text-ink-soft shrink-0">Ubicación:</label>
                                 <div className="flex-1">
                                   <LocationPicker
                                     value={kw.locationName ? { code: kw.locationCode, name: kw.locationName } : null}
@@ -1117,9 +1117,9 @@ export default function RankView({ projectId }: { projectId: string }) {
                                 </div>
                               </div>
                               <div className="flex items-center gap-1.5 text-xs">
-                                <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                                <span className="text-gray-500">Próximo escaneo:</span>
-                                <span className="text-gray-700 font-medium">
+                                <Calendar className="h-3.5 w-3.5 text-ink-faint" />
+                                <span className="text-ink-soft">Próximo escaneo:</span>
+                                <span className="text-ink-soft font-medium">
                                   {kw.nextScanAt
                                     ? new Date(kw.nextScanAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })
                                     : "Manual — sin auto-escaneo"}
@@ -1128,15 +1128,15 @@ export default function RankView({ projectId }: { projectId: string }) {
                             </div>
 
                             {loadingHistory ? (
-                              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                              <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
                             ) : history.length === 0 ? (
-                              <p className="text-xs text-gray-400">Sin mediciones todavía. Pulsa &laquo;Comprobar ahora&raquo;.</p>
+                              <p className="text-xs text-ink-faint">Sin mediciones todavía. Pulsa &laquo;Comprobar ahora&raquo;.</p>
                             ) : (
                               <div className="space-y-2">
                                 <PositionSparkline positions={history} />
                                 {history[history.length - 1]?.url && (
                                   <div className="flex items-center gap-1.5 text-xs">
-                                    <span className="text-gray-500 shrink-0">URL que posiciona ahora:</span>
+                                    <span className="text-ink-soft shrink-0">URL que posiciona ahora:</span>
                                     <UrlLink url={history[history.length - 1]!.url!} className="text-xs" />
                                   </div>
                                 )}
@@ -1147,8 +1147,8 @@ export default function RankView({ projectId }: { projectId: string }) {
                                   if (!last || (!last.title && !last.description)) return null;
                                   return (
                                     <div className="bg-background border border-line rounded-xl p-2 space-y-0.5">
-                                      {last.title && <p className="text-xs font-medium text-gray-800 line-clamp-1">{last.title}</p>}
-                                      {last.description && <p className="text-xs text-gray-500 line-clamp-2">{last.description}</p>}
+                                      {last.title && <p className="text-xs font-medium text-ink line-clamp-1">{last.title}</p>}
+                                      {last.description && <p className="text-xs text-ink-soft line-clamp-2">{last.description}</p>}
                                     </div>
                                   );
                                 })()}
@@ -1164,20 +1164,20 @@ export default function RankView({ projectId }: { projectId: string }) {
                                               className={cn("border-b border-line/60", hasCopy && "cursor-pointer hover:bg-background")}
                                               onClick={() => hasCopy && setCopyExpanded(open ? null : p.id)}
                                             >
-                                              <td className="py-1 text-gray-500 whitespace-nowrap">{new Date(p.checkedAt).toLocaleString("es-ES")}</td>
-                                              <td className="py-1 text-right text-gray-900 tabular-nums whitespace-nowrap">
-                                                {p.position === null ? <span className="text-gray-300">fuera top-{kw.depth}</span> : `#${p.position}`}
+                                              <td className="py-1 text-ink-soft whitespace-nowrap">{new Date(p.checkedAt).toLocaleString("es-ES")}</td>
+                                              <td className="py-1 text-right text-ink tabular-nums whitespace-nowrap">
+                                                {p.position === null ? <span className="text-ink-faint">fuera top-{kw.depth}</span> : `#${p.position}`}
                                               </td>
                                               <td className="py-1 pl-2 min-w-0">
                                                 {p.url ? (
                                                   <UrlLink url={p.url} className="text-xs" showIcon={false} />
                                                 ) : (
-                                                  <span className="text-gray-300">—</span>
+                                                  <span className="text-ink-faint">—</span>
                                                 )}
                                               </td>
                                               <td className="py-1 pl-1 text-right w-6">
                                                 {hasCopy && (
-                                                  <span className="text-gray-400">
+                                                  <span className="text-ink-faint">
                                                     {open ? <ChevronUp className="h-3 w-3 inline" /> : <ChevronDown className="h-3 w-3 inline" />}
                                                   </span>
                                                 )}
@@ -1186,8 +1186,8 @@ export default function RankView({ projectId }: { projectId: string }) {
                                             {open && hasCopy && (
                                               <tr className="bg-background">
                                                 <td colSpan={4} className="px-2 py-1.5 space-y-0.5">
-                                                  {p.title && <p className="text-xs font-medium text-gray-800">{p.title}</p>}
-                                                  {p.description && <p className="text-xs text-gray-600 leading-relaxed">{p.description}</p>}
+                                                  {p.title && <p className="text-xs font-medium text-ink">{p.title}</p>}
+                                                  {p.description && <p className="text-xs text-ink-soft leading-relaxed">{p.description}</p>}
                                                 </td>
                                               </tr>
                                             )}
@@ -1203,9 +1203,9 @@ export default function RankView({ projectId }: { projectId: string }) {
                             {/* Competidores en el mismo SERP (R1) — coste marginal cero: la
                                 posición ya venía en la respuesta pagada para la keyword propia. */}
                             <div className="pt-2 border-t border-line">
-                              <p className="text-xs font-medium text-gray-600 mb-1.5">Competidores en este SERP</p>
+                              <p className="text-xs font-medium text-ink-soft mb-1.5">Competidores en este SERP</p>
                               {kw.competitorPositions.length === 0 ? (
-                                <p className="text-xs text-gray-400">
+                                <p className="text-xs text-ink-faint">
                                   Sin competidores trackeados todavía (o el último chequeo fue anterior a esta
                                   función) — añádelos en la pestaña Competidores.
                                 </p>
@@ -1222,27 +1222,27 @@ export default function RankView({ projectId }: { projectId: string }) {
                                             className={cn("border-b border-line/60", hasCopy && "cursor-pointer hover:bg-background")}
                                             onClick={() => hasCopy && setCopyExpanded(open ? null : key)}
                                           >
-                                            <td className="py-1 text-gray-700 font-mono">
+                                            <td className="py-1 text-ink-soft font-mono">
                                               {c.domain}
                                               {hasCopy && (
-                                                <span className="ml-1 text-gray-400 align-middle">
+                                                <span className="ml-1 text-ink-faint align-middle">
                                                   {open ? <ChevronUp className="h-3 w-3 inline" /> : <ChevronDown className="h-3 w-3 inline" />}
                                                 </span>
                                               )}
                                             </td>
-                                            <td className="py-1 text-gray-400">
+                                            <td className="py-1 text-ink-faint">
                                               {new Date(c.checkedAt).toLocaleDateString("es-ES")}
                                             </td>
-                                            <td className="py-1 text-right text-gray-900 tabular-nums">
+                                            <td className="py-1 text-right text-ink tabular-nums">
                                               {c.position === null ? (
-                                                <span className="text-gray-300">fuera top-{kw.depth}</span>
+                                                <span className="text-ink-faint">fuera top-{kw.depth}</span>
                                               ) : (
                                                 `#${c.position}`
                                               )}
                                             </td>
                                             <td className="py-1 pl-2 text-right whitespace-nowrap">
                                               {c.position !== null && kw.lastPosition !== null ? (
-                                                <span className={kw.lastPosition < c.position ? "text-emerald-600" : "text-red-600"}>
+                                                <span className={kw.lastPosition < c.position ? "text-accent-ink" : "text-alert-ink"}>
                                                   {kw.lastPosition < c.position ? "vas delante" : "vas detrás"}
                                                 </span>
                                               ) : (
@@ -1253,8 +1253,8 @@ export default function RankView({ projectId }: { projectId: string }) {
                                           {open && hasCopy && (
                                             <tr className="bg-background">
                                               <td colSpan={4} className="px-2 py-1.5 space-y-0.5">
-                                                {c.title && <p className="text-xs font-medium text-gray-800">{c.title}</p>}
-                                                {c.description && <p className="text-xs text-gray-600 leading-relaxed">{c.description}</p>}
+                                                {c.title && <p className="text-xs font-medium text-ink">{c.title}</p>}
+                                                {c.description && <p className="text-xs text-ink-soft leading-relaxed">{c.description}</p>}
                                                 {c.url && (
                                                   <a href={c.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] text-brand hover:underline">
                                                     <span className="truncate max-w-sm">{c.url}</span>
@@ -1288,16 +1288,16 @@ export default function RankView({ projectId }: { projectId: string }) {
           {groups.length > 0 && (
             <div className="flex justify-end">
               <Select.Root value={visibilityGroup} onValueChange={setVisibilityGroup}>
-                <Select.Trigger className="flex items-center justify-between gap-1.5 min-w-[160px] border border-line rounded-xl px-3 py-1.5 text-xs bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                <Select.Trigger className="flex items-center justify-between gap-1.5 min-w-[160px] border border-line rounded-xl px-3 py-1.5 text-xs bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                   <Select.Value />
-                  <Select.Icon><ChevronDown className="h-3.5 w-3.5 text-gray-400" /></Select.Icon>
+                  <Select.Icon><ChevronDown className="h-3.5 w-3.5 text-ink-faint" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                  <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                     <Select.Viewport>
-                      <Select.Item value="__all__" className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Visibilidad: todo el proyecto</Select.ItemText></Select.Item>
+                      <Select.Item value="__all__" className="px-3 py-1.5 text-xs text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Visibilidad: todo el proyecto</Select.ItemText></Select.Item>
                       {groups.map((g) => (
-                        <Select.Item key={g} value={g} className="px-3 py-1.5 text-xs text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Visibilidad: {g}</Select.ItemText></Select.Item>
+                        <Select.Item key={g} value={g} className="px-3 py-1.5 text-xs text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Visibilidad: {g}</Select.ItemText></Select.Item>
                       ))}
                     </Select.Viewport>
                   </Select.Content>
@@ -1309,22 +1309,22 @@ export default function RankView({ projectId }: { projectId: string }) {
         </div>
       )}
       {/* Añadir keyword */}
-      <form onSubmit={handleAdd} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+      <form onSubmit={handleAdd} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Keywords a seguir (una por línea)</label>
+            <label className="block text-sm font-medium text-ink-soft">Keywords a seguir (una por línea)</label>
             <textarea
               value={newKeyword}
               onChange={(e) => setNewKeyword(e.target.value)}
               placeholder={"abogado de familia madrid\nabogado laboralista madrid\nabogado penalista madrid"}
               rows={3}
-              className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors resize-y"
+              className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors resize-y"
             />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Ubicación <span className="text-gray-400 font-normal">(opcional)</span>
+              <label className="block text-sm font-medium text-ink-soft">
+                Ubicación <span className="text-ink-faint font-normal">(opcional)</span>
               </label>
               <LocationPicker
                 value={newLocation}
@@ -1333,34 +1333,34 @@ export default function RankView({ projectId }: { projectId: string }) {
               />
             </div>
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Dispositivo</label>
+              <label className="block text-sm font-medium text-ink-soft">Dispositivo</label>
               <Select.Root value={newDevice} onValueChange={setNewDevice}>
-                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                   <Select.Value />
-                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+                  <Select.Icon><ChevronDown className="h-4 w-4 text-ink-faint" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                  <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                     <Select.Viewport>
-                      <Select.Item value="desktop" className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Desktop</Select.ItemText></Select.Item>
-                      <Select.Item value="mobile" className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Móvil</Select.ItemText></Select.Item>
+                      <Select.Item value="desktop" className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Desktop</Select.ItemText></Select.Item>
+                      <Select.Item value="mobile" className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Móvil</Select.ItemText></Select.Item>
                     </Select.Viewport>
                   </Select.Content>
                 </Select.Portal>
               </Select.Root>
             </div>
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Frecuencia</label>
+              <label className="block text-sm font-medium text-ink-soft">Frecuencia</label>
               <Select.Root value={newFrequency} onValueChange={setNewFrequency}>
-                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                   <Select.Value />
-                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+                  <Select.Icon><ChevronDown className="h-4 w-4 text-ink-faint" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                  <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                     <Select.Viewport>
                       {Object.entries(RANK_FREQUENCY_LABELS).map(([v, l]) => (
-                        <Select.Item key={v} value={v} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{l}</Select.ItemText></Select.Item>
+                        <Select.Item key={v} value={v} className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{l}</Select.ItemText></Select.Item>
                       ))}
                     </Select.Viewport>
                   </Select.Content>
@@ -1368,17 +1368,17 @@ export default function RankView({ projectId }: { projectId: string }) {
               </Select.Root>
             </div>
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700" title="Resultados a rastrear. A mayor depth, más caro.">Profundidad</label>
+              <label className="block text-sm font-medium text-ink-soft" title="Resultados a rastrear. A mayor depth, más caro.">Profundidad</label>
               <Select.Root value={newDepth} onValueChange={setNewDepth}>
-                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                   <Select.Value />
-                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+                  <Select.Icon><ChevronDown className="h-4 w-4 text-ink-faint" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                  <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                     <Select.Viewport>
                       {DEPTHS.map((d) => (
-                        <Select.Item key={d} value={String(d)} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Top-{d}</Select.ItemText></Select.Item>
+                        <Select.Item key={d} value={String(d)} className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>Top-{d}</Select.ItemText></Select.Item>
                       ))}
                     </Select.Viewport>
                   </Select.Content>
@@ -1387,12 +1387,12 @@ export default function RankView({ projectId }: { projectId: string }) {
             </div>
           </div>
         </div>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-ink-faint">
           La ubicación simula la búsqueda desde ese punto (ej. &laquo;Gijón&raquo;) en vez de
           España entera — más fiable para negocios locales. Sin elegir nada, España (nacional).
         </p>
 
-        {error && <p className="text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl">{error}</p>}
+        {error && <p className="text-sm text-accent-ink bg-accent-tint px-3 py-2 rounded-xl">{error}</p>}
         <button
           type="submit"
           disabled={adding}
@@ -1401,10 +1401,10 @@ export default function RankView({ projectId }: { projectId: string }) {
           {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           Añadir a seguimiento
         </button>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-ink-faint">
           {newKeywordCount > 0
-            ? <>Estas {newKeywordCount} keyword(s) costarán <strong className="text-gray-600">~${newKeywordMonthlyCost.toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>
-            : <>Coste por keyword: <strong className="text-gray-600">~${rankMonthlyCostUsd(1, Number(newDepth), newFrequency).toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>}
+            ? <>Estas {newKeywordCount} keyword(s) costarán <strong className="text-ink-soft">~${newKeywordMonthlyCost.toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>
+            : <>Coste por keyword: <strong className="text-ink-soft">~${rankMonthlyCostUsd(1, Number(newDepth), newFrequency).toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).</>}
           {" "}Total del proyecto al añadirlas: ~${(projectMonthlyCost + newKeywordMonthlyCost).toFixed(2)}/mes.
         </p>
       </form>
@@ -1414,26 +1414,26 @@ export default function RankView({ projectId }: { projectId: string }) {
           y quede claro que es la palanca que sincroniza al mismo día TODAS
           las keywords con frecuencia automática del proyecto (ver
           src/lib/rank/job.ts). */}
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-gray-400" />
-          <h3 className="text-sm font-semibold text-gray-900">Escaneo programado del proyecto</h3>
+          <Calendar className="h-4 w-4 text-ink-faint" />
+          <h3 className="text-sm font-semibold text-ink">Escaneo programado del proyecto</h3>
         </div>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-ink-faint">
           Fija una fecha para que TODAS las keywords con frecuencia automática (no manual) del
           proyecto se comprueben el mismo día, y se sigan repitiendo cada cierto tiempo a partir de ahí.
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <Select.Root value={scheduleFrequency} onValueChange={setScheduleFrequency}>
-            <Select.Trigger className="flex items-center justify-between gap-2 w-36 border border-line rounded-xl px-3 py-1.5 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+            <Select.Trigger className="flex items-center justify-between gap-2 w-36 border border-line rounded-xl px-3 py-1.5 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
               <Select.Value />
-              <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+              <Select.Icon><ChevronDown className="h-4 w-4 text-ink-faint" /></Select.Icon>
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+              <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                 <Select.Viewport>
                   {RANK_SCAN_FREQUENCIES.map((v) => (
-                    <Select.Item key={v} value={v} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{RANK_FREQUENCY_LABELS[v]}</Select.ItemText></Select.Item>
+                    <Select.Item key={v} value={v} className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-background"><Select.ItemText>{RANK_FREQUENCY_LABELS[v]}</Select.ItemText></Select.Item>
                   ))}
                 </Select.Viewport>
               </Select.Content>
@@ -1443,13 +1443,13 @@ export default function RankView({ projectId }: { projectId: string }) {
             type="date"
             value={scheduleDate}
             onChange={(e) => setScheduleDate(e.target.value)}
-            className="border border-line rounded-xl px-3 py-1.5 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+            className="border border-line rounded-xl px-3 py-1.5 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
           <button
             type="button"
             onClick={handleSaveSchedule}
             disabled={scheduleSaving || !scheduleDate}
-            className="border border-line bg-white text-gray-700 text-sm font-medium rounded-xl px-3 py-1.5 hover:bg-background transition-colors disabled:opacity-50"
+            className="border border-line bg-surface text-ink-soft text-sm font-medium rounded-xl px-3 py-1.5 hover:bg-background transition-colors disabled:opacity-50"
           >
             {scheduleSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Guardar programación"}
           </button>
@@ -1458,14 +1458,14 @@ export default function RankView({ projectId }: { projectId: string }) {
               type="button"
               onClick={handleClearSchedule}
               disabled={scheduleSaving}
-              className="text-gray-500 text-sm hover:text-red-600 disabled:opacity-50"
+              className="text-ink-soft text-sm hover:text-alert-ink disabled:opacity-50"
             >
               Quitar
             </button>
           )}
         </div>
         {savedSchedule && (
-          <p className="text-xs text-emerald-600">
+          <p className="text-xs text-accent-ink">
             Próximo escaneo programado: {new Date(savedSchedule.date).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
             {" "}· cada {RANK_FREQUENCY_LABELS[savedSchedule.frequency].toLowerCase()}
           </p>
@@ -1474,21 +1474,21 @@ export default function RankView({ projectId }: { projectId: string }) {
 
       {/* Importar desde estudio */}
       {studies.length > 0 && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900">Importar desde un estudio</h3>
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
+          <h3 className="text-sm font-semibold text-ink">Importar desde un estudio</h3>
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[200px] space-y-1">
-              <label className="block text-xs font-medium text-gray-500">Estudio (Módulo 1)</label>
+              <label className="block text-xs font-medium text-ink-soft">Estudio (Módulo 1)</label>
               <Select.Root value={importStudyId} onValueChange={setImportStudyId}>
-                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+                <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
                   <Select.Value placeholder="Selecciona un estudio" />
-                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+                  <Select.Icon><ChevronDown className="h-4 w-4 text-ink-faint" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50 max-h-60">
+                  <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50 max-h-60">
                     <Select.Viewport>
                       {studies.map((s) => (
-                        <Select.Item key={s.id} value={s.id} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background">
+                        <Select.Item key={s.id} value={s.id} className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-background">
                           <Select.ItemText>{s.name} ({s._count.keywords})</Select.ItemText>
                         </Select.Item>
                       ))}
@@ -1501,16 +1501,16 @@ export default function RankView({ projectId }: { projectId: string }) {
               type="button"
               onClick={handleImport}
               disabled={importing}
-              className="inline-flex items-center gap-2 border border-line bg-white text-gray-700 text-sm rounded-xl px-3 py-2 hover:bg-background transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 border border-line bg-surface text-ink-soft text-sm rounded-xl px-3 py-2 hover:bg-background transition-colors disabled:opacity-50"
             >
               {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowDownToLine className="h-4 w-4" />}
               Importar
             </button>
           </div>
           {importStudy && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-ink-faint">
               Importar {importStudy._count.keywords} keywords costará{" "}
-              <strong className="text-gray-600">~${importBatchMonthly.toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).
+              <strong className="text-ink-soft">~${importBatchMonthly.toFixed(2)}/mes</strong> (Top-{newDepth}, {RANK_FREQUENCY_LABELS[newFrequency].toLowerCase()}).
             </p>
           )}
         </div>

@@ -60,7 +60,7 @@ function ImageGrid({
               type="button"
               onClick={() => onDelete(img.id)}
               title="Quitar foto"
-              className="absolute -top-1.5 -right-1.5 bg-white border border-line rounded-full p-0.5 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute -top-1.5 -right-1.5 bg-surface border border-line rounded-full p-0.5 text-ink-faint hover:text-alert-ink opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <X className="h-3 w-3" />
             </button>
@@ -114,7 +114,7 @@ function PendingImagePicker({
               type="button"
               onClick={() => onChange(files.filter((_, idx) => idx !== i))}
               disabled={disabled}
-              className="absolute -top-1.5 -right-1.5 bg-white border border-line rounded-full p-0.5 text-gray-400 hover:text-red-600"
+              className="absolute -top-1.5 -right-1.5 bg-surface border border-line rounded-full p-0.5 text-ink-faint hover:text-alert-ink"
             >
               <X className="h-3 w-3" />
             </button>
@@ -126,7 +126,7 @@ function PendingImagePicker({
             onClick={() => inputRef.current?.click()}
             disabled={disabled}
             title="Adjuntar fotos"
-            className="h-20 w-20 flex items-center justify-center rounded-xl border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 hover:bg-background disabled:opacity-50 transition-colors"
+            className="h-20 w-20 flex items-center justify-center rounded-xl border border-dashed border-line text-ink-faint hover:text-ink-soft hover:border-ink-faint hover:bg-background disabled:opacity-50 transition-colors"
           >
             <ImagePlus className="h-5 w-5" />
           </button>
@@ -185,7 +185,7 @@ function NoteCard({
   const edited = note.updatedAt !== note.createdAt;
 
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] overflow-hidden">
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] overflow-hidden">
       <div className="px-5 py-4 space-y-2">
         {editing ? (
           <div className="space-y-2">
@@ -195,7 +195,7 @@ function NoteCard({
               maxLength={NOTE_TITLE_MAX_LENGTH}
               placeholder="Título (opcional)"
               autoFocus
-              className="w-full border border-line rounded-xl px-3 py-2 text-sm font-medium bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+              className="w-full border border-line rounded-xl px-3 py-2 text-sm font-medium bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
             />
             <RichTextEditor value={draftContent} onChange={setDraftContent} disabled={busy || uploading} />
             <PendingImagePicker
@@ -224,7 +224,7 @@ function NoteCard({
                   setEditing(false);
                 }}
                 disabled={busy || uploading}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:text-gray-900"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-ink-soft hover:text-ink"
               >
                 <X className="h-3.5 w-3.5" />
                 Cancelar
@@ -233,14 +233,14 @@ function NoteCard({
           </div>
         ) : (
           <>
-            {note.title && <p className="text-sm font-semibold tracking-tight text-gray-900">{note.title}</p>}
+            {note.title && <p className="text-sm font-semibold tracking-tight text-ink">{note.title}</p>}
             <div
-              className="tiptap text-sm text-gray-800"
+              className="tiptap text-sm text-ink"
               dangerouslySetInnerHTML={{ __html: note.content }}
             />
             <ImageGrid projectId={projectId} noteId={note.id} images={note.images} />
             <div className="flex items-center justify-between gap-2">
-              <p className="font-mono text-[11px] text-gray-400">
+              <p className="font-mono text-[11px] text-ink-faint">
                 {new Date(note.createdAt).toLocaleDateString("es-ES", {
                   day: "2-digit",
                   month: "short",
@@ -254,7 +254,7 @@ function NoteCard({
                 <button
                   onClick={() => setEditing(true)}
                   disabled={busy}
-                  className="p-1 text-gray-300 hover:text-gray-900 disabled:opacity-50"
+                  className="p-1 text-ink-faint hover:text-ink disabled:opacity-50"
                   title="Editar apunte"
                 >
                   <Pencil className="h-3.5 w-3.5" />
@@ -262,7 +262,7 @@ function NoteCard({
                 <button
                   onClick={onDelete}
                   disabled={busy}
-                  className="p-1 text-gray-300 hover:text-red-600 disabled:opacity-50"
+                  className="p-1 text-ink-faint hover:text-alert-ink disabled:opacity-50"
                   title="Eliminar apunte"
                 >
                   {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
@@ -378,15 +378,15 @@ export default function NotasView({ projectId }: { projectId: string }) {
         description="Apuntes internos del negocio del cliente — acuerdos, contactos, cosas a recordar. No son tareas ni aparecen en el Informe."
       />
 
-      <form onSubmit={handleCreate} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+      <form onSubmit={handleCreate} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Nuevo apunte</label>
+          <label className="block text-sm font-medium text-ink-soft">Nuevo apunte</label>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={NOTE_TITLE_MAX_LENGTH}
             placeholder="Título (opcional)"
-            className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+            className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
           <RichTextEditor
             value={content}
@@ -400,7 +400,7 @@ export default function NotasView({ projectId }: { projectId: string }) {
           disabled={creating}
           remainingSlots={NOTE_IMAGE_MAX_COUNT - pendingFiles.length}
         />
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{error}</p>}
+        {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">{error}</p>}
         <button
           type="submit"
           disabled={creating || !content.replace(/<[^>]*>/g, "").trim()}
@@ -412,14 +412,14 @@ export default function NotasView({ projectId }: { projectId: string }) {
       </form>
 
       {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
       ) : notes.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
           <div className="py-12 text-center">
-            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-ink-faint">
               <StickyNote className="h-5 w-5" />
             </span>
-            <p className="text-sm text-gray-500">Todavía no hay apuntes para este proyecto.</p>
+            <p className="text-sm text-ink-soft">Todavía no hay apuntes para este proyecto.</p>
           </div>
         </div>
       ) : (

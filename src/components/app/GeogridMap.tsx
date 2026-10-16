@@ -27,12 +27,14 @@ export type GeogridMapPoint = {
   top?: MapsTopItem[];
 };
 
+// Escala índigo de la guía (mejor posición = más intenso), coral de alerta
+// para posiciones malas y gris azulado si el negocio no aparece en ese punto.
 function colorFor(position: number | null): string {
-  if (position === null) return "#9ca3af"; // gray-400
-  if (position <= 3) return "#10b981"; // emerald-500
-  if (position <= 10) return "#f59e0b"; // amber-500
-  if (position <= 20) return "#fb923c"; // orange-400
-  return "#ef4444"; // red-500
+  if (position === null) return "#9a9fb5"; // ink-faint
+  if (position <= 3) return "#4f5cf5"; // brand-500
+  if (position <= 10) return "#7381ff"; // brand-300
+  if (position <= 20) return "#c3caff"; // brand-100
+  return "#e8575f"; // alert
 }
 
 export default function GeogridMap({
@@ -121,7 +123,7 @@ export default function GeogridMap({
       // datos todavía.
       L.circle([centerLat, centerLng], {
         radius: radiusKm * 1000,
-        color: "#111827",
+        color: "#11142b",
         weight: 1,
         fillOpacity: 0.03,
         dashArray: "4 4",
@@ -132,7 +134,7 @@ export default function GeogridMap({
       L.marker([centerLat, centerLng], {
         icon: L.divIcon({
           className: "",
-          html: `<div style="width:14px;height:14px;border-radius:9999px;background:#111827;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div>`,
+          html: `<div style="width:14px;height:14px;border-radius:9999px;background:#11142b;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div>`,
           iconSize: [14, 14],
           iconAnchor: [7, 7],
         }),

@@ -136,12 +136,12 @@ export default function AuthPanel({ variant }: { variant: "acceso" | "registro" 
             <Logo />
           </div>
 
-          <div className="rounded-2xl border border-line bg-white p-8 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_16px_40px_-24px_rgba(26,29,26,0.25)]">
+          <div className="rounded-2xl border border-line bg-surface p-8 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_16px_40px_-24px_rgba(17,20,43,0.25)]">
             <div className="mb-6">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
                 {esRegistro ? "Registro" : "Acceso"}
               </p>
-              <h2 className="text-xl font-semibold text-gray-900 mt-1">
+              <h2 className="text-xl font-semibold text-ink mt-1">
                 {esRegistro ? "Crear tu cuenta" : "Iniciar sesión"}
               </h2>
             </div>
@@ -149,7 +149,7 @@ export default function AuthPanel({ variant }: { variant: "acceso" | "registro" 
             <button
               onClick={handleGoogle}
               disabled={googleLoading}
-              className="w-full py-2.5 px-4 border border-line bg-white text-gray-800 text-sm font-medium rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 transition-colors active:scale-[0.99]"
+              className="w-full py-2.5 px-4 border border-line bg-surface text-ink text-sm font-medium rounded-xl hover:bg-surface-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 transition-colors active:scale-[0.99]"
             >
               {googleLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -177,7 +177,7 @@ export default function AuthPanel({ variant }: { variant: "acceso" | "registro" 
             </button>
 
             {esRegistro && (
-              <p className="mt-3 text-xs text-gray-500 leading-relaxed">
+              <p className="mt-3 text-xs text-ink-soft leading-relaxed">
                 Al continuar aceptas los términos del servicio. Plan gratis, sin
                 tarjeta: crea tu primer proyecto y pruébalo todo.
               </p>
@@ -186,11 +186,11 @@ export default function AuthPanel({ variant }: { variant: "acceso" | "registro" 
             <div className="mt-6 pt-5 border-t border-line">
               {showInternal ? (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.12em] font-medium text-gray-500">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.12em] font-medium text-ink-soft">
                     Acceso interno (email y contraseña)
                   </p>
                   <div>
-                    <label htmlFor="login-email" className="block font-mono text-[11px] uppercase tracking-[0.12em] font-medium text-gray-500 mb-1.5">
+                    <label htmlFor="login-email" className="block font-mono text-[11px] uppercase tracking-[0.12em] font-medium text-ink-soft mb-1.5">
                       Email
                     </label>
                     <input
@@ -199,13 +199,13 @@ export default function AuthPanel({ variant }: { variant: "acceso" | "registro" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15 bg-white"
+                      className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15 bg-surface"
                       placeholder="tu@email.com"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="login-password" className="block font-mono text-[11px] uppercase tracking-[0.12em] font-medium text-gray-500 mb-1.5">
+                    <label htmlFor="login-password" className="block font-mono text-[11px] uppercase tracking-[0.12em] font-medium text-ink-soft mb-1.5">
                       Contraseña
                     </label>
                     <input
@@ -214,13 +214,13 @@ export default function AuthPanel({ variant }: { variant: "acceso" | "registro" 
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15 bg-white"
+                      className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15 bg-surface"
                       placeholder="••••••••"
                     />
                   </div>
 
                   {error && (
-                    <p className="text-sm text-red-700 bg-red-50 border border-red-100 px-3 py-2 rounded-xl">
+                    <p className="text-sm text-alert-ink bg-alert-tint border border-alert-tint px-3 py-2 rounded-xl">
                       {error}
                     </p>
                   )}
@@ -237,7 +237,7 @@ export default function AuthPanel({ variant }: { variant: "acceso" | "registro" 
               ) : (
                 <button
                   onClick={() => setShowInternal(true)}
-                  className="text-xs text-gray-400 hover:text-gray-600 underline underline-offset-4"
+                  className="text-xs text-ink-faint hover:text-ink-soft underline underline-offset-4"
                 >
                   Acceso interno con contraseña
                 </button>
@@ -246,7 +246,7 @@ export default function AuthPanel({ variant }: { variant: "acceso" | "registro" 
           </div>
 
           {!esRegistro && (
-            <p className="mt-6 text-center text-sm text-gray-500">
+            <p className="mt-6 text-center text-sm text-ink-soft">
               ¿No tienes cuenta?{" "}
               <a href="/registro" className="text-brand hover:underline font-medium">
                 Crear cuenta gratis
@@ -254,7 +254,7 @@ export default function AuthPanel({ variant }: { variant: "acceso" | "registro" 
             </p>
           )}
 
-          <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-gray-400">
+          <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
             Solo datos reales
           </p>
         </div>

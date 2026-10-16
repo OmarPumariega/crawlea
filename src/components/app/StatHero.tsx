@@ -18,8 +18,8 @@ function Sparkline({ data, tone = "brand" }: { data: number[]; tone?: "brand" | 
   });
   const stroke =
     tone === "white" ? "rgba(255,255,255,0.9)"
-    : tone === "danger" ? "#dc2626"
-    : tone === "success" ? "#059669"
+    : tone === "danger" ? "#e8575f"
+    : tone === "success" ? "#4f5cf5"
     : "var(--brand)";
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="h-8 w-24" fill="none" aria-hidden="true">
@@ -59,12 +59,12 @@ export default function StatHero({
   const dark = tone === "ink";
   const deltaCls =
     delta?.dir === "up"
-      ? "bg-emerald-50 text-emerald-700"
+      ? "bg-accent-tint text-accent-ink"
       : delta?.dir === "down"
-        ? "bg-red-50 text-red-700"
+        ? "bg-alert-tint text-alert-ink"
         : dark
           ? "bg-white/10 text-white/70"
-          : "bg-gray-100 text-gray-600";
+          : "bg-surface-muted text-ink-soft";
   const DeltaIcon = delta?.dir === "up" ? TrendingUp : delta?.dir === "down" ? TrendingDown : Minus;
 
   return (
@@ -72,13 +72,13 @@ export default function StatHero({
       className={cn(
         "rounded-2xl p-5 flex flex-col gap-3 transition-shadow",
         dark
-          ? "bg-brand text-white shadow-[0_10px_30px_-10px_rgba(14,107,79,0.55)]"
-          : "bg-white border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] hover:shadow-[0_6px_20px_rgba(26,29,26,0.07)]",
+          ? "bg-brand text-white shadow-[0_10px_30px_-10px_rgba(79,92,245,0.55)]"
+          : "bg-surface border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] hover:shadow-[0_6px_20px_rgba(17,20,43,0.07)]",
         className
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <p className={cn("text-[13px] font-medium", dark ? "text-white/60" : "text-gray-500")}>
+        <p className={cn("text-[13px] font-medium", dark ? "text-white/60" : "text-ink-soft")}>
           {label}
         </p>
         {icon && (
@@ -94,10 +94,10 @@ export default function StatHero({
       </div>
       <div className="flex items-end justify-between gap-3">
         <div>
-          <div className={cn("text-4xl font-bold tracking-tight tabular-nums leading-none", dark ? "text-white" : "text-gray-900")}>
+          <div className={cn("text-4xl font-bold tracking-tight tabular-nums leading-none", dark ? "text-white" : "text-ink")}>
             {value}
           </div>
-          {sub && <p className={cn("text-xs mt-2", dark ? "text-white/50" : "text-gray-400")}>{sub}</p>}
+          {sub && <p className={cn("text-xs mt-2", dark ? "text-white/50" : "text-ink-faint")}>{sub}</p>}
         </div>
         <div className="flex flex-col items-end gap-2">
           {delta && (

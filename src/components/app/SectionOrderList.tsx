@@ -48,7 +48,7 @@ export default function SectionOrderList({
     if (keys.length === 0) return null;
     return (
       <div className="space-y-1.5">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400 px-1">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint px-1">
           {title} ({keys.length})
         </p>
         <ul className="space-y-1">
@@ -69,13 +69,13 @@ export default function SectionOrderList({
                   onChange={() => onToggle(key)}
                   className="h-4 w-4 rounded accent-brand"
                 />
-                <span className="text-gray-700 truncate">{SECTION_LABELS[key]}</span>
+                <span className="text-ink-soft truncate">{SECTION_LABELS[key]}</span>
               </label>
               <button
                 type="button"
                 onClick={() => moveWithinGroup(key, -1)}
                 disabled={i === 0}
-                className="p-1 text-gray-400 hover:text-gray-900 hover:bg-white rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                className="p-1 text-ink-faint hover:text-ink hover:bg-surface rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                 title="Subir"
               >
                 <ChevronUp className="h-3.5 w-3.5" />
@@ -84,7 +84,7 @@ export default function SectionOrderList({
                 type="button"
                 onClick={() => moveWithinGroup(key, 1)}
                 disabled={i === keys.length - 1}
-                className="p-1 text-gray-400 hover:text-gray-900 hover:bg-white rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                className="p-1 text-ink-faint hover:text-ink hover:bg-surface rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                 title="Bajar"
               >
                 <ChevronDown className="h-3.5 w-3.5" />

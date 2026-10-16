@@ -73,25 +73,25 @@ export default function ProjectSwitcher({
       <Popover.Root open={open} onOpenChange={setOpen}>
         <Popover.Trigger asChild>
           <button
-            className="w-full flex items-center justify-between gap-2 px-2.5 py-2 border border-line rounded-xl text-sm bg-white hover:bg-background outline-none focus:border-brand transition-colors"
+            className="w-full flex items-center justify-between gap-2 px-2.5 py-2 border border-line rounded-xl text-sm bg-surface hover:bg-background outline-none focus:border-brand transition-colors"
             disabled={projects.length === 0}
           >
             <span className="truncate text-left">
               {current ? current.name : currentId ? "Cargando…" : "Selecciona proyecto"}
             </span>
-            <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
+            <ChevronDown className="h-4 w-4 text-ink-faint shrink-0" />
           </button>
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Content
             align="start"
             sideOffset={4}
-            className="z-50 bg-white border border-line rounded-2xl shadow-lg flex flex-col max-h-80 w-[var(--radix-popover-trigger-width)] animate-[pop_0.14s_ease-out]"
+            className="z-50 bg-surface border border-line rounded-2xl shadow-lg flex flex-col max-h-80 w-[var(--radix-popover-trigger-width)] animate-[pop_0.14s_ease-out]"
           >
             {/* Buscador arriba */}
             <div className="p-2 border-b border-line">
               <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-background">
-                <Search className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                <Search className="h-3.5 w-3.5 text-ink-faint shrink-0" />
                 <input
                   autoFocus
                   value={query}
@@ -106,7 +106,7 @@ export default function ProjectSwitcher({
               {/* Recientes (últimos 5 visitados) — solo si hay y no se filtra */}
               {recentProjects.length > 0 && (
                 <>
-                  <p className="flex items-center gap-1 px-3 py-1 font-mono text-[10px] uppercase tracking-wide text-gray-400">
+                  <p className="flex items-center gap-1 px-3 py-1 font-mono text-[10px] uppercase tracking-wide text-ink-faint">
                     <Clock className="h-3 w-3" /> Recientes
                   </p>
                   {recentProjects.map((p) => (
@@ -117,12 +117,12 @@ export default function ProjectSwitcher({
               )}
 
               {/* Todos (o filtrados por búsqueda) */}
-              {!q && <p className="px-3 py-1 font-mono text-[10px] uppercase tracking-wide text-gray-400">Todos</p>}
+              {!q && <p className="px-3 py-1 font-mono text-[10px] uppercase tracking-wide text-ink-faint">Todos</p>}
               {(q ? filtered : projects.filter((p) => !recentProjects.includes(p))).map((p) => (
                 <Row key={p.id} name={p.name} active={p.id === currentId} onClick={() => pick(p.id)} />
               ))}
               {(q ? filtered : projects).length === 0 && (
-                <p className="px-3 py-3 text-sm text-gray-400">
+                <p className="px-3 py-3 text-sm text-ink-faint">
                   {projects.length === 0 ? "Cargando proyectos…" : "Sin resultados."}
                 </p>
               )}
@@ -140,7 +140,7 @@ function Row({ name, active, onClick }: { name: string; active: boolean; onClick
       onClick={onClick}
       className={cn(
         "w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm text-left hover:bg-background",
-        active ? "text-gray-900 font-medium" : "text-gray-600"
+        active ? "text-ink font-medium" : "text-ink-soft"
       )}
     >
       <span className="truncate">{name}</span>

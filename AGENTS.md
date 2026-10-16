@@ -74,7 +74,9 @@ terceros, no por trabajo pendiente — ver `docs/01-vision-general.md`.
 
 ## Stack técnico
 
-- **Next.js 16** (App Router) + TypeScript + Tailwind 4
+- **Next.js 16** (App Router) + TypeScript + Tailwind 4 (tokens CSS-first de la
+  guía de estilo en `src/app/crawlea.css`) + **Manrope** + **modo oscuro** vía
+  `next-themes` (`data-theme`)
 - **PostgreSQL + Prisma** (adapter `PrismaPg`, sin pgvector — esta app no usa embeddings)
 - **NextAuth (JWT)** — dos vías: **Google OAuth** (registro público del SaaS,
   `GOOGLE_AUTH_CLIENT_ID/SECRET`, sin esas env el botón no aparece) y
@@ -168,6 +170,13 @@ solo con `NODE_ENV=production` — para probarlo de verdad hace falta
 
 ## Convenciones del proyecto
 
+- **Identidad visual:** la fuente de verdad es la guía de estilo
+  [`Guia de estilo/GUIA-DE-ESTILO.md`](./Guia%20de%20estilo/GUIA-DE-ESTILO.md)
+  (tokens en `src/app/crawlea.css`: rampa índigo, acento único, coral solo para
+  avisos/bajadas, tema claro/oscuro). Antes de tocar UI, léela: nada de
+  colores/radios/sombras que no estén ahí. Los alias de la identidad anterior
+  (`bg-brand`, `text-signal`, `bg-sidebar`...) viven en `globals.css` apuntando
+  a la nueva paleta y se retiran gradualmente.
 - **Idioma:** todo en español — UI, comentarios de código, commits, documentación.
 - **Commits:** en español, describiendo el *porqué* del cambio, no solo el qué. Un
   módulo o mejora = una sesión de planificación + implementación; no se mezclan

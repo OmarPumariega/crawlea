@@ -374,8 +374,8 @@ export default function ContentView({ projectId }: { projectId: string }) {
           className={cn(
             "px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
             mode === "generar"
-              ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
-              : "text-gray-500 hover:text-gray-800"
+              ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]"
+              : "text-ink-soft hover:text-ink"
           )}
         >
           Generar contenido nuevo
@@ -386,8 +386,8 @@ export default function ContentView({ projectId }: { projectId: string }) {
           className={cn(
             "px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors",
             mode === "optimizar"
-              ? "bg-white text-gray-900 shadow-[0_1px_3px_rgba(26,29,26,0.12)]"
-              : "text-gray-500 hover:text-gray-800"
+              ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]"
+              : "text-ink-soft hover:text-ink"
           )}
         >
           Optimizar URL existente
@@ -399,49 +399,49 @@ export default function ContentView({ projectId }: { projectId: string }) {
       ) : (
         <>
       {tfidfTerms.trim() && (
-        <div className="bg-indigo-50/60 border border-indigo-100 rounded-xl p-4 space-y-1.5">
+        <div className="bg-accent-tint/60 border border-brand-100 rounded-xl p-4 space-y-1.5">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <Sparkles className="h-4 w-4 text-indigo-500 shrink-0" />
-              <p className="text-sm text-indigo-900">
+              <Sparkles className="h-4 w-4 text-accent-ink shrink-0" />
+              <p className="text-sm text-accent-ink">
                 Términos y temas cargados desde TF-IDF ({tfidfTerms.split("\n").filter(Boolean).length}).
                 Se pasarán al modelo como guía de cobertura.
               </p>
             </div>
             <button
               onClick={() => setTfidfTerms("")}
-              className="text-indigo-400 hover:text-indigo-700 shrink-0"
+              className="text-accent-ink hover:text-accent-ink shrink-0"
               title="Quitar los términos TF-IDF"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
-          <p className="text-xs text-indigo-700/80 line-clamp-2">
+          <p className="text-xs text-accent-ink/80 line-clamp-2">
             {tfidfTerms.split("\n").filter(Boolean).slice(0, 12).join(" · ")}
             {tfidfTerms.split("\n").filter(Boolean).length > 12 ? "…" : ""}
           </p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Tipo de contenido</label>
+            <label className="block text-sm font-medium text-ink-soft">Tipo de contenido</label>
             <Select.Root value={type} onValueChange={(v) => handleTypeChange(v as ContentType)}>
-              <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white">
+              <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-surface">
                 <Select.Value />
                 <Select.Icon>
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                  <ChevronDown className="h-4 w-4 text-ink-faint" />
                 </Select.Icon>
               </Select.Trigger>
               <Select.Portal>
-                <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                   <Select.Viewport>
                     {CONTENT_TYPES.map((value) => (
                       <Select.Item
                         key={value}
                         value={value}
-                        className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100"
+                        className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-surface-muted"
                       >
                         <Select.ItemText>{CONTENT_TYPE_LABELS[value]}</Select.ItemText>
                       </Select.Item>
@@ -453,7 +453,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
           </div>
 
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Palabras objetivo</label>
+            <label className="block text-sm font-medium text-ink-soft">Palabras objetivo</label>
             <input
               type="number"
               min={20}
@@ -465,7 +465,7 @@ export default function ContentView({ projectId }: { projectId: string }) {
         </div>
 
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Tema</label>
+          <label className="block text-sm font-medium text-ink-soft">Tema</label>
           <input
             type="text"
             value={topic}
@@ -478,8 +478,8 @@ export default function ContentView({ projectId }: { projectId: string }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">
-              Keyword objetivo <span className="text-gray-400 font-normal">(opcional)</span>
+            <label className="block text-sm font-medium text-ink-soft">
+              Keyword objetivo <span className="text-ink-faint font-normal">(opcional)</span>
             </label>
             <input
               type="text"
@@ -489,8 +489,8 @@ export default function ContentView({ projectId }: { projectId: string }) {
             />
           </div>
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">
-              URL destino <span className="text-gray-400 font-normal">(opcional)</span>
+            <label className="block text-sm font-medium text-ink-soft">
+              URL destino <span className="text-ink-faint font-normal">(opcional)</span>
             </label>
             <input
               type="url"
@@ -502,8 +502,8 @@ export default function ContentView({ projectId }: { projectId: string }) {
         </div>
 
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">
-            Enlaces internos a incluir <span className="text-gray-400 font-normal">(opcional, uno por línea)</span>
+          <label className="block text-sm font-medium text-ink-soft">
+            Enlaces internos a incluir <span className="text-ink-faint font-normal">(opcional, uno por línea)</span>
           </label>
           <textarea
             value={internalLinks}
@@ -516,17 +516,17 @@ export default function ContentView({ projectId }: { projectId: string }) {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">
+            <span className="text-xs font-medium text-ink-soft">
               URLs del proyecto
             </span>
             {projectUrls.length > 0 && (
-              <span className="text-[11px] text-gray-400">Clic para añadir como enlace interno</span>
+              <span className="text-[11px] text-ink-faint">Clic para añadir como enlace interno</span>
             )}
           </div>
           {loadingUrls ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-gray-400" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-ink-faint" />
           ) : projectUrls.length === 0 ? (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-ink-faint">
               Ejecuta una auditoría para ver las URLs del sitio y sugerir enlaces.
             </p>
           ) : (
@@ -543,8 +543,8 @@ export default function ContentView({ projectId }: { projectId: string }) {
                     className={cn(
                       "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-colors",
                       already
-                        ? "bg-emerald-50 text-emerald-600 cursor-default"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                        ? "bg-accent-tint text-accent-ink cursor-default"
+                        : "bg-surface-muted text-ink-soft hover:bg-surface-muted cursor-pointer"
                     )}
                   >
                     {u.short}
@@ -556,12 +556,12 @@ export default function ContentView({ projectId }: { projectId: string }) {
           )}
         </div>
 
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+        {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
           Generar
@@ -569,14 +569,14 @@ export default function ContentView({ projectId }: { projectId: string }) {
       </form>
 
       {current && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400 uppercase tracking-wide">
+              <span className="text-xs text-ink-faint uppercase tracking-wide">
                 {current.wordCount} palabras
               </span>
               {restored && (
-                <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] text-accent-ink bg-accent-tint px-2 py-0.5 rounded-full">
                   Versión restaurada
                 </span>
               )}
@@ -584,41 +584,41 @@ export default function ContentView({ projectId }: { projectId: string }) {
             <div className="flex items-center gap-1">
               <button
                 onClick={handleRegenerate}
-                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-gray-600 hover:bg-gray-100"
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-ink-soft hover:bg-surface-muted"
                 title="Rellenar el formulario con este tema para generar otra versión"
               >
                 <RefreshCw className="h-3.5 w-3.5" /> Regenerar
               </button>
               <button
                 onClick={copyContent}
-                className="text-gray-400 hover:text-gray-900 p-1"
+                className="text-ink-faint hover:text-ink p-1"
                 aria-label="Copiar contenido"
               >
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </button>
             </div>
           </div>
-          <pre className="text-sm text-gray-800 whitespace-pre-wrap font-sans">{current.content}</pre>
+          <pre className="text-sm text-ink whitespace-pre-wrap font-sans">{current.content}</pre>
         </div>
       )}
 
       {/* Comparación línea a línea contra otra versión del mismo tema */}
       {current && compareTarget && diff && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+              <div className="flex items-center gap-2 text-sm font-semibold text-ink">
                 <GitCompare className="h-4 w-4" />
                 Comparación de versiones
               </div>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-ink-faint mt-0.5">
                 Actual ({current.wordCount} palabras) frente a la del{" "}
                 {new Date(compareTarget.createdAt).toLocaleString("es-ES")} ({compareTarget.wordCount} palabras)
               </p>
             </div>
             <button
               onClick={() => setCompareTarget(null)}
-              className="text-gray-400 hover:text-gray-900 p-1"
+              className="text-ink-faint hover:text-ink p-1"
               aria-label="Cerrar comparación"
             >
               <X className="h-4 w-4" />
@@ -630,9 +630,9 @@ export default function ContentView({ projectId }: { projectId: string }) {
                 key={idx}
                 className={cn(
                   "px-3 py-0.5 whitespace-pre-wrap break-words",
-                  line.type === "added" && "bg-emerald-50 text-emerald-700",
-                  line.type === "removed" && "bg-red-50 text-red-700",
-                  line.type === "same" && "text-gray-400"
+                  line.type === "added" && "bg-accent-tint text-accent-ink",
+                  line.type === "removed" && "bg-alert-tint text-alert-ink",
+                  line.type === "same" && "text-ink-faint"
                 )}
               >
                 <span className="select-none inline-block w-4 shrink-0">
@@ -642,15 +642,15 @@ export default function ContentView({ projectId }: { projectId: string }) {
               </div>
             ))}
           </div>
-          <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-500">
+          <div className="flex flex-wrap items-center gap-3 text-[11px] text-ink-soft">
             <span className="flex items-center gap-1">
-              <span className="h-3 w-3 rounded bg-emerald-50 border border-emerald-200" /> Añadida
+              <span className="h-3 w-3 rounded bg-accent-tint border border-brand-100" /> Añadida
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-3 w-3 rounded bg-red-50 border border-red-200" /> Quitada
+              <span className="h-3 w-3 rounded bg-alert-tint border border-alert-tint" /> Quitada
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-3 w-3 rounded bg-white border border-line" /> Sin cambios
+              <span className="h-3 w-3 rounded bg-surface border border-line" /> Sin cambios
             </span>
           </div>
         </div>
@@ -658,11 +658,11 @@ export default function ContentView({ projectId }: { projectId: string }) {
 
       {/* Otras versiones del mismo tema */}
       {current && otherVersions.length > 0 && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <History className="h-4 w-4 text-gray-400" />
-            <h3 className="text-sm font-semibold text-gray-900">Otras versiones de este tema</h3>
-            <span className="text-xs text-gray-400">{otherVersions.length} más</span>
+            <History className="h-4 w-4 text-ink-faint" />
+            <h3 className="text-sm font-semibold text-ink">Otras versiones de este tema</h3>
+            <span className="text-xs text-ink-faint">{otherVersions.length} más</span>
           </div>
           <div className="space-y-2">
             {otherVersions.map((v) => (
@@ -671,8 +671,8 @@ export default function ContentView({ projectId }: { projectId: string }) {
                 className="flex items-center justify-between gap-3 rounded-lg border border-line p-3"
               >
                 <div className="min-w-0">
-                  <p className="text-sm text-gray-900 truncate">{v.topic}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-sm text-ink truncate">{v.topic}</p>
+                  <p className="text-xs text-ink-faint">
                     {new Date(v.createdAt).toLocaleString("es-ES")} · {v.wordCount} palabras · {v.model}
                   </p>
                 </div>
@@ -682,15 +682,15 @@ export default function ContentView({ projectId }: { projectId: string }) {
                     className={cn(
                       "flex items-center gap-1 px-2 py-1 rounded-md text-xs",
                       compareTarget?.id === v.id
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-600 hover:bg-gray-100"
+                        ? "bg-brand-900 text-white"
+                        : "text-ink-soft hover:bg-surface-muted"
                     )}
                   >
                     <GitCompare className="h-3.5 w-3.5" /> Comparar
                   </button>
                   <button
                     onClick={() => handleRestore(v)}
-                    className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-gray-600 hover:bg-gray-100"
+                    className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-ink-soft hover:bg-surface-muted"
                   >
                     <RotateCcw className="h-3.5 w-3.5" /> Restaurar
                   </button>
@@ -702,11 +702,11 @@ export default function ContentView({ projectId }: { projectId: string }) {
       )}
 
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Historial del proyecto</h3>
+        <h3 className="text-sm font-semibold text-ink mb-3">Historial del proyecto</h3>
         {loadingHistory ? (
-          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+          <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
         ) : history.length === 0 ? (
-          <p className="text-sm text-gray-500">Todavía no se ha generado nada para este proyecto.</p>
+          <p className="text-sm text-ink-soft">Todavía no se ha generado nada para este proyecto.</p>
         ) : (
           <div className="space-y-2">
             {history.map((gen) => (
@@ -718,17 +718,17 @@ export default function ContentView({ projectId }: { projectId: string }) {
                   setCompareTarget(null);
                 }}
                 className={cn(
-                  "w-full text-left bg-white rounded-lg border p-3 hover:bg-background transition-colors",
-                  current?.id === gen.id ? "border-gray-900" : "border-line"
+                  "w-full text-left bg-surface rounded-lg border p-3 hover:bg-background transition-colors",
+                  current?.id === gen.id ? "border-brand-900" : "border-line"
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-900 truncate">{gen.topic}</p>
-                  <span className="text-xs text-gray-400 shrink-0 ml-2">
+                  <p className="text-sm text-ink truncate">{gen.topic}</p>
+                  <span className="text-xs text-ink-faint shrink-0 ml-2">
                     {CONTENT_TYPE_LABELS[gen.type]} · {gen.wordCount} palabras
                   </span>
                 </div>
-                <p className="text-xs text-gray-400">{new Date(gen.createdAt).toLocaleString("es-ES")}</p>
+                <p className="text-xs text-ink-faint">{new Date(gen.createdAt).toLocaleString("es-ES")}</p>
               </button>
             ))}
           </div>

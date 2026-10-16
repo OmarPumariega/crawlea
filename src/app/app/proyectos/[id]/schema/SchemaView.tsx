@@ -127,9 +127,9 @@ export default function SchemaView({ projectId }: { projectId: string }) {
         description="Analiza una URL, elige el tipo de datos estructurados (basado en schema.org) y genera el JSON-LD."
       />
 
-      <form onSubmit={handleAnalyze} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+      <form onSubmit={handleAnalyze} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">URL</label>
+          <label className="block text-sm font-medium text-ink-soft">URL</label>
           <input
             type="url"
             value={url}
@@ -140,7 +140,7 @@ export default function SchemaView({ projectId }: { projectId: string }) {
             }}
             placeholder="https://www.ejemplo.com/pagina"
             required
-            className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+            className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
         </div>
 
@@ -156,9 +156,9 @@ export default function SchemaView({ projectId }: { projectId: string }) {
         {suggestedType && (
           <div className="border-t border-line pt-4 space-y-3">
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-ink-soft">
                 Tipo de schema{" "}
-                <span className="text-gray-400 font-normal">
+                <span className="text-ink-faint font-normal">
                   (sugerido: {typeLabel(suggestedType)})
                 </span>
               </label>
@@ -168,12 +168,12 @@ export default function SchemaView({ projectId }: { projectId: string }) {
             {selectedEntry && (
               <div className="rounded-xl border border-line p-4 space-y-2 bg-background/60">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-xs text-gray-600 leading-snug flex-1">{selectedEntry.description}</p>
+                  <p className="text-xs text-ink-soft leading-snug flex-1">{selectedEntry.description}</p>
                   <a
                     href={selectedEntry.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs text-gray-400 hover:text-gray-900 inline-flex items-center gap-1 shrink-0"
+                    className="text-xs text-ink-faint hover:text-ink inline-flex items-center gap-1 shrink-0"
                   >
                     schema.org <ExternalLink className="h-3 w-3" />
                   </a>
@@ -194,40 +194,40 @@ export default function SchemaView({ projectId }: { projectId: string }) {
           </div>
         )}
 
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{error}</p>}
+        {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">{error}</p>}
       </form>
 
       {current && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
           <Pill tone={current.valid ? "success" : "danger"}>
             {current.valid ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
             {current.valid ? "Válido" : "Con avisos de validación"}
           </Pill>
           {!current.valid && current.validationErrors && (
-            <ul className="text-sm text-red-600 list-disc list-inside">
+            <ul className="text-sm text-alert-ink list-disc list-inside">
               {current.validationErrors.map((err, i) => (
                 <li key={i}>{err}</li>
               ))}
             </ul>
           )}
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">JSON-LD</span>
-            <button onClick={copyJsonLd} className="text-gray-400 hover:text-gray-900" aria-label="Copiar JSON-LD">
+            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">JSON-LD</span>
+            <button onClick={copyJsonLd} className="text-ink-faint hover:text-ink" aria-label="Copiar JSON-LD">
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </button>
           </div>
-          <pre className="bg-background text-gray-800 border border-line/90 rounded-xl p-4 font-mono text-xs overflow-x-auto">
+          <pre className="bg-background text-ink border border-line/90 rounded-xl p-4 font-mono text-xs overflow-x-auto">
             {JSON.stringify(current.jsonLd, null, 2)}
           </pre>
         </div>
       )}
 
       <div>
-        <h3 className="text-lg font-bold tracking-tight text-gray-900 mb-3">Historial del proyecto</h3>
+        <h3 className="text-lg font-bold tracking-tight text-ink mb-3">Historial del proyecto</h3>
         {loadingHistory ? (
-          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+          <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
         ) : history.length === 0 ? (
-          <p className="text-sm text-gray-500">Todavía no se ha generado nada para este proyecto.</p>
+          <p className="text-sm text-ink-soft">Todavía no se ha generado nada para este proyecto.</p>
         ) : (
           <div className="space-y-2">
             {history.map((gen) => (
@@ -238,15 +238,15 @@ export default function SchemaView({ projectId }: { projectId: string }) {
                 onClick={() => setCurrent(gen)}
                 onKeyDown={(e) => e.key === "Enter" && setCurrent(gen)}
                 className={cn(
-                  "w-full text-left bg-white rounded-xl border p-3 hover:bg-background transition-colors cursor-pointer shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]",
+                  "w-full text-left bg-surface rounded-xl border p-3 hover:bg-background transition-colors cursor-pointer shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]",
                   current?.id === gen.id ? "border-brand ring-2 ring-brand/15" : "border-line"
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
                   <UrlLink url={gen.url} className="text-sm" />
-                  <span className="text-xs text-gray-400 shrink-0">{typeLabel(gen.selectedType)}</span>
+                  <span className="text-xs text-ink-faint shrink-0">{typeLabel(gen.selectedType)}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-0.5">{new Date(gen.createdAt).toLocaleString("es-ES")}</p>
+                <p className="text-xs text-ink-faint mt-0.5">{new Date(gen.createdAt).toLocaleString("es-ES")}</p>
               </div>
             ))}
           </div>
@@ -271,11 +271,11 @@ function PropRow({ prop }: { prop: SchemaProp }) {
   return (
     <div>
       <div className="flex items-center gap-2">
-        <code className="text-xs text-gray-900">{prop.name}</code>
+        <code className="text-xs text-ink">{prop.name}</code>
         <Pill tone={meta.tone} className="px-1.5 py-0 text-[10px]">{meta.label}</Pill>
-        {prop.multiple && <span className="text-[10px] text-gray-400">lista</span>}
+        {prop.multiple && <span className="text-[10px] text-ink-faint">lista</span>}
       </div>
-      <p className="text-xs text-gray-400 leading-snug pl-0.5">{prop.desc}</p>
+      <p className="text-xs text-ink-faint leading-snug pl-0.5">{prop.desc}</p>
       {prop.nested && prop.nested.length > 0 && (
         <div className="pl-3 border-l border-line mt-1 space-y-1">
           <PropList props={prop.nested} />

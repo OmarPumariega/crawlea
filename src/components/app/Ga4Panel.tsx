@@ -59,9 +59,9 @@ function shortPath(path: string): string {
 
 function Kpi({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 flex flex-col">
-      <p className="text-[13px] font-medium text-gray-500">{label}</p>
-      <p className="text-2xl font-bold tracking-tight text-gray-900 tabular-nums mt-1.5 leading-none">{value}</p>
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 flex flex-col">
+      <p className="text-[13px] font-medium text-ink-soft">{label}</p>
+      <p className="text-2xl font-bold tracking-tight text-ink tabular-nums mt-1.5 leading-none">{value}</p>
     </div>
   );
 }
@@ -69,7 +69,7 @@ function Kpi({ label, value }: { label: string; value: string }) {
 function MonthlyChart({ points }: { points: Ga4MonthPoint[] }) {
   const [metric, setMetric] = useState<"sessions" | "conversions">("sessions");
   if (points.length === 0) {
-    return <p className="text-sm text-gray-500">Sin datos suficientes para la evolución.</p>;
+    return <p className="text-sm text-ink-soft">Sin datos suficientes para la evolución.</p>;
   }
   const max = Math.max(...points.map((p) => p[metric]), 1);
   return (
@@ -82,7 +82,7 @@ function MonthlyChart({ points }: { points: Ga4MonthPoint[] }) {
             onClick={() => setMetric(m)}
             className={cn(
               "px-2.5 py-1 rounded-md text-xs font-medium border",
-              metric === m ? "bg-gray-900 text-white border-gray-900" : "border-line text-gray-600 hover:bg-background"
+              metric === m ? "bg-brand-500 text-white border-brand-500" : "border-line text-ink-soft hover:bg-background"
             )}
           >
             {m === "sessions" ? "Sesiones" : "Conversiones"}
@@ -95,16 +95,16 @@ function MonthlyChart({ points }: { points: Ga4MonthPoint[] }) {
           return (
             <div key={p.month} className="flex-1 flex flex-col items-center gap-1 min-w-0">
               <div
-                className={cn("w-full rounded-t", metric === "sessions" ? "bg-gray-800" : "bg-gray-400")}
+                    className={cn("w-full rounded-t", metric === "sessions" ? "bg-brand-500" : "bg-brand-100")}
                 style={{ height: `${h}px` }}
                 title={`${monthLabel(p.month)}: ${fmtInt(p[metric])} ${metric === "sessions" ? "sesiones" : "conversiones"}`}
               />
-              <span className="text-[9px] text-gray-400 truncate w-full text-center">{monthLabel(p.month)}</span>
+              <span className="text-[9px] text-ink-faint truncate w-full text-center">{monthLabel(p.month)}</span>
             </div>
           );
         })}
       </div>
-      <p className="text-[11px] text-gray-400">Evolución de los últimos 12 meses (independiente del periodo seleccionado).</p>
+      <p className="text-[11px] text-ink-faint">Evolución de los últimos 12 meses (independiente del periodo seleccionado).</p>
     </div>
   );
 }
@@ -137,8 +137,8 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
     setShowAllPages(false);
   }
 
-  if (loading) return <Loader2 className="h-5 w-5 animate-spin text-gray-400" />;
-  if (error) return <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>;
+  if (loading) return <Loader2 className="h-5 w-5 animate-spin text-ink-faint" />;
+  if (error) return <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>;
   if (!data) return null;
 
   const t = data.totals;
@@ -150,10 +150,10 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">Comportamiento en Google Analytics</h3>
-          <p className="text-xs text-gray-500">Datos reales de Google · periodo: {rangeLabel}</p>
+          <h3 className="text-sm font-semibold text-ink">Comportamiento en Google Analytics</h3>
+          <p className="text-xs text-ink-soft">Datos reales de Google · periodo: {rangeLabel}</p>
         </div>
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+        <div className="flex items-center gap-1 bg-surface-muted rounded-lg p-0.5">
           {RANGE_OPTIONS.map((r) => (
             <button
               key={r.key}
@@ -161,7 +161,7 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
               onClick={() => changeRange(r.key)}
               className={cn(
                 "px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
-                range === r.key ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-800"
+                range === r.key ? "bg-surface text-ink shadow-sm" : "text-ink-soft hover:text-ink"
               )}
             >
               {r.label}
@@ -177,24 +177,24 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
         <Kpi label="Duración media" value={fmtDuration(t.averageSessionDuration)} />
       </div>
 
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Evolución (12 meses)</h4>
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-ink-faint mb-3">Evolución (12 meses)</h4>
         <MonthlyChart points={data.monthly} />
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         {data.byChannel.length > 0 && (
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Por canal de tráfico</h4>
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Por canal de tráfico</h4>
             <div className="space-y-2">
               {data.byChannel.map((c) => (
                 <div key={c.channel} className="space-y-0.5">
                   <div className="flex items-center justify-between gap-2 text-sm">
-                    <span className="text-gray-700">{c.channel}</span>
-                    <span className="text-gray-500 tabular-nums">{fmtInt(c.sessions)} sesiones · {fmtInt(c.conversions)} conv.</span>
+                    <span className="text-ink-soft">{c.channel}</span>
+                    <span className="text-ink-soft tabular-nums">{fmtInt(c.sessions)} sesiones · {fmtInt(c.conversions)} conv.</span>
                   </div>
-                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-gray-800 rounded-full" style={{ width: `${(c.sessions / maxChannelSessions) * 100}%` }} />
+                  <div className="h-1.5 bg-surface-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-brand-700 rounded-full" style={{ width: `${(c.sessions / maxChannelSessions) * 100}%` }} />
                   </div>
                 </div>
               ))}
@@ -202,13 +202,13 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
           </div>
         )}
         {data.byDevice.length > 0 && (
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Por dispositivo</h4>
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Por dispositivo</h4>
             <div className="space-y-1.5">
               {data.byDevice.map((d) => (
                 <div key={d.device} className="flex items-center justify-between gap-2 text-sm">
-                  <span className="text-gray-700">{DEVICE_LABEL[d.device] ?? d.device}</span>
-                  <span className="text-gray-500 tabular-nums">{fmtInt(d.sessions)} sesiones</span>
+                  <span className="text-ink-soft">{DEVICE_LABEL[d.device] ?? d.device}</span>
+                  <span className="text-ink-soft tabular-nums">{fmtInt(d.sessions)} sesiones</span>
                 </div>
               ))}
             </div>
@@ -216,14 +216,14 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
           Páginas de aterrizaje ({data.topLandingPages.length})
         </h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+              <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
                 <th className="py-1.5 pr-3 font-medium">Página</th>
                 <th className="py-1.5 pr-3 font-medium text-right">Sesiones</th>
                 <th className="py-1.5 pr-3 font-medium text-right">Conv.</th>
@@ -232,13 +232,13 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
             </thead>
             <tbody>
               {data.topLandingPages.slice(0, pagesShown).map((p) => (
-                <tr key={p.landingPage} className="border-b border-gray-50 last:border-0">
-                  <td className="py-1.5 pr-3 text-gray-900 truncate max-w-[220px]" title={p.landingPage}>
+                <tr key={p.landingPage} className="border-b border-line last:border-0">
+                  <td className="py-1.5 pr-3 text-ink truncate max-w-[220px]" title={p.landingPage}>
                     {shortPath(p.landingPage)}
                   </td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums text-gray-700">{fmtInt(p.sessions)}</td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums text-gray-500">{fmtInt(p.conversions)}</td>
-                  <td className="py-1.5 text-right tabular-nums text-gray-500">{fmtPct(p.engagementRate)}</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums text-ink-soft">{fmtInt(p.sessions)}</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums text-ink-soft">{fmtInt(p.conversions)}</td>
+                  <td className="py-1.5 text-right tabular-nums text-ink-soft">{fmtPct(p.engagementRate)}</td>
                 </tr>
               ))}
             </tbody>
@@ -248,14 +248,14 @@ export default function Ga4Panel({ projectId }: { projectId: string }) {
           <button
             type="button"
             onClick={() => setShowAllPages((v) => !v)}
-            className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900"
+            className="inline-flex items-center gap-1 text-xs text-ink-soft hover:text-ink"
           >
             <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showAllPages ? "rotate-180" : "")} />
             {showAllPages ? "Ver menos" : `Ver las ${data.topLandingPages.length} páginas`}
           </button>
         )}
       </div>
-      <p className="text-[11px] text-gray-400">
+      <p className="text-[11px] text-ink-faint">
         <Link href={`/app/proyectos/${projectId}/google`} className="hover:underline">
           Cambiar propiedad de GA4 →
         </Link>

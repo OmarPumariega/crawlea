@@ -27,13 +27,16 @@ type Point = {
   categories: Record<string, number | null>;
 };
 
-const OVERALL_COLOR = "#4f46e5";
-const CATEGORIES: { key: keyof CategoryScores; label: string; color: string }[] = [
-  { key: "indexabilidad", label: "Indexabilidad", color: "#0284c7" },
-  { key: "enlaces", label: "Enlaces", color: "#059669" },
-  { key: "onpage", label: "On-page", color: "#d97706" },
-  { key: "rendimiento", label: "Rendimiento", color: "#dc2626" },
-  { key: "accesibilidadImagenes", label: "Accesibilidad", color: "#7c3aed" },
+// Serie general en brand-500; las categorías en la rampa índigo de la guía,
+// distinguibles por trazo (continua/discontinua/punteada) antes que por color
+// cuando hay más de 3 series.
+const OVERALL_COLOR = "#4f5cf5";
+const CATEGORIES: { key: keyof CategoryScores; label: string; color: string; dash?: string }[] = [
+  { key: "indexabilidad", label: "Indexabilidad", color: "#3238ad" },
+  { key: "enlaces", label: "Enlaces", color: "#7381ff", dash: "4 3" },
+  { key: "onpage", label: "On-page", color: "#9da8ff", dash: "2 3" },
+  { key: "rendimiento", label: "Rendimiento", color: "#c3caff", dash: "1 3" },
+  { key: "accesibilidadImagenes", label: "Accesibilidad", color: "#9da8ff", dash: "6 3" },
 ];
 
 function normalize(c: CategoryScore | null | undefined): number | null {
@@ -141,24 +144,24 @@ export default function AuditTrendChart({ projectId }: { projectId: string }) {
   const labelStep = Math.max(1, Math.ceil(n / 7));
 
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
       <div className="flex items-center gap-2 mb-1">
-        <TrendingUp className="h-4 w-4 text-gray-400" />
-        <h3 className="text-sm font-semibold text-gray-900">Evolución de la puntuación global</h3>
+        <TrendingUp className="h-4 w-4 text-ink-faint" />
+        <h3 className="text-sm font-semibold text-ink">Evolución de la puntuación global</h3>
       </div>
-      <p className="text-xs text-gray-400 mb-3">Puntuación global 0-100 por auditoría completada. Las líneas finas son las 5 categorías.</p>
+      <p className="text-xs text-ink-faint mb-3">Puntuación global 0-100 por auditoría completada. Las líneas finas son las 5 categorías.</p>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12 text-gray-400">
+        <div className="flex items-center justify-center py-12 text-ink-faint">
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
       ) : error ? (
-        <div className="flex items-center gap-2 py-8 text-sm text-red-600">
+        <div className="flex items-center gap-2 py-8 text-sm text-alert-ink">
           <AlertTriangle className="h-4 w-4" />
           {error}
         </div>
       ) : n === 0 ? (
-        <p className="py-12 text-center text-sm text-gray-400">Aún no hay auditorías completadas</p>
+        <p className="py-12 text-center text-sm text-ink-faint">Aún no hay auditorías completadas</p>
       ) : (
         <>
           <div ref={wrapRef} className="w-full overflow-hidden">
@@ -171,10 +174,10 @@ export default function AuditTrendChart({ projectId }: { projectId: string }) {
                     x2={w - PAD_R}
                     y1={y(v)}
                     y2={y(v)}
-                    stroke="#f1f5f9"
+                    className="stroke-line"
                     strokeWidth={1}
                   />
-                  <text x={PAD_L - 6} y={y(v) + 3} textAnchor="end" className="fill-gray-400" fontSize={9}>
+                  <text x={PAD_L - 6} y={y(v) + 3} textAnchor="end" className="fill-ink-faint" fontSize={9}>
                     {v}
                   </text>
                 </g>
@@ -183,7 +186,7 @@ export default function AuditTrendChart({ projectId }: { projectId: string }) {
               {/* Etiquetas eje X (fecha corta, subconjunto para no amontonar) */}
               {points.map((p, i) =>
                 i % labelStep === 0 || i === n - 1 ? (
-                  <text key={p.id} x={x(i)} y={H - 8} textAnchor="middle" className="fill-gray-400" fontSize={9}>
+                  <text key={p.id} x={x(i)} y={H - 8} textAnchor="middle" className="fill-ink-faint" fontSize={9}>
                     {fmtShort(p.date)}
                   </text>
                 ) : null
@@ -197,6 +200,7 @@ export default function AuditTrendChart({ projectId }: { projectId: string }) {
                   fill="none"
                   stroke={c.color}
                   strokeWidth={1.25}
+                  strokeDasharray={c.dash}
                   strokeLinejoin="round"
                   strokeLinecap="round"
                   opacity={0.75}
@@ -240,16 +244,16 @@ export default function AuditTrendChart({ projectId }: { projectId: string }) {
           </div>
 
           {n === 1 && (
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-ink-faint">
               Necesita al menos 2 auditorías para ver la evolución
             </p>
           )}
 
           {/* Leyenda */}
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-gray-500">
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-ink-soft">
             <span className="inline-flex items-center gap-1.5">
               <span className="inline-block h-0.5 w-4 rounded-full" style={{ background: OVERALL_COLOR }} />
-              <span className="font-medium text-gray-700">Global (0-100)</span>
+              <span className="font-medium text-ink-soft">Global (0-100)</span>
             </span>
             {CATEGORIES.map((c) => (
               <span key={c.key} className="inline-flex items-center gap-1.5">

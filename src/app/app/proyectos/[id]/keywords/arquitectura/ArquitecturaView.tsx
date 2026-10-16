@@ -132,8 +132,8 @@ export default function ArquitecturaView({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">Arquitectura de la web</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-lg font-semibold text-ink">Arquitectura de la web</h2>
+        <p className="text-sm text-ink-soft mt-1">
           Jerarquía de páginas recomendada a partir de un estudio de keywords (pestaña Estudios) — agrupa las
           keywords reales del estudio por volumen de búsqueda y propone la URL optimizada de cada
           página.
@@ -141,27 +141,27 @@ export default function ArquitecturaView({
       </div>
 
       {/* Selector de estudio */}
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex-1 min-w-[220px] space-y-1">
-            <label className="block text-xs font-medium text-gray-500">Estudio de keywords (Módulo 1)</label>
+            <label className="block text-xs font-medium text-ink-soft">Estudio de keywords (Módulo 1)</label>
             {loadingStudies ? (
-              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+              <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
             ) : studies.length === 0 ? (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-ink-soft">
                 Aún no hay estudios de keywords en este proyecto — crea uno en la pestaña Keywords.
               </p>
             ) : (
               <Select.Root value={studyId} onValueChange={setStudyId}>
-                <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white">
+                <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-surface">
                   <Select.Value placeholder="Selecciona un estudio" />
-                  <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+                  <Select.Icon><ChevronDown className="h-4 w-4 text-ink-faint" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50 max-h-60">
+                  <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50 max-h-60">
                     <Select.Viewport>
                       {studies.map((s) => (
-                        <Select.Item key={s.id} value={s.id} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100">
+                        <Select.Item key={s.id} value={s.id} className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-surface-muted">
                           <Select.ItemText>
                             {s.name} ({s._count.keywords}){s.hasStructure ? " · con estructura" : ""}
                           </Select.ItemText>
@@ -178,7 +178,7 @@ export default function ArquitecturaView({
               type="button"
               onClick={handleGenerate}
               disabled={generating}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 shrink-0"
+              className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 shrink-0"
             >
               {generating ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -192,13 +192,13 @@ export default function ArquitecturaView({
           )}
         </div>
         {study && study.keywords.length === 0 && (
-          <p className="text-xs text-amber-600">
+          <p className="text-xs text-accent-ink">
             Este estudio todavía no tiene keywords — añádelas en la pestaña Keywords antes de generar
             la arquitectura.
           </p>
         )}
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-        <p className="text-xs text-gray-400">
+        {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
+        <p className="text-xs text-ink-faint">
           La agrupación en páginas y su jerarquía las genera un modelo de IA (OpenRouter) a partir de
           las keywords reales del estudio (volumen, intención, prioridad) — el volumen mostrado en el
           árbol es siempre el real acumulado, no una estimación de la IA.
@@ -207,23 +207,23 @@ export default function ArquitecturaView({
 
       {/* Árbol en abanico */}
       {loadingStudy ? (
-        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-ink-faint" />
       ) : tree ? (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <GitFork className="h-4 w-4 text-gray-500" />
-              <h3 className="text-sm font-semibold text-gray-900">
+              <GitFork className="h-4 w-4 text-ink-soft" />
+              <h3 className="text-sm font-semibold text-ink">
                 {pageCount} página{pageCount === 1 ? "" : "s"} propuesta{pageCount === 1 ? "" : "s"}
               </h3>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-ink-faint">
               {totalVolume.toLocaleString("es-ES")} vol. total cubierto
               {study?.structureModel && <> · generado con {study.structureModel}</>}
               {study?.updatedAt && <> · {new Date(study.updatedAt).toLocaleDateString("es-ES")}</>}
             </p>
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-ink-faint">
             Despliega cada rama para ver sus páginas. Cada tarjeta muestra el H1, la URL, los
             encabezados (H2/H3) y las keywords que cubre. El orden dentro de cada rama es por
             volumen de búsqueda real, de mayor a menor.
@@ -231,20 +231,20 @@ export default function ArquitecturaView({
           <StructureTreeView root={tree} domain={domain} />
         </div>
       ) : study && !study.structure ? (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-6 text-center space-y-2">
-          <GitFork className="h-6 w-6 text-gray-300 mx-auto" />
-          <p className="text-sm text-gray-500">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-6 text-center space-y-2">
+          <GitFork className="h-6 w-6 text-ink-faint mx-auto" />
+          <p className="text-sm text-ink-soft">
             Este estudio todavía no tiene una arquitectura generada.
           </p>
           {study.keywords.length > 0 && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-ink-faint">
               Pulsa «Generar estructura» arriba para crearla a partir de sus {study.keywords.length}{" "}
               keywords.
             </p>
           )}
         </div>
       ) : !loadingStudies && studies.length > 0 && !studyId ? (
-        <p className="text-sm text-gray-500">Selecciona un estudio para ver o generar su arquitectura.</p>
+        <p className="text-sm text-ink-soft">Selecciona un estudio para ver o generar su arquitectura.</p>
       ) : null}
     </div>
   );

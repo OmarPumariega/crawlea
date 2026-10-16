@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Manrope } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
-// Identidad tipográfica v3: Plus Jakarta Sans (geométrica, moderna, la de los
-// dashboards de referencia) + IBM Plex Mono solo para datos numéricos/código.
-const jakarta = Plus_Jakarta_Sans({
+// Identidad tipográfica Crawlea: Manrope (geométrica, humana, la de las
+// referencias de la guía de estilo). Los números de datos van siempre con
+// la clase .num (tabular-nums). El mono cae al stack del sistema.
+const manrope = Manrope({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-jakarta",
-  display: "swap",
-});
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-plex-mono",
+  variable: "--font-manrope",
   display: "swap",
 });
 
@@ -29,9 +25,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body className={`${jakarta.variable} ${plexMono.variable}`}>
-        {children}
+    // suppressHydrationWarning: next-themes muta el atributo data-theme de
+    // <html> antes del primer pintado para evitar el flash de tema equivocado.
+    <html lang="es" suppressHydrationWarning>
+      <body className={manrope.variable}>
+        <ThemeProvider
+          attribute="data-theme"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

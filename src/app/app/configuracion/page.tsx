@@ -53,8 +53,8 @@ export default async function ConfiguracionPage({
         errorMessage={errorMessage}
       />
 
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-2 text-sm text-gray-600">
-        <p className="font-semibold text-gray-900">Antes de conectar</p>
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-2 text-sm text-ink-soft">
+        <p className="font-semibold text-ink">Antes de conectar</p>
         <p>
           Si tu cuenta de Google es de <strong>Google Workspace</strong>, marca la
           app como <strong>Interna</strong> en Google Cloud Console: sin verificación, sin

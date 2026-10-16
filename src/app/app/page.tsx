@@ -33,10 +33,10 @@ const ENDPOINT_LABELS: Record<string, string> = {
 };
 
 function scoreTone(score: number | null | undefined): string {
-  if (score == null) return "text-gray-400";
-  if (score >= 80) return "text-emerald-600";
-  if (score >= 50) return "text-amber-600";
-  return "text-red-600";
+  if (score == null) return "text-ink-faint";
+  if (score >= 80) return "text-accent-ink";
+  if (score >= 50) return "text-ink-soft";
+  return "text-alert-ink";
 }
 
 export default async function DashboardPage() {
@@ -266,14 +266,14 @@ export default async function DashboardPage() {
       {/* Bento superior: presupuesto (héroe de tinta) + stats clave */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Presupuesto DataForSEO — tarjeta protagonista */}
-        <div className="md:col-span-2 bg-brand text-white rounded-2xl p-6 relative overflow-hidden shadow-[0_10px_30px_-10px_rgba(14,107,79,0.55)]">
+        <div className="md:col-span-2 bg-brand text-white rounded-2xl p-6 relative overflow-hidden shadow-[0_10px_30px_-10px_rgba(79,92,245,0.55)]">
           {/* Barras de ranking como textura de fondo */}
           <div
             className="absolute inset-y-0 right-5 flex items-end gap-2 opacity-[0.10] pointer-events-none"
             aria-hidden="true"
           >
             {[36, 56, 48, 76, 62, 96].map((h, i) => (
-              <div key={i} className="w-5 rounded-t-md bg-white" style={{ height: h }} />
+              <div key={i} className="w-5 rounded-t-md bg-surface" style={{ height: h }} />
             ))}
           </div>
           <div className="relative flex flex-col gap-5 h-full">
@@ -281,7 +281,7 @@ export default async function DashboardPage() {
               <p className="text-[13px] font-medium text-white/60">
                 Presupuesto DataForSEO · <span className="capitalize">{monthLabel}</span>
               </p>
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-signal">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white/80">
                 <Gauge className="h-4 w-4" />
               </span>
             </div>
@@ -297,13 +297,13 @@ export default async function DashboardPage() {
               <div className="mt-auto">
                 <div className="flex items-baseline justify-between mb-1.5">
                   <span className="text-xs text-white/50">Consumo del mes</span>
-                  <span className={`text-lg font-bold tabular-nums ${dfsPct! >= 100 ? "text-red-300" : dfsPct! >= 80 ? "text-amber-200" : "text-signal"}`}>
+                  <span className={`text-lg font-bold tabular-nums ${dfsPct! >= 100 ? "text-alert-bright" : "text-white"}`}>
                     {dfsPct!.toFixed(0)}%
                   </span>
                 </div>
                 <div className="h-2 rounded-full bg-white/15 overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${dfsPct! >= 100 ? "bg-red-400" : dfsPct! >= 80 ? "bg-amber-300" : "bg-signal"}`}
+                    className={`h-full rounded-full ${dfsPct! >= 100 ? "bg-alert" : "bg-white"}`}
                     style={{ width: `${Math.min(100, Math.max(0, dfsPct!))}%` }}
                   />
                 </div>
@@ -349,26 +349,26 @@ export default async function DashboardPage() {
         />
 
         {/* Avisos — timeline con puntos */}
-        <div className="md:col-span-2 bg-white rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+        <div className="md:col-span-2 bg-surface rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold tracking-tight text-gray-900">Avisos</h2>
-            {alerts.length === 0 && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
+            <h2 className="text-base font-bold tracking-tight text-ink">Avisos</h2>
+            {alerts.length === 0 && <CheckCircle2 className="h-4 w-4 text-accent-ink" />}
           </div>
           {alerts.length === 0 ? (
-            <p className="text-sm text-gray-400">Todo en orden. Nada que revisar hoy.</p>
+            <p className="text-sm text-ink-faint">Todo en orden. Nada que revisar hoy.</p>
           ) : (
             <ul className="space-y-3">
               {alerts.map((a, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <span
-                    className={`mt-1 h-2 w-2 shrink-0 rounded-full ${a.tone === "danger" ? "bg-red-500" : "bg-amber-400"}`}
+                    className={`mt-1 h-2 w-2 shrink-0 rounded-full ${a.tone === "danger" ? "bg-alert" : "bg-brand-300"}`}
                     aria-hidden="true"
                   />
                   <Link href={a.href ?? "#"} className="group flex-1 min-w-0">
-                    <span className={`text-sm leading-snug ${a.tone === "danger" ? "text-red-700" : "text-amber-700"}`}>
+                    <span className={`text-sm leading-snug ${a.tone === "danger" ? "text-alert-ink" : "text-accent-ink"}`}>
                       {a.text}
                     </span>
-                    <ArrowRight className="inline h-3.5 w-3.5 ml-1.5 text-gray-300 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all" />
+                    <ArrowRight className="inline h-3.5 w-3.5 ml-1.5 text-ink-faint group-hover:text-ink-soft group-hover:translate-x-0.5 transition-all" />
                   </Link>
                 </li>
               ))}
@@ -378,18 +378,18 @@ export default async function DashboardPage() {
       </div>
 
       {/* Salud de los proyectos */}
-      <div className="bg-white rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+      <div className="bg-surface rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold tracking-tight text-gray-900">Salud de los proyectos</h2>
+          <h2 className="text-base font-bold tracking-tight text-ink">Salud de los proyectos</h2>
           <Link
             href="/app/proyectos"
-            className="text-[13px] font-medium text-gray-400 hover:text-brand transition-colors"
+            className="text-[13px] font-medium text-ink-faint hover:text-brand transition-colors"
           >
             Ver todos →
           </Link>
         </div>
         {projects.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ink-soft">
             Aún no hay proyectos.{" "}
             <Link href="/app/proyectos" className="text-brand underline underline-offset-2">
               Crear el primero
@@ -400,7 +400,7 @@ export default async function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
                   <th className="py-2.5 pl-4 pr-3 font-medium rounded-tl-lg">Proyecto</th>
                   <th className="py-2.5 px-3 font-medium">Nota auditoría</th>
                   <th className="py-2.5 px-3 font-medium">Tendencia rank</th>
@@ -424,13 +424,13 @@ export default async function DashboardPage() {
                             {p.name.charAt(0).toUpperCase()}
                           </span>
                           <span className="min-w-0">
-                            <span className="block font-medium text-gray-900 group-hover:text-brand transition-colors truncate">
+                            <span className="block font-medium text-ink group-hover:text-brand transition-colors truncate">
                               {p.name}
                             </span>
                             {p.domain ? (
-                              <span className="block text-xs text-gray-400 truncate">{p.domain}</span>
+                              <span className="block text-xs text-ink-faint truncate">{p.domain}</span>
                             ) : (
-                              <span className="block text-xs text-amber-600">sin dominio</span>
+                              <span className="block text-xs text-accent-ink">sin dominio</span>
                             )}
                           </span>
                         </Link>
@@ -442,36 +442,36 @@ export default async function DashboardPage() {
                         {trend && trendTotal > 0 ? (
                           <span className="flex items-center gap-3">
                             {trend.up > 0 && (
-                              <span className="inline-flex items-center gap-0.5 text-emerald-600 font-semibold tabular-nums">
+                              <span className="inline-flex items-center gap-0.5 text-accent-ink font-semibold tabular-nums">
                                 <TrendingUp className="h-3.5 w-3.5" />
                                 {trend.up}
                               </span>
                             )}
                             {trend.down > 0 && (
-                              <span className="inline-flex items-center gap-0.5 text-red-600 font-semibold tabular-nums">
+                              <span className="inline-flex items-center gap-0.5 text-alert-ink font-semibold tabular-nums">
                                 <TrendingDown className="h-3.5 w-3.5" />
                                 {trend.down}
                               </span>
                             )}
                           </span>
                         ) : (
-                          <span className="text-gray-300">—</span>
+                          <span className="text-ink-faint">—</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-gray-600 tabular-nums">
+                      <td className="py-2.5 px-3 text-ink-soft tabular-nums">
                         {geo ? (
                           <span>
                             {geo.foundCount ?? 0}/{geo.gridSize * geo.gridSize}
                             {geo.averagePosition != null && (
-                              <span className="text-gray-400"> · {geo.averagePosition.toFixed(1)}</span>
+                              <span className="text-ink-faint"> · {geo.averagePosition.toFixed(1)}</span>
                             )}
                           </span>
                         ) : (
-                          <span className="text-gray-300">—</span>
+                          <span className="text-ink-faint">—</span>
                         )}
                       </td>
-                      <td className="py-2.5 pl-3 pr-4 text-right font-semibold text-gray-900 tabular-nums">
-                        {cost > 0 ? `${cost.toFixed(2)}$` : <span className="text-gray-300">—</span>}
+                      <td className="py-2.5 pl-3 pr-4 text-right font-semibold text-ink tabular-nums">
+                        {cost > 0 ? `${cost.toFixed(2)}$` : <span className="text-ink-faint">—</span>}
                       </td>
                     </tr>
                   );
@@ -483,25 +483,25 @@ export default async function DashboardPage() {
       </div>
 
       {/* Costes del mes — barras horizontales proporcionales */}
-      <div className="bg-white rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)]">
+      <div className="bg-surface rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold tracking-tight text-gray-900">¿A dónde va el gasto?</h2>
+          <h2 className="text-base font-bold tracking-tight text-ink">¿A dónde va el gasto?</h2>
           <Link
             href="/app/costes"
-            className="text-[13px] font-medium text-gray-400 hover:text-brand transition-colors"
+            className="text-[13px] font-medium text-ink-faint hover:text-brand transition-colors"
           >
             Ver detalle →
           </Link>
         </div>
         {topEndpoints.length === 0 ? (
-          <p className="text-sm text-gray-400">Sin consumo este mes.</p>
+          <p className="text-sm text-ink-faint">Sin consumo este mes.</p>
         ) : (
           <div className="space-y-3">
             {topEndpoints.map((r) => (
               <div key={r.endpoint} className="flex items-center gap-3">
-                <span className="w-56 shrink-0 text-[13px] text-gray-600 truncate">
+                <span className="w-56 shrink-0 text-[13px] text-ink-soft truncate">
                   {ENDPOINT_LABELS[r.endpoint] ?? r.endpoint}
-                  <span className="text-gray-400"> · {r.count}</span>
+                  <span className="text-ink-faint"> · {r.count}</span>
                 </span>
                 <div className="flex-1 h-2.5 rounded-full bg-black/[0.05] overflow-hidden">
                   <div
@@ -509,7 +509,7 @@ export default async function DashboardPage() {
                     style={{ width: `${Math.max(4, (r.cost / topEndpointsMax) * 100)}%` }}
                   />
                 </div>
-                <span className="w-20 shrink-0 text-right text-[13px] font-semibold text-gray-900 tabular-nums">
+                <span className="w-20 shrink-0 text-right text-[13px] font-semibold text-ink tabular-nums">
                   {r.cost.toFixed(3)}$
                 </span>
               </div>

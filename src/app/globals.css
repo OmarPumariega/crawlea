@@ -1,50 +1,50 @@
 @import "tailwindcss";
+@import "./crawlea.css";
+
+/* ==========================================================================
+   Identidad Crawlea (Guia de estilo/GUIA-DE-ESTILO.md)
+   Los tokens de diseño viven en crawlea.css (rampa índigo, neutros azules,
+   alerta coral, tema claro/oscuro con data-theme). Aquí solo:
+     1. Alias de compatibilidad con la identidad anterior (verde/lima) para
+        que las ~300 clases bg-brand / text-signal / bg-sidebar / etc. de las
+        vistas existentes se re-pinten con la nueva paleta sin tocar cada
+        archivo. Se retiran gradualmente a medida que las vistas adopten los
+        tokens de la guía.
+     2. El tono del marco exterior de la "framed app" (un paso más oscuro
+        que canvas).
+     3. Base y animaciones del chrome que no son tokens.
+   ========================================================================== */
 
 :root {
-  /* Identidad v3 "framed app": el lienzo del contenido es un gris cálido
-     con suficiente contraste para que las tarjetas BLANCAS respiren y se
-     separen del fondo (antes era casi blanco y las tarjetas no destacaban). */
-  --background: #f2f1ec;
-  --foreground: #1a1d1a;
+  /* Marco exterior de la framed app: mismo tinte azulado, un paso más
+     profundo que canvas para que la app redondeada siga flotando. */
+  --frame: #e9ebf4;
 
-  /* El marco: gris cálido exterior sobre el que flota la app redondeada, y el
-     tono del panel de navegación (un paso más oscuro que el contenido). */
-  --canvas: #e9e8e3;
-  --sidebar: #f1f0eb;
-
-  /* Marca: verde profundo tipo teal (referencia Bankio). Al ser el token del
-     que cuelgan bg-brand / text-brand / ring-brand, el cambio de identidad se
-     propaga a botones, focos y acentos de todas las vistas sin tocar cada una. */
-  --brand: #0e6b4f;
-  --brand-strong: #0c5d45;
+  /* Alias de la identidad anterior → rampa índigo de la guía. */
+  --brand: #4f5cf5; /* brand-500: botón primario, dato destacado, enlaces */
+  --brand-strong: #3238ad; /* brand-700: hover/pulsado del primario */
   --brand-foreground: #ffffff;
+  --signal: #9da8ff; /* acento sobre superficies oscuras (brand-200) */
+  --alert-bright: #ff8a91; /* coral claro para texto sobre superficies oscuras fijas */
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --sidebar: var(--surface);
+}
 
-  /* Tinta oscura para superficies protagonista (login, tarjetas hero) y señal
-     lima: el detalle que vive sobre oscuro (porcentajes destacados). */
-  --ink: #141814;
-  --ink-soft: #1f251f;
-  --signal: #c8f24e;
-
-  /* Hairline sobre papel, más cálida que gray-200. */
-  --line: #e7e5e0;
+[data-theme="dark"] {
+  --frame: #090b17;
 }
 
 @theme inline {
+  --color-frame: var(--frame);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-canvas: var(--canvas);
   --color-sidebar: var(--sidebar);
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
   --color-brand-foreground: var(--brand-foreground);
-  --color-ink: var(--ink);
-  --color-ink-soft: var(--ink-soft);
   --color-signal: var(--signal);
-  --color-line: var(--line);
-  /* Las fuentes llegan como variables CSS de next/font (layout raíz): todas
-     las utilidades font-sans / font-mono heredan la identidad tipográfica. */
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
+  --color-alert-bright: var(--alert-bright);
 }
 
 body {
@@ -55,23 +55,23 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Selección con la señal de marca */
+/* Selección con el tinte del acento */
 ::selection {
-  background: var(--signal);
+  background: var(--accent-tint);
   color: var(--ink);
 }
 
 /* Foco visible único y consistente en toda la app: anillo de marca que
    respeta los radios y no se recorta en botones/tarjetas redondeadas. */
 :focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--brand) 60%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--color-brand-500) 60%, transparent);
   outline-offset: 2px;
 }
 
-/* Scrollbars finos y discretos, en el tono del papel */
+/* Scrollbars finos y discretos, en el tono de los neutros */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #c9c7bc transparent;
+  scrollbar-color: color-mix(in srgb, var(--ink) 25%, transparent) transparent;
 }
 
 /* Animaciones del chrome: barras de ranking del login y apertura de modales */
@@ -117,6 +117,6 @@ body {
   content: attr(data-placeholder);
   float: left;
   height: 0;
-  color: #9ca3af;
+  color: var(--ink-faint);
   pointer-events: none;
 }

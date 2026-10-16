@@ -246,17 +246,17 @@ export default function TfidfView({ projectId }: { projectId: string }) {
 
       {/* Resultados disponibles (auto-generados desde Rank Tracking) */}
       {loadingStored && stored.length === 0 && (
-        <div className="flex items-center gap-2 text-xs text-gray-400">
+        <div className="flex items-center gap-2 text-xs text-ink-faint">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           Cargando resultados guardados…
         </div>
       )}
       {stored.length > 0 && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 space-y-3">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 space-y-3">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-gray-400" />
-              <h3 className="text-sm font-semibold text-gray-900">
+              <Clock className="h-4 w-4 text-ink-faint" />
+              <h3 className="text-sm font-semibold text-ink">
                 Resultados disponibles ({visibleStored.length}{visibleStored.length !== stored.length ? ` de ${stored.length}` : ""})
               </h3>
             </div>
@@ -271,7 +271,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
               <select
                 value={storedSort}
                 onChange={(e) => setStoredSort(e.target.value as StoredSort)}
-                className="px-2 py-1 border border-line rounded-xl text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white text-gray-600"
+                className="px-2 py-1 border border-line rounded-xl text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-surface text-ink-soft"
               >
                 <option value="alpha">Alfabético</option>
                 <option value="best-position">Mejor posición</option>
@@ -281,7 +281,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
             </div>
           </div>
           {visibleStored.length === 0 ? (
-            <p className="text-xs text-gray-400">Ninguna keyword coincide con la búsqueda.</p>
+            <p className="text-xs text-ink-faint">Ninguna keyword coincide con la búsqueda.</p>
           ) : (
             <div className="flex flex-wrap gap-1.5">
               {visibleStored.map((s) => (
@@ -291,14 +291,14 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                   className={cn(
                     "px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
                     result === s.result
-                      ? "bg-gray-900 text-white border-gray-900"
-                      : "border-line text-gray-600 hover:bg-background"
+                      ? "bg-brand-900 text-white border-brand-900"
+                      : "border-line text-ink-soft hover:bg-background"
                   )}
                   title={new Date(s.updatedAt).toLocaleDateString("es-ES")}
                 >
                   {s.keyword}
                   {(s.position != null || s.searchVolume != null) && (
-                    <span className={cn("ml-1.5 font-normal", result === s.result ? "text-gray-300" : "text-gray-400")}>
+                    <span className={cn("ml-1.5 font-normal", result === s.result ? "text-ink-faint" : "text-ink-faint")}>
                       {s.position != null && `· #${s.position}`}
                       {s.searchVolume != null && ` · ${s.searchVolume.toLocaleString("es-ES")}/mes`}
                     </span>
@@ -311,10 +311,10 @@ export default function TfidfView({ projectId }: { projectId: string }) {
       )}
 
       {/* Formulario de análisis manual */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Keyword</label>
+            <label className="block text-sm font-medium text-ink-soft">Keyword</label>
             <input
               type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)}
               placeholder="ej. reformas cocina valencia" required
@@ -322,15 +322,15 @@ export default function TfidfView({ projectId }: { projectId: string }) {
             />
           </div>
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">
-              Ubicación <span className="text-gray-400 font-normal">(opcional)</span>
+            <label className="block text-sm font-medium text-ink-soft">
+              Ubicación <span className="text-ink-faint font-normal">(opcional)</span>
             </label>
             <LocationPicker value={location} onChange={setLocation} />
           </div>
         </div>
         <div>
           <button type="button" onClick={() => setShowAdvanced((v) => !v)}
-            className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-900">
+            className="flex items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink">
             {showAdvanced ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
             Opciones avanzadas
           </button>
@@ -339,13 +339,13 @@ export default function TfidfView({ projectId }: { projectId: string }) {
               placeholder="es" className="mt-2 w-24 px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand" />
           )}
         </div>
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+        {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-ink-faint">
             Coste: ~0,002 $ (gratis si rank tracking ya consultó esa keyword).
           </p>
           <button type="submit" disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50">
+            className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             Analizar
           </button>
@@ -360,34 +360,34 @@ export default function TfidfView({ projectId }: { projectId: string }) {
               quienes ya posicionan. Llega gratis con el SERP que paga el
               rank tracking / este análisis. */}
           {result.competitors && result.competitors.length > 0 && (
-            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+            <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
               <div className="flex items-center gap-2 mb-1">
-                <Search className="h-4 w-4 text-gray-400" />
-                <h3 className="text-sm font-semibold text-gray-900">
+                <Search className="h-4 w-4 text-ink-faint" />
+                <h3 className="text-sm font-semibold text-ink">
                   Cómo lo muestran tus competidores en Google (top-10)
                 </h3>
               </div>
-              <p className="text-xs text-gray-400 mb-4">
+              <p className="text-xs text-ink-faint mb-4">
                 El título y el snippet con el que Google muestra a cada resultado — tu mejor referencia de copy para titulo/meta.
               </p>
               <ol className="space-y-2">
                 {result.competitors.map((c, i) => (
                   <li key={i} className="flex gap-2.5">
-                    <span className="shrink-0 mt-0.5 h-5 w-5 rounded bg-gray-100 text-gray-500 text-[11px] font-semibold inline-flex items-center justify-center tabular-nums">
+                    <span className="shrink-0 mt-0.5 h-5 w-5 rounded bg-surface-muted text-ink-soft text-[11px] font-semibold inline-flex items-center justify-center tabular-nums">
                       {c.position ?? i + 1}
                     </span>
                     <div className="min-w-0 flex-1">
                       <a
                         href={c.url} target="_blank" rel="noopener noreferrer"
-                        className="text-sm text-indigo-700 hover:underline font-medium inline-flex items-start gap-1"
+                        className="text-sm text-accent-ink hover:underline font-medium inline-flex items-start gap-1"
                       >
                         <span className="truncate">{c.title || c.url}</span>
-                        <ExternalLink className="h-3 w-3 shrink-0 mt-1 text-gray-400" />
+                        <ExternalLink className="h-3 w-3 shrink-0 mt-1 text-ink-faint" />
                       </a>
                       {c.description && (
-                        <p className="text-xs text-gray-600 leading-relaxed mt-0.5">{c.description}</p>
+                        <p className="text-xs text-ink-soft leading-relaxed mt-0.5">{c.description}</p>
                       )}
-                      <p className="text-[11px] text-gray-400 truncate mt-0.5">
+                      <p className="text-[11px] text-ink-faint truncate mt-0.5">
                         {(() => {
                           try {
                             return new URL(c.url).hostname.replace(/^www\./, "");
@@ -409,40 +409,40 @@ export default function TfidfView({ projectId }: { projectId: string }) {
           {((result.peopleAlsoAsk && result.peopleAlsoAsk.length > 0) ||
             (result.relatedSearches && result.relatedSearches.length > 0) ||
             result.featuredSnippet) && (
-            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
-              <h3 className="text-sm font-semibold text-gray-900">Ideas de contenido desde el propio SERP</h3>
+            <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
+              <h3 className="text-sm font-semibold text-ink">Ideas de contenido desde el propio SERP</h3>
               {result.featuredSnippet && (
                 <div>
-                  <p className="text-xs font-medium text-gray-500 mb-1">Featured snippet actual</p>
+                  <p className="text-xs font-medium text-ink-soft mb-1">Featured snippet actual</p>
                   <div className="bg-background rounded-lg p-3">
-                    <p className="text-sm font-medium text-gray-900">{result.featuredSnippet.title ?? "(sin título)"}</p>
+                    <p className="text-sm font-medium text-ink">{result.featuredSnippet.title ?? "(sin título)"}</p>
                     {result.featuredSnippet.description && (
-                      <p className="text-xs text-gray-600 mt-0.5">{result.featuredSnippet.description}</p>
+                      <p className="text-xs text-ink-soft mt-0.5">{result.featuredSnippet.description}</p>
                     )}
                     {result.featuredSnippet.url && (
-                      <p className="text-[11px] text-gray-400 mt-0.5 truncate">{result.featuredSnippet.url}</p>
+                      <p className="text-[11px] text-ink-faint mt-0.5 truncate">{result.featuredSnippet.url}</p>
                     )}
                   </div>
                 </div>
               )}
               {result.peopleAlsoAsk && result.peopleAlsoAsk.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-gray-500 mb-1">
+                  <p className="text-xs font-medium text-ink-soft mb-1">
                     La gente también pregunta ({result.peopleAlsoAsk.length})
                   </p>
                   <ul className="space-y-1">
                     {result.peopleAlsoAsk.map((q, i) => (
-                      <li key={i} className="text-sm text-gray-700">• {q.question}</li>
+                      <li key={i} className="text-sm text-ink-soft">• {q.question}</li>
                     ))}
                   </ul>
                 </div>
               )}
               {result.relatedSearches && result.relatedSearches.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-gray-500 mb-1">Búsquedas relacionadas</p>
+                  <p className="text-xs font-medium text-ink-soft mb-1">Búsquedas relacionadas</p>
                   <div className="flex flex-wrap gap-1.5">
                     {result.relatedSearches.map((s, i) => (
-                      <span key={i} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{s}</span>
+                      <span key={i} className="text-xs px-2 py-0.5 bg-surface-muted text-ink-soft rounded-full">{s}</span>
                     ))}
                   </div>
                 </div>
@@ -452,26 +452,26 @@ export default function TfidfView({ projectId }: { projectId: string }) {
 
           {/* Temas del top-10 (H2/H3 con cobertura) */}
           {result.topics.length > 0 && (
-            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+            <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
-                  <FileSearch className="h-4 w-4 text-gray-400" />
-                  <h3 className="text-sm font-semibold text-gray-900">Temas del top-10 ({result.topics.length})</h3>
+                  <FileSearch className="h-4 w-4 text-ink-faint" />
+                  <h3 className="text-sm font-semibold text-ink">Temas del top-10 ({result.topics.length})</h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={copyTopics}
-                    className="flex items-center gap-1.5 px-2.5 py-1 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background">
-                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <ClipboardCopy className="h-3.5 w-3.5" />}
+                    className="flex items-center gap-1.5 px-2.5 py-1 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background">
+                    {copied ? <Check className="h-3.5 w-3.5 text-accent-ink" /> : <ClipboardCopy className="h-3.5 w-3.5" />}
                     {copied ? "Copiado" : "Copiar temas"}
                   </button>
                   <button onClick={sendToKeywords} disabled={addingToKeywords}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background disabled:opacity-50"
                     title="Añadir estos temas/términos al estudio General de Keywords (resuelve volumen real)">
                     {addingToKeywords ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                     Añadir a Keywords
                   </button>
                   <button onClick={sendToContent}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700"
                     title="Llevar estos temas/términos al generador de contenido como guía de cobertura">
                     <Send className="h-3.5 w-3.5" />
                     Usar en Contenido →
@@ -488,7 +488,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                   />
                 </div>
               )}
-              <p className="text-xs text-gray-400 mb-4">
+              <p className="text-xs text-ink-faint mb-4">
                 Encabezados H2/H3 de {totalSources} páginas. {result.costUsd != null && <>Coste: {result.costUsd.toFixed(4)} $.</>}
               </p>
               <ul className="space-y-1.5">
@@ -497,10 +497,10 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                   return (
                     <li key={i} className="flex items-center justify-between gap-2 py-1.5 px-3 rounded-lg hover:bg-background">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-sm text-gray-900 truncate">{t.text}</span>
+                        <span className="text-sm text-ink truncate">{t.text}</span>
                       </div>
                       <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded tabular-nums shrink-0",
-                        pct >= 60 ? "bg-emerald-50 text-emerald-700" : pct >= 30 ? "bg-amber-50 text-amber-700" : "bg-gray-100 text-gray-500")}>
+                        pct >= 60 ? "bg-accent-tint text-accent-ink" : pct >= 30 ? "bg-accent-tint text-accent-ink" : "bg-surface-muted text-ink-soft")}>
                         {t.coverage}/{totalSources}
                       </span>
                     </li>
@@ -512,19 +512,19 @@ export default function TfidfView({ projectId }: { projectId: string }) {
 
           {/* Palabras más frecuentes en encabezados */}
           {result.headingTerms.length > 0 && (
-            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+            <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
               <div className="flex items-center gap-2 mb-3">
-                <List className="h-4 w-4 text-gray-400" />
-                <h3 className="text-sm font-semibold text-gray-900">Palabras frecuentes en encabezados</h3>
+                <List className="h-4 w-4 text-ink-faint" />
+                <h3 className="text-sm font-semibold text-ink">Palabras frecuentes en encabezados</h3>
               </div>
               <div className="space-y-1.5">
                 {result.headingTerms.slice(0, 20).map((t, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="text-sm text-gray-700 w-32 truncate">{t.term}</span>
-                    <div className="flex-1 h-4 bg-gray-100 rounded overflow-hidden">
+                    <span className="text-sm text-ink-soft w-32 truncate">{t.term}</span>
+                    <div className="flex-1 h-4 bg-surface-muted rounded overflow-hidden">
                       <div className="h-full bg-brand rounded" style={{ width: `${(t.count / maxHeadingTermCount) * 100}%` }} />
                     </div>
-                    <span className="text-xs text-gray-400 tabular-nums w-6 text-right">{t.count}</span>
+                    <span className="text-xs text-ink-faint tabular-nums w-6 text-right">{t.count}</span>
                   </div>
                 ))}
               </div>
@@ -533,8 +533,8 @@ export default function TfidfView({ projectId }: { projectId: string }) {
 
           {/* Encabezados completos por página */}
           {result.headingsByPage.length > 0 && (
-            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Encabezados por página del top-10</h3>
+            <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
+              <h3 className="text-sm font-semibold text-ink mb-3">Encabezados por página del top-10</h3>
               <div className="space-y-1.5">
                 {result.headingsByPage.map((p, i) => (
                   <div key={i} className="border border-line rounded-xl overflow-hidden">
@@ -542,16 +542,16 @@ export default function TfidfView({ projectId }: { projectId: string }) {
                       onClick={() => setExpandedPage(expandedPage === p.url ? null : p.url)}
                       className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-background"
                     >
-                      <span className="text-gray-700 truncate flex-1 text-left">{p.url}</span>
-                      <span className="text-xs text-gray-400 shrink-0">{p.headings.length} H2/H3</span>
+                      <span className="text-ink-soft truncate flex-1 text-left">{p.url}</span>
+                      <span className="text-xs text-ink-faint shrink-0">{p.headings.length} H2/H3</span>
                       {expandedPage === p.url
-                        ? <ChevronUp className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                        : <ChevronDown className="h-3.5 w-3.5 text-gray-400 shrink-0" />}
+                        ? <ChevronUp className="h-3.5 w-3.5 text-ink-faint shrink-0" />
+                        : <ChevronDown className="h-3.5 w-3.5 text-ink-faint shrink-0" />}
                     </button>
                     {expandedPage === p.url && (
                       <ul className="px-4 py-2 space-y-1 bg-background">
                         {p.headings.map((h, j) => (
-                          <li key={j} className="text-sm text-gray-600">• {h}</li>
+                          <li key={j} className="text-sm text-ink-soft">• {h}</li>
                         ))}
                       </ul>
                     )}
@@ -563,26 +563,26 @@ export default function TfidfView({ projectId }: { projectId: string }) {
 
           {/* Términos TF-IDF (colapsable) */}
           {result.terms.length > 0 && (
-            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+            <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
               <button onClick={() => setShowTerms((v) => !v)}
-                className="flex items-center gap-1 text-sm font-semibold text-gray-900">
+                className="flex items-center gap-1 text-sm font-semibold text-ink">
                 {showTerms ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 Términos relevantes (TF-IDF) — {result.terms.length}
               </button>
               {showTerms && (
                 <div className="overflow-x-auto mt-3">
                   <table className="w-full text-sm">
-                    <thead><tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                    <thead><tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
                       <th className="py-2 pr-4 font-medium">Término</th>
                       <th className="py-2 pr-4 font-medium">TF-IDF</th>
                       <th className="py-2 font-medium">Nº docs</th>
                     </tr></thead>
                     <tbody>
                       {result.terms.map((t) => (
-                        <tr key={t.term} className="border-b border-gray-50 last:border-0">
-                          <td className="py-2 pr-4 text-gray-900 font-medium">{t.term}</td>
-                          <td className="py-2 pr-4 text-gray-500 font-mono text-xs">{t.tfidf}</td>
-                          <td className="py-2 text-gray-500">{t.docs}</td>
+                        <tr key={t.term} className="border-b border-line last:border-0">
+                          <td className="py-2 pr-4 text-ink font-medium">{t.term}</td>
+                          <td className="py-2 pr-4 text-ink-soft font-mono text-xs">{t.tfidf}</td>
+                          <td className="py-2 text-ink-soft">{t.docs}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -593,15 +593,15 @@ export default function TfidfView({ projectId }: { projectId: string }) {
           )}
 
           {/* Corpus */}
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Corpus ({result.sources.length} páginas)</h3>
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
+            <h3 className="text-sm font-semibold text-ink mb-3">Corpus ({result.sources.length} páginas)</h3>
             {result.sources.length === 0 ? (
-              <p className="text-sm text-gray-500">No se pudo scrapear ninguna página.</p>
+              <p className="text-sm text-ink-soft">No se pudo scrapear ninguna página.</p>
             ) : (
               <ul className="space-y-1">
                 {result.sources.map((url) => (
                   <li key={url}>
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline truncate block">
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-accent-ink hover:underline truncate block">
                       {url}
                     </a>
                   </li>

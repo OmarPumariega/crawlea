@@ -40,11 +40,11 @@ const TYPE_LABEL: Record<Suggestion["type"], string> = {
 };
 
 const TYPE_BADGE: Record<Suggestion["type"], string> = {
-  titulo: "bg-indigo-50 text-indigo-700",
-  meta: "bg-indigo-50 text-indigo-700",
-  h1: "bg-amber-50 text-amber-700",
-  encabezado: "bg-amber-50 text-amber-700",
-  contenido: "bg-emerald-50 text-emerald-700",
+  titulo: "bg-accent-tint text-accent-ink",
+  meta: "bg-accent-tint text-accent-ink",
+  h1: "bg-accent-tint text-accent-ink",
+  encabezado: "bg-accent-tint text-accent-ink",
+  contenido: "bg-accent-tint text-accent-ink",
 };
 
 export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
@@ -130,24 +130,24 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
   return (
     <div className="space-y-6">
       {!loadingRecent && recentRuns.length > 0 && !run && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-gray-400" />
-            <h3 className="text-sm font-semibold text-gray-900">Análisis recientes del proyecto</h3>
+            <Clock className="h-4 w-4 text-ink-faint" />
+            <h3 className="text-sm font-semibold text-ink">Análisis recientes del proyecto</h3>
           </div>
           <div className="space-y-2">
             {recentRuns.slice(0, 8).map((h) => (
               <button
                 key={h.id}
                 onClick={() => selectRecent(h)}
-                className="w-full text-left bg-white rounded-lg border border-line p-3 hover:bg-background transition-colors"
+                className="w-full text-left bg-surface rounded-lg border border-line p-3 hover:bg-background transition-colors"
               >
-                <p className="text-sm text-gray-900 truncate">{h.url}</p>
+                <p className="text-sm text-ink truncate">{h.url}</p>
                 <div className="flex items-center justify-between mt-0.5">
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-ink-soft">
                     {h.targetKeyword} · {h.suggestions.length} sugerencias
                   </span>
-                  <span className="text-xs text-gray-400 shrink-0 ml-2">
+                  <span className="text-xs text-ink-faint shrink-0 ml-2">
                     {new Date(h.createdAt).toLocaleDateString("es-ES")}
                   </span>
                 </div>
@@ -157,9 +157,9 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">URL a optimizar</label>
+          <label className="block text-sm font-medium text-ink-soft">URL a optimizar</label>
           <input
             type="url"
             value={url}
@@ -168,15 +168,15 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
             required
             className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-ink-faint">
             Se lee el contenido actual de la página y se compara contra el top-10 de Google, tus
             competidores y el estudio de keywords del proyecto.
           </p>
         </div>
 
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">
-            Keyword objetivo <span className="text-gray-400 font-normal">(opcional — se autosugiere si la URL está en Rank Tracking)</span>
+          <label className="block text-sm font-medium text-ink-soft">
+            Keyword objetivo <span className="text-ink-faint font-normal">(opcional — se autosugiere si la URL está en Rank Tracking)</span>
           </label>
           <input
             type="text"
@@ -186,12 +186,12 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
           />
         </div>
 
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+        {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
 
         <button
           type="submit"
           disabled={loading || !url.trim()}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
           Optimizar
@@ -200,47 +200,47 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
 
       {run && (
         <>
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
             <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-gray-400" />
-              <h3 className="text-sm font-semibold text-gray-900">Estado actual de la página</h3>
+              <FileText className="h-4 w-4 text-ink-faint" />
+              <h3 className="text-sm font-semibold text-ink">Estado actual de la página</h3>
             </div>
             <div className="grid sm:grid-cols-2 gap-3 text-sm">
               <div>
-                <span className="text-gray-400">Keyword objetivo:</span>{" "}
-                <span className="text-gray-900 font-medium">{run.targetKeyword}</span>
+                <span className="text-ink-faint">Keyword objetivo:</span>{" "}
+                <span className="text-ink font-medium">{run.targetKeyword}</span>
               </div>
               <div>
-                <span className="text-gray-400">Posición actual:</span>{" "}
-                <span className="text-gray-900 font-medium">
+                <span className="text-ink-faint">Posición actual:</span>{" "}
+                <span className="text-ink font-medium">
                   {run.rankPosition !== null ? run.rankPosition : "sin trackear / fuera de rango"}
                 </span>
               </div>
               <div className="sm:col-span-2">
-                <span className="text-gray-400">Título:</span>{" "}
-                <span className="text-gray-900">{run.currentSnapshot.title || "(vacío)"}</span>
+                <span className="text-ink-faint">Título:</span>{" "}
+                <span className="text-ink">{run.currentSnapshot.title || "(vacío)"}</span>
               </div>
               <div className="sm:col-span-2">
-                <span className="text-gray-400">H1:</span>{" "}
-                <span className="text-gray-900">{run.currentSnapshot.h1 || "(vacío)"}</span>
+                <span className="text-ink-faint">H1:</span>{" "}
+                <span className="text-ink">{run.currentSnapshot.h1 || "(vacío)"}</span>
               </div>
               <div>
-                <span className="text-gray-400">Nº palabras:</span>{" "}
-                <span className="text-gray-900">{run.currentSnapshot.wordCount}</span>
+                <span className="text-ink-faint">Nº palabras:</span>{" "}
+                <span className="text-ink">{run.currentSnapshot.wordCount}</span>
               </div>
               <div>
-                <span className="text-gray-400">Encabezados H2/H3:</span>{" "}
-                <span className="text-gray-900">{run.currentSnapshot.headings.length}</span>
+                <span className="text-ink-faint">Encabezados H2/H3:</span>{" "}
+                <span className="text-ink">{run.currentSnapshot.headings.length}</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
-            <h3 className="text-sm font-semibold text-gray-900">
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
+            <h3 className="text-sm font-semibold text-ink">
               Cambios recomendados ({run.suggestions.length})
             </h3>
             {run.suggestions.length === 0 ? (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-ink-soft">
                 No se han encontrado cambios claros que recomendar — la página ya cubre bien lo que
                 se ha comparado.
               </p>
@@ -252,14 +252,14 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
                       <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded", TYPE_BADGE[s.type])}>
                         {TYPE_LABEL[s.type]}
                       </span>
-                      <span className="text-xs text-gray-500">{s.location}</span>
+                      <span className="text-xs text-ink-soft">{s.location}</span>
                     </div>
                     {s.current && (
-                      <p className="text-sm text-gray-400 line-through">{s.current}</p>
+                      <p className="text-sm text-ink-faint line-through">{s.current}</p>
                     )}
-                    <p className="text-sm text-gray-900">{s.recommended}</p>
-                    <p className="text-xs text-gray-500 flex items-start gap-1">
-                      <AlertCircle className="h-3.5 w-3.5 text-gray-400 shrink-0 mt-0.5" />
+                    <p className="text-sm text-ink">{s.recommended}</p>
+                    <p className="text-xs text-ink-soft flex items-start gap-1">
+                      <AlertCircle className="h-3.5 w-3.5 text-ink-faint shrink-0 mt-0.5" />
                       {s.reason}
                     </p>
                   </div>
@@ -271,13 +271,13 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
       )}
 
       {(loadingHistory || history.length > 0) && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <History className="h-4 w-4 text-gray-400" />
-            <h3 className="text-sm font-semibold text-gray-900">Optimizaciones previas de esta URL</h3>
+            <History className="h-4 w-4 text-ink-faint" />
+            <h3 className="text-sm font-semibold text-ink">Optimizaciones previas de esta URL</h3>
           </div>
           {loadingHistory ? (
-            <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+            <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
           ) : (
             <div className="space-y-2">
               {history.map((h) => (
@@ -285,15 +285,15 @@ export default function OptimizeUrlPanel({ projectId }: { projectId: string }) {
                   key={h.id}
                   onClick={() => setRun(h)}
                   className={cn(
-                    "w-full text-left bg-white rounded-lg border p-3 hover:bg-background transition-colors",
-                    run?.id === h.id ? "border-gray-900" : "border-line"
+                    "w-full text-left bg-surface rounded-lg border p-3 hover:bg-background transition-colors",
+                    run?.id === h.id ? "border-brand-900" : "border-line"
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-900">
+                    <p className="text-sm text-ink">
                       {h.targetKeyword} · {h.suggestions.length} sugerencias
                     </p>
-                    <span className="text-xs text-gray-400 shrink-0 ml-2 flex items-center gap-1">
+                    <span className="text-xs text-ink-faint shrink-0 ml-2 flex items-center gap-1">
                       <Search className="h-3 w-3" /> {new Date(h.createdAt).toLocaleString("es-ES")}
                     </span>
                   </div>

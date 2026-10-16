@@ -40,8 +40,8 @@ export default function Stepper({
                 className={cn(
                   "flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-full text-xs font-semibold border transition-colors",
                   isDone && "bg-brand text-white border-brand",
-                  isCurrent && "bg-white text-brand border-brand",
-                  !isDone && !isCurrent && "bg-white text-gray-400 border-line"
+                  isCurrent && "bg-surface text-brand border-brand",
+                  !isDone && !isCurrent && "bg-surface text-ink-faint border-line"
                 )}
               >
                 {isDone ? <Check className="h-3.5 w-3.5" /> : i + 1}
@@ -49,11 +49,11 @@ export default function Stepper({
               <span
                 className={cn(
                   "text-xs sm:text-sm hidden sm:block",
-                  isCurrent ? "text-gray-900 font-medium" : isDone ? "text-gray-700" : "text-gray-400"
+                  isCurrent ? "text-ink font-medium" : isDone ? "text-ink-soft" : "text-ink-faint"
                 )}
               >
                 {step.title}
-                {step.optional && <span className="text-gray-300 font-normal"> · opcional</span>}
+                {step.optional && <span className="text-ink-faint font-normal"> · opcional</span>}
               </span>
             </button>
             {i < steps.length - 1 && (

@@ -1,34 +1,30 @@
 import { cn } from "@/lib/utils";
 
-// Marca de Crawlea: cuadrado redondeado + tres barras ascendentes (motivo de
-// ranking/crecimiento). El símbolo usa el color de marca y no depende del
-// color del texto contenedor:
-//   • "brand" (default): cuadrado verde de marca, barras blancas — el tono
-//     acento del sistema, funciona sobre claro y oscuro.
-//   • "light" (fondos de tinta, p. ej. el login): cuadrado lima, barras tinta.
-
-function LogoMark({
-  className,
-  tone = "brand",
-}: {
-  className?: string;
-  tone?: "brand" | "light";
-}) {
-  const squareFill = tone === "brand" ? "var(--brand)" : "var(--signal)";
-  const barsFill = tone === "brand" ? "#ffffff" : "var(--ink)";
+// Marca de Crawlea (Guia de estilo, §8): una «c» abierta en blanco con un
+// punto en la boca (el rastreador entrando en la web), sobre cuadrado índigo
+// brand-500 de esquinas muy redondas. El punto va en brand-100. El nombre va
+// en minúsculas, un solo color (tinta sobre claro, claro sobre oscuro).
+// El símbolo usa siempre los colores fijos de la guía — funciona igual sobre
+// fondo claro y oscuro, por eso el prop tone ya no cambia el relleno (se
+// conserva por compatibilidad con los usos existentes).
+function LogoMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden="true">
-      <rect width="32" height="32" rx="7" fill={squareFill} />
-      <rect x="8" y="17" width="3" height="7" rx="1" fill={barsFill} />
-      <rect x="13.5" y="13" width="3" height="11" rx="1" fill={barsFill} />
-      <rect x="19" y="9" width="3" height="15" rx="1" fill={barsFill} />
+    <svg viewBox="0 0 64 64" fill="none" className={className} aria-hidden="true">
+      <rect width="64" height="64" rx="18" fill="#4F5CF5" />
+      <path
+        d="M43.52 21.63A15.5 15.5 0 1 0 43.52 42.37"
+        stroke="#ffffff"
+        strokeWidth="7.5"
+        strokeLinecap="round"
+      />
+      <circle cx="46" cy="32" r="4.6" fill="#C3CAFF" />
     </svg>
   );
 }
 
 export default function Logo({
   compact = false,
-  tone = "brand",
+  tone,
   className,
   textClassName,
 }: {
@@ -39,10 +35,15 @@ export default function Logo({
 }) {
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      <LogoMark className="h-7 w-7 shrink-0" tone={tone} />
+      <LogoMark className="h-7 w-7 shrink-0" />
       {!compact && (
-        <span className={cn("font-semibold tracking-tight text-gray-900", textClassName)}>
-          Crawlea
+        <span
+          className={cn(
+            "font-extrabold tracking-[-0.02em] text-ink lowercase",
+            textClassName
+          )}
+        >
+          crawlea
         </span>
       )}
     </span>

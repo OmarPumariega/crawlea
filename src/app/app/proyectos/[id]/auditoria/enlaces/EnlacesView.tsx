@@ -42,7 +42,7 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="flex items-center gap-2 text-sm text-ink-soft">
         <Loader2 className="h-4 w-4 animate-spin" />
         Analizando el enlazado interno…
       </div>
@@ -51,19 +51,19 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
 
   if (needsAudit) {
     return (
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-6 space-y-2">
-        <div className="flex items-center gap-2 text-gray-900 font-medium">
-          <Network className="h-5 w-5 text-gray-400" />
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-6 space-y-2">
+        <div className="flex items-center gap-2 text-ink font-medium">
+          <Network className="h-5 w-5 text-ink-faint" />
           Aún no hay grafo de enlaces
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-ink-soft">
           Ejecuta una auditoría para analizar el enlazado interno. El rastreo
           construye el grafo de enlaces sobre el que se calcula el PageRank y
           se detectan las páginas huérfanas.
         </p>
         <Link
           href={`/app/proyectos/${projectId}/auditoria`}
-          className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800"
+          className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700"
         >
           Ir a la pestaña Auditoría
         </Link>
@@ -86,17 +86,17 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
         title="Enlazado interno"
         description="PageRank interno calculado sobre el grafo de enlaces de la última auditoría — identifica qué URLs reciben más fuerza, cuáles están huérfanas y cuáles son hubs distribuidores."
       />
-      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
+      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
         {all.length} URLs analizadas · {data.totalExternalLinks} enlaces externos · auditoría del{" "}
         {new Date(data.auditDate).toLocaleDateString("es-ES")}
       </p>
 
       {/* Tabla completa de PageRank por URL */}
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Network className="h-4 w-4 text-gray-500" />
-            <h3 className="text-sm font-semibold text-gray-900">
+            <Network className="h-4 w-4 text-ink-soft" />
+            <h3 className="text-sm font-semibold text-ink">
               PageRank por URL ({all.length})
             </h3>
           </div>
@@ -108,7 +108,7 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
                 all.map((p) => [p.url, (p.pagerank * 100).toFixed(2), p.incoming, p.outgoing, p.externalLinks])
               )
             }
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-line text-gray-700 text-xs font-medium rounded-lg hover:bg-background"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background"
             title="Exportar a CSV"
           >
             <Download className="h-3.5 w-3.5" />
@@ -117,8 +117,8 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
         </div>
         <div className="overflow-x-auto max-h-[28rem] overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-white">
-              <tr className="text-left text-xs text-gray-400 border-b border-line">
+            <thead className="sticky top-0 bg-surface">
+              <tr className="text-left text-xs text-ink-faint border-b border-line">
                 <th className="font-medium py-2 pr-4">URL</th>
                 <th className="font-medium py-2 px-2 text-right">PageRank</th>
                 <th className="font-medium py-2 px-2 text-right">Entrantes</th>
@@ -131,30 +131,30 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
               {all.map((page) => {
                 const widthPct = maxRank > 0 ? (page.pagerank / maxRank) * 100 : 0;
                 return (
-                  <tr key={page.url} className="border-b border-gray-50">
+                  <tr key={page.url} className="border-b border-line">
                     <td className="py-1.5 pr-4 max-w-[320px]">
                       <UrlLink url={page.url} className="text-xs" />
                     </td>
-                    <td className="py-1.5 px-2 text-right text-gray-500 tabular-nums text-xs">
+                    <td className="py-1.5 px-2 text-right text-ink-soft tabular-nums text-xs">
                       {(page.pagerank * 100).toFixed(2)}%
                     </td>
-                    <td className="py-1.5 px-2 text-right text-gray-500 tabular-nums">
+                    <td className="py-1.5 px-2 text-right text-ink-soft tabular-nums">
                       {page.incoming}
                     </td>
-                    <td className="py-1.5 px-2 text-right text-gray-500 tabular-nums">
+                    <td className="py-1.5 px-2 text-right text-ink-soft tabular-nums">
                       {page.outgoing}
                     </td>
                     <td className="py-1.5 px-2 text-right tabular-nums" title={page.externalDomains.join(", ")}>
                       {page.externalLinks > 0 ? (
-                        <span className="text-gray-600">{page.externalLinks}</span>
+                        <span className="text-ink-soft">{page.externalLinks}</span>
                       ) : (
-                        <span className="text-gray-300">0</span>
+                        <span className="text-ink-faint">0</span>
                       )}
                     </td>
                     <td className="py-1.5 pl-2">
-                      <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-2 w-full bg-surface-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gray-900 rounded-full"
+                          className="h-full bg-brand-900 rounded-full"
                           style={{ width: `${widthPct}%` }}
                         />
                       </div>
@@ -168,37 +168,37 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
           <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
-            <h3 className="text-sm font-semibold text-gray-900">
+            <AlertTriangle className="h-4 w-4 text-accent-ink" />
+            <h3 className="text-sm font-semibold text-ink">
               Páginas huérfanas ({data.orphans.length})
             </h3>
           </div>
           {data.orphans.length === 0 ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-ink-soft">
               No hay páginas huérfanas: todas reciben al menos un enlace interno.
             </p>
           ) : (
             <ul className="space-y-1.5">
               {data.orphans.map((url) => (
                 <li key={url}>
-                  <span className="inline-block bg-amber-50 px-2 py-1 rounded-md max-w-full align-middle">
-                    <UrlLink url={url} className="text-xs text-amber-700 hover:text-amber-900" showIcon={false} />
+                  <span className="inline-block bg-accent-tint px-2 py-1 rounded-md max-w-full align-middle">
+                    <UrlLink url={url} className="text-xs text-accent-ink hover:text-ink" showIcon={false} />
                   </span>
                 </li>
               ))}
             </ul>
           )}
-          <p className="text-xs text-gray-400 mt-3">
+          <p className="text-xs text-ink-faint mt-3">
             Candidatas a enlazar desde otras páginas para que reciban fuerza.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Link2 className="h-4 w-4 text-gray-500" />
-            <h3 className="text-sm font-semibold text-gray-900">
+            <Link2 className="h-4 w-4 text-ink-soft" />
+            <h3 className="text-sm font-semibold text-ink">
               Principales distribuidoras (hubs)
             </h3>
           </div>
@@ -206,16 +206,16 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
             {hubs.map((hub, i) => (
               <li key={hub.url} className="flex items-center justify-between gap-3 text-sm">
                 <span className="flex items-center min-w-0">
-                  <span className="text-gray-400 mr-2 tabular-nums shrink-0">{i + 1}.</span>
+                  <span className="text-ink-faint mr-2 tabular-nums shrink-0">{i + 1}.</span>
                   <UrlLink url={hub.url} className="text-sm" />
                 </span>
-                <span className="text-xs text-gray-400 shrink-0 tabular-nums">
+                <span className="text-xs text-ink-faint shrink-0 tabular-nums">
                   {hub.outgoing} salientes
                 </span>
               </li>
             ))}
           </ol>
-          <p className="text-xs text-gray-400 mt-3">
+          <p className="text-xs text-ink-faint mt-3">
             Páginas que más enlaces reparten — buenas distribuidoras de fuerza.
           </p>
         </div>
@@ -223,10 +223,10 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
 
       {/* Dominios externos más enlazados */}
       {data.topExternalDomains.length > 0 && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Link2 className="h-4 w-4 text-gray-500" />
-            <h3 className="text-sm font-semibold text-gray-900">
+            <Link2 className="h-4 w-4 text-ink-soft" />
+            <h3 className="text-sm font-semibold text-ink">
               Dominios externos más enlazados ({data.topExternalDomains.length})
             </h3>
           </div>
@@ -234,15 +234,15 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
             {data.topExternalDomains.map((d) => (
               <span
                 key={d.domain}
-                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-700"
+                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-surface-muted text-ink-soft"
                 title={`${d.pages} página(s) enlazan este dominio`}
               >
                 {d.domain}
-                <span className="text-gray-400 tabular-nums">· {d.pages}</span>
+                <span className="text-ink-faint tabular-nums">· {d.pages}</span>
               </span>
             ))}
           </div>
-          <p className="text-xs text-gray-400 mt-3">
+          <p className="text-xs text-ink-faint mt-3">
             Dominios a los que tu sitio enlaza (según el rastreo). El número indica en cuántas páginas aparecen.
           </p>
         </div>

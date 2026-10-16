@@ -76,10 +76,10 @@ function fmtNum(v: number | null | undefined): string {
 }
 
 function rankBadge(rank: number | null): string {
-  if (rank === null) return "bg-gray-100 text-gray-400";
-  if (rank >= 500) return "bg-emerald-50 text-emerald-700";
-  if (rank >= 200) return "bg-amber-50 text-amber-700";
-  return "bg-gray-100 text-gray-600";
+  if (rank === null) return "bg-surface-muted text-ink-faint";
+  if (rank >= 500) return "bg-accent-tint text-accent-ink";
+  if (rank >= 200) return "bg-accent-tint text-accent-ink";
+  return "bg-surface-muted text-ink-soft";
 }
 
 function daysAgo(iso: string | null): number | null {
@@ -163,22 +163,22 @@ function BacklinkGapCard({
   if (!ownSnapshot || !competitorSnapshot) return null; // falta analizar alguno de los dos — sin ruido
 
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 space-y-2">
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 space-y-2">
       <div className="flex items-center gap-2">
-        <Link2 className="h-4 w-4 text-gray-400" />
-        <h3 className="text-sm font-semibold text-gray-900">
+        <Link2 className="h-4 w-4 text-ink-faint" />
+        <h3 className="text-sm font-semibold text-ink">
           Dominios que enlazan a {competitorDomain} y no a ti ({gap.length})
         </h3>
       </div>
       {gap.length === 0 ? (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-ink-soft">
           Sin dominios exclusivos de {competitorDomain} entre los backlinks ya analizados.
         </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+              <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
                 <th className="py-1.5 pr-2 font-medium">Dominio</th>
                 <th className="py-1.5 pr-2 font-medium text-right">Autoridad</th>
                 <th className="py-1.5 pr-2 font-medium text-right">Backlinks encontrados</th>
@@ -187,17 +187,17 @@ function BacklinkGapCard({
             </thead>
             <tbody>
               {gap.map((g) => (
-                <tr key={g.domain} className="border-b border-gray-50 last:border-0">
-                  <td className="py-1.5 pr-2 text-gray-900">{g.domain}</td>
-                  <td className="py-1.5 pr-2 text-right tabular-nums text-gray-600">{g.rank ?? "—"}</td>
-                  <td className="py-1.5 pr-2 text-right tabular-nums text-gray-500">{g.count}</td>
+                <tr key={g.domain} className="border-b border-line last:border-0">
+                  <td className="py-1.5 pr-2 text-ink">{g.domain}</td>
+                  <td className="py-1.5 pr-2 text-right tabular-nums text-ink-soft">{g.rank ?? "—"}</td>
+                  <td className="py-1.5 pr-2 text-right tabular-nums text-ink-soft">{g.count}</td>
                   <td className="py-1.5 pr-2">
                     {g.exampleUrlFrom ? (
                       <a
                         href={g.exampleUrlFrom}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-indigo-700 hover:underline"
+                        className="inline-flex items-center gap-1 text-accent-ink hover:underline"
                       >
                         <span className="truncate max-w-[220px] inline-block align-bottom">{g.exampleUrlFrom}</span>
                         <ExternalLink className="h-3 w-3 shrink-0" />
@@ -212,7 +212,7 @@ function BacklinkGapCard({
           </table>
         </div>
       )}
-      <p className="text-[11px] text-gray-400">
+      <p className="text-[11px] text-ink-faint">
         Basado en los backlinks ya analizados de cada dominio (hasta el límite elegido al
         analizar) — no es necesariamente el listado completo.
       </p>
@@ -225,15 +225,15 @@ function BacklinkRow({ b }: { b: TopBacklink }) {
   const days = daysAgo(b.lastSeen ?? b.firstSeen);
   return (
     <>
-      <tr className="border-b border-gray-50 last:border-0 hover:bg-background/60 cursor-pointer" onClick={() => setExpanded((v) => !v)}>
-        <td className="py-1.5 pr-2 text-gray-900">
+      <tr className="border-b border-line last:border-0 hover:bg-background/60 cursor-pointer" onClick={() => setExpanded((v) => !v)}>
+        <td className="py-1.5 pr-2 text-ink">
           {b.urlFrom ? (
             <a
               href={b.urlFrom}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 text-indigo-700 hover:underline"
+              className="inline-flex items-center gap-1 text-accent-ink hover:underline"
             >
               <span className="truncate max-w-[200px] inline-block align-bottom">{b.domainFrom ?? b.urlFrom}</span>
               <ExternalLink className="h-3 w-3 shrink-0" />
@@ -242,58 +242,58 @@ function BacklinkRow({ b }: { b: TopBacklink }) {
             b.domainFrom ?? "—"
           )}
         </td>
-        <td className="py-1.5 pr-2 text-right tabular-nums text-gray-600">{b.domainFromRank ?? "—"}</td>
-        <td className="py-1.5 pr-2 text-right tabular-nums text-gray-500">{b.pageFromRank ?? "—"}</td>
-        <td className="py-1.5 pr-2 text-gray-600 truncate max-w-[160px]">{b.anchor || "—"}</td>
-        <td className="py-1.5 pr-2 text-gray-500">{b.dofollow === false ? "nofollow" : "dofollow"}</td>
+        <td className="py-1.5 pr-2 text-right tabular-nums text-ink-soft">{b.domainFromRank ?? "—"}</td>
+        <td className="py-1.5 pr-2 text-right tabular-nums text-ink-soft">{b.pageFromRank ?? "—"}</td>
+        <td className="py-1.5 pr-2 text-ink-soft truncate max-w-[160px]">{b.anchor || "—"}</td>
+        <td className="py-1.5 pr-2 text-ink-soft">{b.dofollow === false ? "nofollow" : "dofollow"}</td>
         <td className="py-1.5 pr-2">
           {b.isBroken || (b.urlToStatusCode && b.urlToStatusCode >= 400) ? (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-700 font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-alert-tint text-alert-ink font-medium">
               roto{b.urlToStatusCode ? ` (${b.urlToStatusCode})` : ""}
             </span>
           ) : b.urlToStatusCode && b.urlToStatusCode >= 300 ? (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-tint text-accent-ink font-medium">
               redirección ({b.urlToStatusCode})
             </span>
           ) : (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-tint text-accent-ink">
               {b.urlToStatusCode ?? "OK"}
             </span>
           )}
         </td>
-        <td className="py-1.5 pr-2 text-gray-400">{days !== null ? `hace ${days}d` : "—"}</td>
+        <td className="py-1.5 pr-2 text-ink-faint">{days !== null ? `hace ${days}d` : "—"}</td>
       </tr>
       {expanded && (
-        <tr className="border-b border-gray-50 last:border-0 bg-background/40">
+        <tr className="border-b border-line last:border-0 bg-background/40">
           <td colSpan={7} className="p-3">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1.5 text-[11px] text-gray-600">
-              <div><span className="text-gray-400">Página destino:</span> {b.urlTo ?? "—"}</div>
-              <div><span className="text-gray-400">TLD origen:</span> {b.tldFrom ?? "—"}</div>
-              <div><span className="text-gray-400">HTTPS origen:</span> {b.urlFromHttps === null ? "—" : b.urlFromHttps ? "sí" : "no"}</div>
-              <div><span className="text-gray-400">Es IP:</span> {b.domainFromIsIp === null ? "—" : b.domainFromIsIp ? "sí" : "no"}</div>
-              <div><span className="text-gray-400">Nuevo:</span> {b.isNew === null ? "—" : b.isNew ? "sí" : "no"}</div>
-              <div><span className="text-gray-400">Perdido:</span> {b.isLost === null ? "—" : b.isLost ? "sí" : "no"}</div>
-              <div><span className="text-gray-400">Enlace indirecto:</span> {b.isIndirectLink === null ? "—" : b.isIndirectLink ? "sí" : "no"}</div>
-              <div><span className="text-gray-400">Spam score:</span> {b.backlinkSpamScore ?? "—"}</div>
-              <div><span className="text-gray-400">Nº enlaces en la página:</span> {b.linksCount ?? "—"}</div>
-              <div><span className="text-gray-400">Grupo de enlaces:</span> {b.groupCount ?? "—"}</div>
-              <div><span className="text-gray-400">Enlaces externos página origen:</span> {b.pageFromExternalLinks ?? "—"}</div>
-              <div><span className="text-gray-400">Enlaces internos página origen:</span> {b.pageFromInternalLinks ?? "—"}</div>
-              <div><span className="text-gray-400">Tamaño página origen:</span> {b.pageFromSize ?? "—"}</div>
-              <div><span className="text-gray-400">Idioma página origen:</span> {b.pageFromLanguage ?? "—"}</div>
-              <div><span className="text-gray-400">Codificación:</span> {b.pageFromEncoding ?? "—"}</div>
-              <div><span className="text-gray-400">Primera vez visto:</span> {b.firstSeen ? new Date(b.firstSeen).toLocaleDateString("es-ES") : "—"}</div>
-              <div><span className="text-gray-400">Última vez visto:</span> {b.lastSeen ? new Date(b.lastSeen).toLocaleDateString("es-ES") : "—"}</div>
-              <div><span className="text-gray-400">Visto anteriormente:</span> {b.prevSeen ? new Date(b.prevSeen).toLocaleDateString("es-ES") : "—"}</div>
-              <div><span className="text-gray-400">Tipo de item:</span> {b.itemType ?? "—"}</div>
-              <div><span className="text-gray-400">Plataforma origen:</span> {b.domainFromPlatformType?.join(", ") || "—"}</div>
-              {b.pageFromTitle && <div className="col-span-2 sm:col-span-4"><span className="text-gray-400">Título página origen:</span> {b.pageFromTitle}</div>}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1.5 text-[11px] text-ink-soft">
+              <div><span className="text-ink-faint">Página destino:</span> {b.urlTo ?? "—"}</div>
+              <div><span className="text-ink-faint">TLD origen:</span> {b.tldFrom ?? "—"}</div>
+              <div><span className="text-ink-faint">HTTPS origen:</span> {b.urlFromHttps === null ? "—" : b.urlFromHttps ? "sí" : "no"}</div>
+              <div><span className="text-ink-faint">Es IP:</span> {b.domainFromIsIp === null ? "—" : b.domainFromIsIp ? "sí" : "no"}</div>
+              <div><span className="text-ink-faint">Nuevo:</span> {b.isNew === null ? "—" : b.isNew ? "sí" : "no"}</div>
+              <div><span className="text-ink-faint">Perdido:</span> {b.isLost === null ? "—" : b.isLost ? "sí" : "no"}</div>
+              <div><span className="text-ink-faint">Enlace indirecto:</span> {b.isIndirectLink === null ? "—" : b.isIndirectLink ? "sí" : "no"}</div>
+              <div><span className="text-ink-faint">Spam score:</span> {b.backlinkSpamScore ?? "—"}</div>
+              <div><span className="text-ink-faint">Nº enlaces en la página:</span> {b.linksCount ?? "—"}</div>
+              <div><span className="text-ink-faint">Grupo de enlaces:</span> {b.groupCount ?? "—"}</div>
+              <div><span className="text-ink-faint">Enlaces externos página origen:</span> {b.pageFromExternalLinks ?? "—"}</div>
+              <div><span className="text-ink-faint">Enlaces internos página origen:</span> {b.pageFromInternalLinks ?? "—"}</div>
+              <div><span className="text-ink-faint">Tamaño página origen:</span> {b.pageFromSize ?? "—"}</div>
+              <div><span className="text-ink-faint">Idioma página origen:</span> {b.pageFromLanguage ?? "—"}</div>
+              <div><span className="text-ink-faint">Codificación:</span> {b.pageFromEncoding ?? "—"}</div>
+              <div><span className="text-ink-faint">Primera vez visto:</span> {b.firstSeen ? new Date(b.firstSeen).toLocaleDateString("es-ES") : "—"}</div>
+              <div><span className="text-ink-faint">Última vez visto:</span> {b.lastSeen ? new Date(b.lastSeen).toLocaleDateString("es-ES") : "—"}</div>
+              <div><span className="text-ink-faint">Visto anteriormente:</span> {b.prevSeen ? new Date(b.prevSeen).toLocaleDateString("es-ES") : "—"}</div>
+              <div><span className="text-ink-faint">Tipo de item:</span> {b.itemType ?? "—"}</div>
+              <div><span className="text-ink-faint">Plataforma origen:</span> {b.domainFromPlatformType?.join(", ") || "—"}</div>
+              {b.pageFromTitle && <div className="col-span-2 sm:col-span-4"><span className="text-ink-faint">Título página origen:</span> {b.pageFromTitle}</div>}
               {(b.textPre || b.textPost) && (
                 <div className="col-span-2 sm:col-span-4">
-                  <span className="text-gray-400">Contexto del enlace:</span> {b.textPre} <strong>[enlace]</strong> {b.textPost}
+                  <span className="text-ink-faint">Contexto del enlace:</span> {b.textPre} <strong>[enlace]</strong> {b.textPost}
                 </div>
               )}
-              {b.semanticLocation && <div className="col-span-2 sm:col-span-4"><span className="text-gray-400">Ubicación semántica:</span> {b.semanticLocation}</div>}
+              {b.semanticLocation && <div className="col-span-2 sm:col-span-4"><span className="text-ink-faint">Ubicación semántica:</span> {b.semanticLocation}</div>}
             </div>
           </td>
         </tr>
@@ -356,25 +356,25 @@ function DomainDetail({
 
   if (!domain) {
     return (
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4">
-        <p className="text-sm text-gray-500">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4">
+        <p className="text-sm text-ink-soft">
           Define el dominio del proyecto en su ficha para analizar sus backlinks.
         </p>
       </div>
     );
   }
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 space-y-3">
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 space-y-3">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <p className="text-xs text-gray-400">{label}</p>
-          <p className="text-sm font-semibold text-gray-900">{domain}</p>
+          <p className="text-xs text-ink-faint">{label}</p>
+          <p className="text-sm font-semibold text-ink">{domain}</p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={String(limit)}
             onChange={(e) => setLimit(e.target.value === "all" ? "all" : Number(e.target.value))}
-            className="px-2 py-1.5 border border-line rounded-xl text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white"
+            className="px-2 py-1.5 border border-line rounded-xl text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-surface"
           >
             {LIMIT_OPTIONS.map((n) => (
               <option key={n} value={n}>Top {n}</option>
@@ -385,7 +385,7 @@ function DomainDetail({
             onClick={handleAnalyzeClick}
             disabled={analyzing}
             title={estimatedCost ? `Coste estimado ~$${estimatedCost.toFixed(2)}` : "Coste según cantidad real"}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
           >
             {analyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
             Analizar {estimatedCost != null && <span className="opacity-70">~${estimatedCost.toFixed(2)}</span>}
@@ -394,30 +394,30 @@ function DomainDetail({
       </div>
 
       {!snapshot ? (
-        <p className="text-xs text-gray-400">Sin analizar todavía.</p>
+        <p className="text-xs text-ink-faint">Sin analizar todavía.</p>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <p className="text-[11px] text-gray-400">Autoridad</p>
+              <p className="text-[11px] text-ink-faint">Autoridad</p>
               <span className={cn("inline-block mt-0.5 px-1.5 py-0.5 rounded text-sm font-semibold", rankBadge(snapshot.rank))}>
                 {snapshot.rank ?? "—"}
               </span>
             </div>
             <div>
-              <p className="text-[11px] text-gray-400">Backlinks</p>
-              <p className="text-sm font-medium text-gray-900">{fmtNum(snapshot.backlinksTotal)}</p>
+              <p className="text-[11px] text-ink-faint">Backlinks</p>
+              <p className="text-sm font-medium text-ink">{fmtNum(snapshot.backlinksTotal)}</p>
             </div>
             <div>
-              <p className="text-[11px] text-gray-400">Dominios de referencia</p>
-              <p className="text-sm font-medium text-gray-900">{fmtNum(snapshot.referringDomains)}</p>
+              <p className="text-[11px] text-ink-faint">Dominios de referencia</p>
+              <p className="text-sm font-medium text-ink">{fmtNum(snapshot.referringDomains)}</p>
             </div>
             <div>
-              <p className="text-[11px] text-gray-400">Rotos</p>
-              <p className="text-sm font-medium text-gray-900">{fmtNum(snapshot.brokenBacklinks)}</p>
+              <p className="text-[11px] text-ink-faint">Rotos</p>
+              <p className="text-sm font-medium text-ink">{fmtNum(snapshot.brokenBacklinks)}</p>
             </div>
           </div>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-ink-faint">
             {snapshot.dofollowBacklinks != null && snapshot.nofollowBacklinks != null && (
               <>dofollow {fmtNum(snapshot.dofollowBacklinks)} · nofollow {fmtNum(snapshot.nofollowBacklinks)} · </>
             )}
@@ -429,12 +429,12 @@ function DomainDetail({
             <div className="grid sm:grid-cols-2 gap-3">
               {targetPages.length > 0 && (
                 <div className="border border-line rounded-xl p-2.5">
-                  <p className="text-[11px] font-semibold text-gray-500 mb-1.5">Tus páginas con más enlaces entrantes</p>
+                  <p className="text-[11px] font-semibold text-ink-soft mb-1.5">Tus páginas con más enlaces entrantes</p>
                   <ul className="space-y-1">
                     {targetPages.map((p) => (
                       <li key={p.url} className="flex items-center justify-between gap-2 text-xs">
-                        <span className="text-gray-700 truncate">{p.url}</span>
-                        <span className="text-gray-400 shrink-0">{p.count}</span>
+                        <span className="text-ink-soft truncate">{p.url}</span>
+                        <span className="text-ink-faint shrink-0">{p.count}</span>
                       </li>
                     ))}
                   </ul>
@@ -442,12 +442,12 @@ function DomainDetail({
               )}
               {referringPages.length > 0 && (
                 <div className="border border-line rounded-xl p-2.5">
-                  <p className="text-[11px] font-semibold text-gray-500 mb-1.5">Páginas de origen con más autoridad</p>
+                  <p className="text-[11px] font-semibold text-ink-soft mb-1.5">Páginas de origen con más autoridad</p>
                   <ul className="space-y-1">
                     {referringPages.map((p, i) => (
                       <li key={i} className="flex items-center justify-between gap-2 text-xs">
-                        <span className="text-gray-700 truncate">{p.urlFrom ?? p.domainFrom ?? "—"}</span>
-                        <span className="text-gray-400 shrink-0">{p.pageFromRank}</span>
+                        <span className="text-ink-soft truncate">{p.urlFrom ?? p.domainFrom ?? "—"}</span>
+                        <span className="text-ink-faint shrink-0">{p.pageFromRank}</span>
                       </li>
                     ))}
                   </ul>
@@ -460,15 +460,15 @@ function DomainDetail({
             <div>
               <button
                 onClick={() => setExpanded((v) => !v)}
-                className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900"
+                className="flex items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink"
               >
                 {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                 Todos los backlinks ({items.length})
               </button>
               {expanded && (
                 <div className="mt-2 space-y-2">
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 bg-background rounded-xl px-3 py-2">
-                    <Filter className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-ink-soft bg-background rounded-xl px-3 py-2">
+                    <Filter className="h-3.5 w-3.5 text-ink-faint" />
                     <label className="flex items-center gap-1.5">
                       Autoridad mín.
                       <input
@@ -485,7 +485,7 @@ function DomainDetail({
                       <select
                         value={maxDaysAgo ?? ""}
                         onChange={(e) => setMaxDaysAgo(e.target.value ? Number(e.target.value) : null)}
-                        className="px-1.5 py-0.5 border border-line rounded-lg text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white"
+                        className="px-1.5 py-0.5 border border-line rounded-lg text-xs outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-surface"
                       >
                         <option value="">cualquier fecha</option>
                         <option value="30">30 días</option>
@@ -497,12 +497,12 @@ function DomainDetail({
                       <input type="checkbox" checked={dofollowOnly} onChange={(e) => setDofollowOnly(e.target.checked)} className="h-3.5 w-3.5" />
                       Solo dofollow
                     </label>
-                    <span className="text-gray-400">{filtered.length} de {items.length}</span>
+                    <span className="text-ink-faint">{filtered.length} de {items.length}</span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                        <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
                           <th className="py-1.5 pr-2 font-medium">Origen</th>
                           <th className="py-1.5 pr-2 font-medium text-right">Autoridad dominio</th>
                           <th className="py-1.5 pr-2 font-medium text-right">Autoridad página</th>
@@ -564,7 +564,7 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
     load();
   }
 
-  if (loading) return <Loader2 className="h-5 w-5 animate-spin text-gray-400" />;
+  if (loading) return <Loader2 className="h-5 w-5 animate-spin text-ink-faint" />;
 
   const comparisonRows = [
     ...(data?.projectDomain
@@ -581,15 +581,15 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
         description="{Enlazado externo: qué dominios enlazan a tu sitio (y a los de tus competidores ya trackeados           en Competidores), cuánta autoridad tienen y desde dónde. A diferencia del resto de la           herramienta, esto usa un producto de DataForSEO nuevo — cada análisis tiene coste real.}"
       />
 
-      {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+      {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
 
       {comparisonRows.length > 1 && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Comparativa de autoridad</h3>
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4">
+          <h3 className="text-sm font-semibold text-ink mb-3">Comparativa de autoridad</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-foreground text-white/80">
+                <tr className="text-left font-mono text-[11px] uppercase tracking-wide bg-brand-900 text-white/80">
                   <th className="py-1.5 pr-2 font-medium">Dominio</th>
                   <th className="py-1.5 px-2 font-medium text-right">Autoridad</th>
                   <th className="py-1.5 px-2 font-medium text-right">Backlinks</th>
@@ -598,17 +598,17 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
               </thead>
               <tbody>
                 {comparisonRows.map((r, i) => (
-                  <tr key={i} className="border-t border-gray-50">
-                    <td className="py-1.5 pr-2 text-gray-900 font-medium">
-                      {r.domain} {r.isOwn && <span className="text-[10px] text-emerald-700 font-semibold">· TÚ</span>}
+                  <tr key={i} className="border-t border-line">
+                    <td className="py-1.5 pr-2 text-ink font-medium">
+                      {r.domain} {r.isOwn && <span className="text-[10px] text-accent-ink font-semibold">· TÚ</span>}
                     </td>
                     <td className="py-1.5 px-2 text-right">
                       <span className={cn("inline-block px-1.5 py-0.5 rounded font-medium", rankBadge(r.snapshot?.rank ?? null))}>
                         {r.snapshot?.rank ?? "—"}
                       </span>
                     </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums text-gray-600">{fmtNum(r.snapshot?.backlinksTotal)}</td>
-                    <td className="py-1.5 pl-2 text-right tabular-nums text-gray-600">{fmtNum(r.snapshot?.referringDomains)}</td>
+                    <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{fmtNum(r.snapshot?.backlinksTotal)}</td>
+                    <td className="py-1.5 pl-2 text-right tabular-nums text-ink-soft">{fmtNum(r.snapshot?.referringDomains)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -626,9 +626,9 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
       />
 
       {data?.competitors.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 flex items-start gap-2">
-          <ShieldAlert className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-500">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 flex items-start gap-2">
+          <ShieldAlert className="h-4 w-4 text-ink-faint shrink-0 mt-0.5" />
+          <p className="text-sm text-ink-soft">
             Todavía no hay competidores trackeados. Añádelos en el módulo Competidores — aquí se
             reutiliza la misma lista.
           </p>

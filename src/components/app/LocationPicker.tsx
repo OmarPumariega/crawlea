@@ -83,15 +83,15 @@ export default function LocationPicker({
     <div ref={boxRef} className="relative">
       {value ? (
         <div className="flex items-center gap-1.5 px-3 py-2 border border-line rounded-xl text-sm bg-background">
-          <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-          <span className="text-gray-900 truncate flex-1">{value.name}</span>
+          <MapPin className="h-3.5 w-3.5 text-ink-faint shrink-0" />
+          <span className="text-ink truncate flex-1">{value.name}</span>
           <button
             type="button"
             onClick={() => {
               onChange(null);
               setQuery("");
             }}
-            className="text-gray-400 hover:text-gray-700 shrink-0"
+            className="text-ink-faint hover:text-ink-soft shrink-0"
             title="Quitar ubicación — volver a España (nacional)"
           >
             <X className="h-3.5 w-3.5" />
@@ -112,7 +112,7 @@ export default function LocationPicker({
       )}
 
       {open && !value && results.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full min-w-[280px] bg-white border border-line rounded-xl shadow-lg overflow-hidden">
+        <div className="absolute z-50 mt-1 w-full min-w-[280px] bg-surface border border-line rounded-xl shadow-lg overflow-hidden">
           {results.map((loc) => (
             <button
               key={loc.code}
@@ -124,14 +124,14 @@ export default function LocationPicker({
               }}
               className="w-full flex items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-background"
             >
-              <span className="text-gray-900 truncate">{loc.name}</span>
-              <span className="text-[10px] text-gray-400 shrink-0">{TYPE_LABEL[loc.type] ?? loc.type}</span>
+              <span className="text-ink truncate">{loc.name}</span>
+              <span className="text-[10px] text-ink-faint shrink-0">{TYPE_LABEL[loc.type] ?? loc.type}</span>
             </button>
           ))}
         </div>
       )}
       {open && !value && query.trim() && results.length === 0 && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-line rounded-xl shadow-lg px-3 py-2 text-xs text-gray-400">
+        <div className="absolute z-50 mt-1 w-full bg-surface border border-line rounded-xl shadow-lg px-3 py-2 text-xs text-ink-faint">
           Sin coincidencias en España.
         </div>
       )}

@@ -1,15 +1,17 @@
 import { cn } from "@/lib/utils";
 
-// Pill de estado/estado ligero (badge redondeado con tinte suave). Sustituye
-// a los badges ad-hoc que cada vista se montaba con bg-*-50 text-*-700.
+// Pill de estado (badge píldora con tinte suave), en el lenguaje de la guía
+// de estilo: lo positivo/sube es AZUL (accent), el peligro es el coral de
+// alerta y no existe el verde/ámbar en la interfaz. "A medias" (warning) es
+// un paso más de tinte dentro de la misma rampa índigo (brand-100/700).
 export type PillTone = "neutral" | "success" | "warning" | "danger" | "info" | "brand";
 
 const TONES: Record<PillTone, string> = {
-  neutral: "bg-gray-100 text-gray-600",
-  success: "bg-emerald-50 text-emerald-700",
-  warning: "bg-amber-50 text-amber-700",
-  danger: "bg-red-50 text-red-700",
-  info: "bg-blue-50 text-blue-700",
+  neutral: "bg-surface-muted text-ink-soft",
+  success: "bg-accent-tint text-accent-ink",
+  warning: "bg-brand-100 text-brand-700",
+  danger: "bg-alert-tint text-alert-ink",
+  info: "bg-accent-tint text-accent-ink",
   brand: "bg-brand/10 text-brand",
 };
 

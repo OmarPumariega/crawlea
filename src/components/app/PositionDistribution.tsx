@@ -32,18 +32,18 @@ export default function PositionDistribution({
           <div className="bg-black/[0.15]" style={{ width: `${pct(buckets.top100)}%` }} title={`Top 11-100: ${buckets.top100}`} />
         )}
       </div>
-      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-gray-500">
+      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-ink-soft">
         <span className="inline-flex items-center gap-1">
-          <span className="h-2 w-2 rounded-sm bg-brand" /> Top 3 · <strong className="text-gray-700 tabular-nums">{buckets.top3}</strong>
+          <span className="h-2 w-2 rounded-sm bg-brand" /> Top 3 · <strong className="text-ink-soft tabular-nums">{buckets.top3}</strong>
         </span>
         <span className="inline-flex items-center gap-1">
-          <span className="h-2 w-2 rounded-sm bg-brand/35" /> Top 4-10 · <strong className="text-gray-700 tabular-nums">{buckets.top10}</strong>
+          <span className="h-2 w-2 rounded-sm bg-brand/35" /> Top 4-10 · <strong className="text-ink-soft tabular-nums">{buckets.top10}</strong>
         </span>
         <span className="inline-flex items-center gap-1">
-          <span className="h-2 w-2 rounded-sm bg-black/[0.15]" /> Top 11-100 · <strong className="text-gray-700 tabular-nums">{buckets.top100}</strong>
+          <span className="h-2 w-2 rounded-sm bg-black/[0.15]" /> Top 11-100 · <strong className="text-ink-soft tabular-nums">{buckets.top100}</strong>
         </span>
         {typeof avgPosition === "number" && avgPosition !== null && (
-          <span className="text-gray-400 tabular-nums">Pos. media {avgPosition.toFixed(1)}</span>
+          <span className="text-ink-faint tabular-nums">Pos. media {avgPosition.toFixed(1)}</span>
         )}
       </div>
     </div>

@@ -103,14 +103,14 @@ export default function InformeGlobalConfigCard() {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
       <div className="flex items-start gap-3">
         <div className="h-9 w-9 rounded-xl bg-brand/10 text-brand flex items-center justify-center shrink-0">
           <FileBarChart2 className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-bold tracking-tight text-gray-900">Informe — configuración por defecto</h3>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <h3 className="text-lg font-bold tracking-tight text-ink">Informe — configuración por defecto</h3>
+          <p className="text-xs text-ink-soft mt-0.5">
             Define qué secciones aparecen y en qué orden para TODOS los proyectos por defecto. Cada
             proyecto puede tener su propio override desde su módulo Informe.
           </p>
@@ -124,13 +124,13 @@ export default function InformeGlobalConfigCard() {
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-2 text-xs text-gray-400">
+        <div className="flex items-center gap-2 text-xs text-ink-faint">
           <Loader2 className="h-3.5 w-3.5 animate-spin" /> Cargando…
         </div>
       ) : (
         <>
-          {error && <p className="text-xs text-red-600 bg-red-50 rounded-lg p-2">{error}</p>}
-          <p className="text-xs text-gray-500">
+          {error && <p className="text-xs text-alert-ink bg-alert-tint rounded-lg p-2">{error}</p>}
+          <p className="text-xs text-ink-soft">
             Activa o desactiva cada sección y reordénala con las flechas ↑ ↓ — las activadas se
             agrupan siempre arriba.
           </p>
@@ -146,19 +146,19 @@ export default function InformeGlobalConfigCard() {
               type="button"
               onClick={reset}
               disabled={saving || !isCustom}
-              className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1 text-xs text-ink-soft hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed"
               title={!isCustom ? "Ya estás en el default" : "Restablecer al default"}
             >
               <RotateCcw className="h-3.5 w-3.5" />
               Restablecer al default
             </button>
             <div className="flex items-center gap-2">
-              {saved && <span className="text-xs text-emerald-600">Guardado</span>}
+              {saved && <span className="text-xs text-accent-ink">Guardado</span>}
               <button
                 type="button"
                 onClick={save}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
               >
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
                 Guardar

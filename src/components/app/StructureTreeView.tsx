@@ -28,34 +28,34 @@ function NodeCard({ node, domain }: { node: StructureTreeNode; domain: string | 
   return (
     <div className="flex-1 min-w-0 space-y-1.5">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[10px] uppercase tracking-wide text-gray-400">
+        <span className="text-[10px] uppercase tracking-wide text-ink-faint">
           {page ? page.navLabel : node.segment || "Carpeta"}
         </span>
         {node.volume > 0 && (
-          <span className="inline-flex items-center gap-0.5 text-[10px] text-gray-400 tabular-nums">
+          <span className="inline-flex items-center gap-0.5 text-[10px] text-ink-faint tabular-nums">
             <Search className="h-2.5 w-2.5" /> {fmtVolume(node.volume)} vol.
           </span>
         )}
         {node.children.length > 0 && (
-          <span className="text-[10px] text-gray-400">
+          <span className="text-[10px] text-ink-faint">
             {node.children.length} sub{node.children.length === 1 ? "" : "s"}
           </span>
         )}
       </div>
 
       {page ? (
-        <p className="text-sm font-semibold text-gray-900 break-words">{page.h1}</p>
+        <p className="text-sm font-semibold text-ink break-words">{page.h1}</p>
       ) : (
-        <p className="text-sm font-semibold text-gray-700 break-words">{node.segment}</p>
+        <p className="text-sm font-semibold text-ink-soft break-words">{node.segment}</p>
       )}
 
-      {fullUrl && <p className="text-[11px] text-gray-400 break-all">{fullUrl}</p>}
+      {fullUrl && <p className="text-[11px] text-ink-faint break-all">{fullUrl}</p>}
 
       {page && page.headings.length > 0 && (
         <ul className="space-y-0.5">
           {page.headings.map((h, i) => (
-            <li key={i} className="flex items-start gap-1 text-xs text-gray-600">
-              <Hash className="h-3 w-3 text-gray-300 shrink-0 mt-0.5" />
+            <li key={i} className="flex items-start gap-1 text-xs text-ink-soft">
+              <Hash className="h-3 w-3 text-ink-faint shrink-0 mt-0.5" />
               <span className="break-words">{h}</span>
             </li>
           ))}
@@ -67,7 +67,7 @@ function NodeCard({ node, domain }: { node: StructureTreeNode; domain: string | 
           {page.keywords.map((kw, i) => (
             <span
               key={i}
-              className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 break-words"
+              className="text-[10px] px-1.5 py-0.5 rounded bg-surface-muted text-ink-soft break-words"
             >
               {kw}
             </span>
@@ -99,7 +99,7 @@ function TreeBranch({
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="p-0.5 mt-0.5 text-gray-400 hover:text-gray-900 shrink-0 rounded hover:bg-gray-100"
+            className="p-0.5 mt-0.5 text-ink-faint hover:text-ink shrink-0 rounded hover:bg-surface-muted"
             aria-label={open ? "Contraer" : "Expandir"}
           >
             {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -131,9 +131,9 @@ export default function StructureTreeView({
   const site = cleanDomain(domain);
   return (
     <div className={cn("space-y-3")}>
-      <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-        <Globe className="h-4 w-4 text-gray-400" />
-        Inicio{site ? <span className="text-gray-400 font-normal"> — {site}</span> : null}
+      <div className="flex items-center gap-2 text-sm font-semibold text-ink">
+        <Globe className="h-4 w-4 text-ink-faint" />
+        Inicio{site ? <span className="text-ink-faint font-normal"> — {site}</span> : null}
       </div>
       <ul className="relative ml-[7px] border-l border-line pl-4 space-y-3">
         {root.children.map((child) => (

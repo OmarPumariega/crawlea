@@ -76,16 +76,16 @@ export default function GbpPicker({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">Ficha de Google del negocio</label>
+      <label className="block text-sm font-medium text-ink-soft">Ficha de Google del negocio</label>
 
       {currentPlaceId ? (
-        <div className="flex items-center gap-2 px-3 py-2 border border-emerald-200 bg-emerald-50 rounded-lg text-sm">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-          <span className="text-emerald-900 truncate flex-1">{currentGbpName}</span>
-          <span className="text-[10px] text-emerald-600 shrink-0">place_id verificado</span>
+        <div className="flex items-center gap-2 px-3 py-2 border border-brand-100 bg-accent-tint rounded-lg text-sm">
+          <CheckCircle2 className="h-4 w-4 text-accent-ink shrink-0" />
+          <span className="text-accent-ink truncate flex-1">{currentGbpName}</span>
+          <span className="text-[10px] text-accent-ink shrink-0">place_id verificado</span>
         </div>
       ) : (
-        <div className="flex items-center gap-2 px-3 py-2 border border-amber-200 bg-amber-50 rounded-lg text-xs text-amber-700">
+        <div className="flex items-center gap-2 px-3 py-2 border border-brand-100 bg-accent-tint rounded-lg text-xs text-accent-ink">
           Sin ficha de Google seleccionada — se usan las coordenadas guardadas del proyecto, sin
           garantía de que sean las del negocio correcto.
         </div>
@@ -112,7 +112,7 @@ export default function GbpPicker({
           type="button"
           onClick={() => handleSearch()}
           disabled={loading || !query.trim()}
-          className="flex items-center gap-1.5 px-3 py-2 border border-line text-gray-700 text-sm font-medium rounded-lg hover:bg-background disabled:opacity-50 shrink-0"
+          className="flex items-center gap-1.5 px-3 py-2 border border-line text-ink-soft text-sm font-medium rounded-lg hover:bg-background disabled:opacity-50 shrink-0"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           Buscar
@@ -124,7 +124,7 @@ export default function GbpPicker({
               setCandidates(null);
               setError("");
             }}
-            className="p-2 text-gray-400 hover:text-gray-900 shrink-0"
+            className="p-2 text-ink-faint hover:text-ink shrink-0"
             title="Cerrar resultados"
           >
             <X className="h-4 w-4" />
@@ -132,17 +132,17 @@ export default function GbpPicker({
         )}
       </div>
 
-      {error && <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+      {error && <p className="text-xs text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
 
       {candidates && candidates.length > 0 && (
-        <ul className="border border-line rounded-xl divide-y divide-gray-100 overflow-hidden">
+        <ul className="border border-line rounded-xl divide-y divide-line overflow-hidden">
           {candidates.map((c) => (
             <li key={c.placeId} className="p-3 flex items-start gap-3 hover:bg-background">
-              <MapPin className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
+              <MapPin className="h-4 w-4 text-ink-faint shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-900 truncate">{c.title}</p>
-                {c.address && <p className="text-xs text-gray-500 truncate">{c.address}</p>}
-                <p className="text-xs text-gray-400 flex items-center gap-1 flex-wrap mt-0.5">
+                <p className="text-sm font-medium text-ink truncate">{c.title}</p>
+                {c.address && <p className="text-xs text-ink-soft truncate">{c.address}</p>}
+                <p className="text-xs text-ink-faint flex items-center gap-1 flex-wrap mt-0.5">
                   {c.rating !== null ? (
                     <span className="flex items-center gap-0.5">
                       <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
@@ -161,7 +161,7 @@ export default function GbpPicker({
                 className={cn(
                   "px-3 py-1.5 text-xs font-medium rounded-lg shrink-0 disabled:opacity-50",
                   c.placeId === currentPlaceId
-                    ? "bg-emerald-100 text-emerald-700"
+                    ? "bg-brand-100 text-accent-ink"
                     : "bg-brand text-white hover:bg-brand-strong"
                 )}
               >

@@ -19,13 +19,13 @@ export default function PageHeader({
     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div className="min-w-0">
         {eyebrow && (
-          <p className="text-[13px] font-medium text-gray-400">{eyebrow}</p>
+          <p className="text-[13px] font-medium text-ink-faint">{eyebrow}</p>
         )}
-        <h1 className="text-[28px] leading-tight font-bold tracking-tight text-gray-900 mt-0.5">
+        <h1 className="text-[28px] leading-tight font-bold tracking-tight text-ink mt-0.5">
           {title}
         </h1>
         {description && (
-          <p className="text-sm text-gray-500 mt-1.5 max-w-2xl leading-relaxed">
+          <p className="text-sm text-ink-soft mt-1.5 max-w-2xl leading-relaxed">
             {description}
           </p>
         )}

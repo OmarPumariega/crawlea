@@ -73,9 +73,9 @@ function CopyButton({ text }: { text: string }) {
         });
       }}
       title="Copiar URL"
-      className="p-1 text-gray-400 hover:text-gray-700 rounded shrink-0"
+      className="p-1 text-ink-faint hover:text-ink-soft rounded shrink-0"
     >
-      {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? <Check className="h-3.5 w-3.5 text-accent-ink" /> : <Copy className="h-3.5 w-3.5" />}
     </button>
   );
 }
@@ -92,31 +92,31 @@ function IssueRow({ issue, pages }: { issue: string; pages: AuditPage[] }) {
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-background"
       >
-        <span className="flex items-center justify-center h-6 w-6 rounded-full bg-orange-100 text-orange-600 shrink-0">
+        <span className="flex items-center justify-center h-6 w-6 rounded-full bg-brand-100 text-brand-700 shrink-0">
           <AlertCircle className="h-3.5 w-3.5" />
         </span>
-        <span className="text-sm font-medium text-gray-900 flex-1">{meta.label}</span>
-        <span className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 shrink-0">
+        <span className="text-sm font-medium text-ink flex-1">{meta.label}</span>
+        <span className="text-[11px] px-2 py-0.5 rounded-full bg-surface-muted text-ink-soft shrink-0">
           {pages.length} {pages.length === 1 ? "página" : "páginas"}
         </span>
         {open ? (
-          <ChevronUp className="h-4 w-4 text-gray-400 shrink-0" />
+          <ChevronUp className="h-4 w-4 text-ink-faint shrink-0" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
+          <ChevronDown className="h-4 w-4 text-ink-faint shrink-0" />
         )}
       </button>
 
       {open && (
         <div className="px-4 pb-4 space-y-3 border-t border-line pt-3">
-          <p className="text-sm text-gray-600">{meta.description}</p>
+          <p className="text-sm text-ink-soft">{meta.description}</p>
 
           {meta.fix ? (
-            <div className="bg-blue-50 text-blue-900 text-sm px-3 py-2 rounded-lg">
+            <div className="bg-accent-tint text-accent-ink text-sm px-3 py-2 rounded-lg">
               <span className="font-medium">Cómo arreglarlo: </span>
               {meta.fix}
             </div>
           ) : (
-            <p className="text-xs text-gray-400 italic">
+            <p className="text-xs text-ink-faint italic">
               Señal informativa — puede ser intencional, revisar caso a caso.
             </p>
           )}
@@ -134,11 +134,11 @@ function IssueRow({ issue, pages }: { issue: string; pages: AuditPage[] }) {
                 {pages.map((page) => {
                   const detail = issueDetail(issue, page);
                   return (
-                    <tr key={page.id} className="border-b border-gray-50 last:border-0">
+                    <tr key={page.id} className="border-b border-line last:border-0">
                       <td className="py-1.5 pr-3 font-mono text-xs break-all max-w-xs">
                         <UrlLink url={page.url} />
                       </td>
-                      <td className="py-1.5 px-3 text-xs text-gray-500 break-all">{detail ?? "—"}</td>
+                      <td className="py-1.5 px-3 text-xs text-ink-soft break-all">{detail ?? "—"}</td>
                       <td className="py-1.5 pl-3">
                         <CopyButton text={page.url} />
                       </td>
@@ -187,11 +187,11 @@ export default function AuditIssuesList({
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-900">
+        <h3 className="text-sm font-semibold text-ink">
           Problemas a corregir {failing.length > 0 && `(${failing.length})`}
         </h3>
         {failing.length === 0 ? (
-          <p className="text-sm text-gray-500">Sin incidencias en esta categoría.</p>
+          <p className="text-sm text-ink-soft">Sin incidencias en esta categoría.</p>
         ) : (
           <div className="space-y-2">
             {failing.map(({ issue, pages }) => (
@@ -203,16 +203,16 @@ export default function AuditIssuesList({
 
       {passing.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900">Reglas aprobadas</h3>
+          <h3 className="text-sm font-semibold text-ink">Reglas aprobadas</h3>
           <div className="space-y-1.5">
             {passing.map((issue) => (
               <div
                 key={issue}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 rounded-lg bg-emerald-50/60 text-emerald-800"
+                  "flex items-center gap-3 px-4 py-2.5 rounded-lg bg-accent-tint/60 text-accent-ink"
                 )}
               >
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-accent-ink" />
                 <span className="text-sm">{ISSUE_META[issue]?.passText}</span>
               </div>
             ))}

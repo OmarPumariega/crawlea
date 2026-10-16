@@ -1,0 +1,141 @@
+/* ==========================================================================
+   CRAWLEA · Tokens de diseño (Tailwind 4, CSS-first)
+   Uso: importar en app/globals.css justo después de @import "tailwindcss";
+        @import "./crawlea.css";
+   Las utilidades resultantes: bg-canvas, bg-surface, text-ink, text-ink-soft,
+   border-line, bg-brand-500, text-alert-ink, bg-alert-tint, rounded-card, rounded-pill...
+   ========================================================================== */
+
+/* 1) Variables semánticas (lo único que cambia entre tema claro y oscuro) */
+:root {
+  --canvas: #f2f3f8;       /* fondo de la app, gris azulado */
+  --surface: #ffffff;      /* tarjetas */
+  --surface-muted: #f7f8fc;/* zonas hundidas dentro de una tarjeta */
+  --line: #e4e6ef;         /* bordes y separadores */
+  --ink: #11142b;          /* texto principal */
+  --ink-soft: #6a6f88;     /* texto secundario */
+  --ink-faint: #9a9fb5;    /* etiquetas, ejes de gráficos */
+  --accent-tint: #eef0ff;  /* fondo suave del acento (pastillas, hover) */
+  --accent-ink: #3238ad;   /* texto de acento sobre fondo claro */
+
+  /* Alerta: único color cálido. Solo avisos y bajadas de ranking.
+     Texto pequeño y fondo de pastilla. */
+  --alert-ink: #c13a43; --alert-tint: #fdeaeb;
+
+  /* Gráficos */
+  --chart-muted: #c3caff;  /* barras no destacadas */
+  --chart-track: #eef0ff;  /* pista de donuts y barras de progreso */
+  --heat-0: #eef0ff; --heat-1: #c3caff; --heat-2: #9da8ff; --heat-3: #7381ff; --heat-4: #4f5cf5;
+
+  color-scheme: light;
+}
+
+/* 2) Tema oscuro. Se activa con data-theme="dark" en <html>.
+      Misma rampa índigo; cambian los neutros y los tonos de estado.
+      Fondo azul-noche (no negro puro) para mantener el tinte de marca. */
+[data-theme="dark"] {
+  --canvas: #0c0e1d;
+  --surface: #151833;
+  --surface-muted: #1b1f3d;
+  --line: #262a4d;
+  --ink: #eef0ff;
+  --ink-soft: #a3a8c6;
+  --ink-faint: #6d7298;
+  --accent-tint: #23285a;
+  --accent-ink: #9da8ff;
+
+  --alert-ink: #ff8a91; --alert-tint: rgb(232 87 95 / 0.16);
+
+  --chart-muted: #2f3570;
+  --chart-track: #23285a;
+  --heat-0: #1b1f3d; --heat-1: #2f3570; --heat-2: #3f49a8; --heat-3: #5a67e8; --heat-4: #7381ff;
+
+  --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.04), 0 10px 28px -14px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+/* 3) Registro en Tailwind */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-accent-tint: var(--accent-tint);
+  --color-accent-ink: var(--accent-ink);
+  --color-alert-ink: var(--alert-ink);
+  --color-alert-tint: var(--alert-tint);
+  --color-chart-muted: var(--chart-muted);
+  --color-chart-track: var(--chart-track);
+}
+
+/* "static" fuerza a emitir todas las variables, aunque aún no se usen */
+@theme static {
+  /* Rampa del acento (índigo). 500 = color de marca. */
+  --color-brand-50: #eef0ff;
+  --color-brand-100: #c3caff;
+  --color-brand-200: #9da8ff;
+  --color-brand-300: #7381ff;
+  --color-brand-500: #4f5cf5;
+  --color-brand-700: #3238ad;
+  --color-brand-900: #1c1f5e;
+
+  /* Alerta (rellenos, iconos, líneas). Igual en claro y oscuro.
+     El texto pequeño y las pastillas usan alert-ink/alert-tint, que sí cambian con el tema.
+     No hay verde ni amarillo: lo positivo se expresa en azul. */
+  --color-alert: #e8575f;
+
+  /* Tipografía (la variable --font-manrope la inyecta next/font) */
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+
+  /* Forma */
+  --radius-card: 20px;
+  --radius-inner: 14px;
+  --radius-pill: 999px;
+
+  /* Elevación: casi imperceptible, como en las referencias */
+  --shadow-card: 0 1px 2px rgb(17 20 43 / 0.04), 0 10px 28px -14px rgb(17 20 43 / 0.10);
+  --shadow-pop: 0 12px 32px -8px rgb(17 20 43 / 0.18);
+}
+
+/* 4) Base */
+@layer base {
+  html {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Números tabulares en cualquier dato para que las columnas no bailen */
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+}
+
+/* 5) Componentes base reutilizables */
+@layer components {
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 1.5rem;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: var(--radius-pill);
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.25rem;
+  }
+  .pill-up { background: var(--accent-tint); color: var(--accent-ink); }   /* sube: azul */
+  .pill-down { background: var(--alert-tint); color: var(--alert-ink); }   /* baja o aviso: alerta */
+  .pill-brand { background: var(--accent-tint); color: var(--accent-ink); }
+  .pill-neutral { background: var(--surface-muted); color: var(--ink-soft); } /* dato sin valoración */
+}

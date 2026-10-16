@@ -19,9 +19,9 @@ type Dashboard = { gsc: SourceResult<GscTotals>; ga4: SourceResult<Ga4Totals> };
 
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
-      <div className="text-3xl font-semibold tracking-tight text-gray-900 tabular-nums">{value}</div>
-      <div className="text-sm text-gray-500">{label}</div>
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
+      <div className="text-3xl font-semibold tracking-tight text-ink tabular-nums">{value}</div>
+      <div className="text-sm text-ink-soft">{label}</div>
     </div>
   );
 }
@@ -110,15 +110,15 @@ export default function GoogleView({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-ink-faint" />
       </div>
     );
   }
 
   if (notConnected) {
     return (
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
-        <p className="text-sm text-gray-600">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
+        <p className="text-sm text-ink-soft">
           Todavía no hay ninguna cuenta de Google conectada.{" "}
           <Link href="/app/configuracion" className="text-brand font-medium underline">
             Conectar en Configuración →
@@ -129,7 +129,7 @@ export default function GoogleView({
   }
 
   if (loadError) {
-    return <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{loadError}</p>;
+    return <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">{loadError}</p>;
   }
 
   return (
@@ -140,24 +140,24 @@ export default function GoogleView({
         description="Elige la propiedad de Search Console y de GA4 de este proyecto."
       />
 
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Search Console</label>
+          <label className="block text-sm font-medium text-ink-soft">Search Console</label>
           <Select.Root value={gscSiteUrl || undefined} onValueChange={setGscSiteUrl}>
-            <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+            <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
               <Select.Value placeholder="Sin seleccionar" />
               <Select.Icon>
-                <ChevronDown className="h-4 w-4 text-gray-400" />
+                <ChevronDown className="h-4 w-4 text-ink-faint" />
               </Select.Icon>
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+              <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                 <Select.Viewport>
                   {(propiedades?.gscSites ?? []).map((site) => (
                     <Select.Item
                       key={site.siteUrl}
                       value={site.siteUrl}
-                      className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background flex items-center gap-2"
+                      className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-background flex items-center gap-2"
                     >
                       <Select.ItemText>{site.siteUrl}</Select.ItemText>
                       <Select.ItemIndicator>
@@ -172,22 +172,22 @@ export default function GoogleView({
         </div>
 
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Google Analytics (GA4)</label>
+          <label className="block text-sm font-medium text-ink-soft">Google Analytics (GA4)</label>
           <Select.Root value={ga4PropertyId || undefined} onValueChange={setGa4PropertyId}>
-            <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
+            <Select.Trigger className="w-full flex items-center justify-between border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors">
               <Select.Value placeholder="Sin seleccionar" />
               <Select.Icon>
-                <ChevronDown className="h-4 w-4 text-gray-400" />
+                <ChevronDown className="h-4 w-4 text-ink-faint" />
               </Select.Icon>
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+              <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                 <Select.Viewport>
                   {(propiedades?.ga4Properties ?? []).map((prop) => (
                     <Select.Item
                       key={prop.propertyId}
                       value={prop.propertyId}
-                      className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-background flex items-center gap-2"
+                      className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-background flex items-center gap-2"
                     >
                       <Select.ItemText>
                         {prop.accountName} — {prop.displayName}
@@ -204,13 +204,13 @@ export default function GoogleView({
         </div>
 
         <div className="space-y-1 opacity-50">
-          <label className="block text-sm font-medium text-gray-700">Business Profile</label>
-          <div className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-background text-gray-400 cursor-not-allowed">
+          <label className="block text-sm font-medium text-ink-soft">Business Profile</label>
+          <div className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-background text-ink-faint cursor-not-allowed">
             Pendiente de aprobación de Google (requiere solicitud manual de acceso a la API)
           </div>
         </div>
 
-        {saveError && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">{saveError}</p>}
+        {saveError && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">{saveError}</p>}
 
         <button
           onClick={handleSave}
@@ -222,7 +222,7 @@ export default function GoogleView({
         </button>
       </div>
 
-      {loadingDashboard && <Loader2 className="h-4 w-4 animate-spin text-gray-400" />}
+      {loadingDashboard && <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />}
 
       {dashboard && (
         // grid-cols-2 fijo (no sm:grid-cols-4): el nº de tiles es dinámico
@@ -230,7 +230,7 @@ export default function GoogleView({
         // completo). Así nunca quedan celdas vacías sea cual sea la combinación.
         <div className="grid grid-cols-2 gap-4">
           {dashboard.gsc && "error" in dashboard.gsc ? (
-            <div className="col-span-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">
+            <div className="col-span-2 text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">
               Search Console: {dashboard.gsc.error}
             </div>
           ) : dashboard.gsc ? (
@@ -241,7 +241,7 @@ export default function GoogleView({
           ) : null}
 
           {dashboard.ga4 && "error" in dashboard.ga4 ? (
-            <div className="col-span-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-xl">
+            <div className="col-span-2 text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">
               Google Analytics: {dashboard.ga4.error}
             </div>
           ) : dashboard.ga4 ? (

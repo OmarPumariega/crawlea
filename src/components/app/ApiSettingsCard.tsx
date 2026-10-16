@@ -68,14 +68,14 @@ function SettingField({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between gap-2">
-        <label className="text-xs font-medium text-gray-600">{label}</label>
+        <label className="text-xs font-medium text-ink-soft">{label}</label>
         {status.configured ? (
-          <span className="flex items-center gap-1 text-[10px] text-emerald-600 shrink-0">
+          <span className="flex items-center gap-1 text-[10px] text-accent-ink shrink-0">
             <CheckCircle2 className="h-3 w-3" />
             Configurado{status.source === "env" ? " (.env)" : ""}
           </span>
         ) : (
-          <span className="flex items-center gap-1 text-[10px] text-gray-400 shrink-0">
+          <span className="flex items-center gap-1 text-[10px] text-ink-faint shrink-0">
             <Circle className="h-3 w-3" />
             Sin configurar
           </span>
@@ -105,7 +105,7 @@ function SettingField({
           type="button"
           onClick={handleSave}
           disabled={saving || !value.trim()}
-          className="px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 shrink-0"
+          className="px-3 py-2 bg-brand-900 text-white text-xs font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 shrink-0"
         >
           {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Guardar"}
         </button>
@@ -114,15 +114,15 @@ function SettingField({
             type="button"
             onClick={handleClear}
             disabled={clearing}
-            className="p-2 text-gray-300 hover:text-red-600 shrink-0"
+            className="p-2 text-ink-faint hover:text-alert-ink shrink-0"
             title="Quitar el valor guardado (vuelve al .env si existe)"
           >
             {clearing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-4 w-4" />}
           </button>
         )}
       </div>
-      {helpText && <p className="text-[11px] text-gray-400">{helpText}</p>}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {helpText && <p className="text-[11px] text-ink-faint">{helpText}</p>}
+      {error && <p className="text-xs text-alert-ink">{error}</p>}
     </div>
   );
 }
@@ -147,12 +147,12 @@ export default function ApiSettingsCard() {
   const groups = Array.from(new Set(SETTINGS_CATALOG.map((s) => s.group)));
 
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-5">
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-5">
       <div className="flex items-center gap-2">
-        <KeyRound className="h-5 w-5 text-gray-500" />
+        <KeyRound className="h-5 w-5 text-ink-soft" />
         <div>
-          <h2 className="text-sm font-semibold text-gray-900">Claves de API</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <h2 className="text-sm font-semibold text-ink">Claves de API</h2>
+          <p className="text-xs text-ink-faint mt-0.5">
             Se guardan cifradas en la base de datos y sustituyen a las del <code>.env</code> — puedes
             cambiarlas en cualquier momento sin tocar el servidor. Una vez guardado, el valor no vuelve
             a mostrarse: solo si está configurado y desde dónde.
@@ -161,7 +161,7 @@ export default function ApiSettingsCard() {
       </div>
 
       {loading || !status ? (
-        <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
       ) : (
         // Flujo continuo en 2 columnas (CSS columns) en vez de grid por grupo:
         // cada grupo es indivisible (break-inside-avoid) pero las columnas se
@@ -169,7 +169,7 @@ export default function ApiSettingsCard() {
         <div className="columns-1 sm:columns-2 gap-x-8">
           {groups.map((group) => (
             <div key={group} className="mb-5 break-inside-avoid">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-faint mb-3">
                 {group}
               </h3>
               <div className="space-y-3">

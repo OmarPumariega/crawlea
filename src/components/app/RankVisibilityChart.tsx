@@ -14,13 +14,15 @@ type VisibilityPoint = {
   avgPosition: number | null;
 };
 
+// Rampa índigo de la guía: mejor tramo = más intenso. La serie de posición
+// media (más bajo = mejor) va aparte en brand-700.
 const SERIES = [
-  { key: "top3" as const, label: "Top 3", color: "#10b981" },
-  { key: "top10" as const, label: "Top 10", color: "#3b82f6" },
-  { key: "top20" as const, label: "Top 20", color: "#f59e0b" },
-  { key: "top30" as const, label: "Top 30", color: "#9ca3af" },
+  { key: "top3" as const, label: "Top 3", color: "#4f5cf5" },
+  { key: "top10" as const, label: "Top 10", color: "#7381ff" },
+  { key: "top20" as const, label: "Top 20", color: "#9da8ff" },
+  { key: "top30" as const, label: "Top 30", color: "#c3caff" },
 ];
-const POS_COLOR = "#4f46e5";
+const POS_COLOR = "#3238ad";
 
 function fmtShort(d: Date): string {
   return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -101,40 +103,40 @@ export default function RankVisibilityChart({ projectId, group }: { projectId: s
   const labelStep = Math.max(1, Math.ceil(n / 7));
 
   return (
-    <div ref={wrapRef} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
+    <div ref={wrapRef} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-background text-gray-400">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-background text-ink-faint">
             <Eye className="h-4 w-4" />
           </span>
-          <h3 className="text-lg font-bold tracking-tight text-gray-900">Evolución del posicionamiento{group ? ` — ${group}` : ""}</h3>
+          <h3 className="text-lg font-bold tracking-tight text-ink">Evolución del posicionamiento{group ? ` — ${group}` : ""}</h3>
         </div>
         {current && (
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-semibold tracking-tight text-gray-900 tabular-nums">{current.index}</span>
-            <span className="text-sm text-gray-500">índice</span>
+            <span className="text-3xl font-semibold tracking-tight text-ink tabular-nums">{current.index}</span>
+            <span className="text-sm text-ink-soft">índice</span>
             {delta !== null && delta !== 0 && (
-              <span className={`flex items-center gap-0.5 text-xs font-medium ${delta > 0 ? "text-emerald-600" : "text-red-600"}`}>
+              <span className={`flex items-center gap-0.5 text-xs font-medium ${delta > 0 ? "text-accent-ink" : "text-alert-ink"}`}>
                 {delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                 {delta > 0 ? "+" : ""}
                 {delta}
               </span>
             )}
-            {delta === 0 && <Minus className="h-3 w-3 text-gray-300" />}
+            {delta === 0 && <Minus className="h-3 w-3 text-ink-faint" />}
           </div>
         )}
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-10 text-gray-400">
+        <div className="flex items-center justify-center py-10 text-ink-faint">
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
       ) : n === 0 ? (
         <div className="py-12 text-center">
-          <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-gray-400">
+          <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-background text-ink-faint">
             <Eye className="h-5 w-5" />
           </span>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ink-soft">
             Sin datos suficientes todavía — comprueba alguna keyword para empezar el histórico.
           </p>
         </div>
@@ -147,8 +149,8 @@ export default function RankVisibilityChart({ projectId, group }: { projectId: s
               const val = Math.round(leftMax * (1 - f));
               return (
                 <g key={f}>
-                  <line x1={PAD_L} x2={w - PAD_R} y1={yy} y2={yy} stroke="#f1f5f9" strokeWidth={1} />
-                  <text x={PAD_L - 6} y={yy + 3} textAnchor="end" className="fill-gray-400" fontSize={9}>
+                  <line x1={PAD_L} x2={w - PAD_R} y1={yy} y2={yy} className="stroke-line" strokeWidth={1} />
+                  <text x={PAD_L - 6} y={yy + 3} textAnchor="end" className="fill-ink-faint" fontSize={9}>
                     {val}
                   </text>
                 </g>
@@ -156,7 +158,7 @@ export default function RankVisibilityChart({ projectId, group }: { projectId: s
             })}
             {/* Etiquetas eje derecho (posición media) */}
             {[1, posMax / 2, posMax].map((pos) => (
-              <text key={pos} x={w - PAD_R + 6} y={yRight(pos) + 3} textAnchor="start" className="fill-gray-400" fontSize={9}>
+              <text key={pos} x={w - PAD_R + 6} y={yRight(pos) + 3} textAnchor="start" className="fill-ink-faint" fontSize={9}>
                 {Math.round(pos)}
               </text>
             ))}
@@ -208,7 +210,7 @@ export default function RankVisibilityChart({ projectId, group }: { projectId: s
             {/* Etiquetas eje X */}
             {points.map((p, i) =>
               i % labelStep === 0 || i === n - 1 ? (
-                <text key={`l-${p.date}`} x={x(i)} y={H - 8} textAnchor="middle" className="fill-gray-400" fontSize={9}>
+                <text key={`l-${p.date}`} x={x(i)} y={H - 8} textAnchor="middle" className="fill-ink-faint" fontSize={9}>
                   {fmtShort(new Date(p.date))}
                 </text>
               ) : null
@@ -216,7 +218,7 @@ export default function RankVisibilityChart({ projectId, group }: { projectId: s
           </svg>
 
           {/* Leyenda */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[11px] text-gray-500">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[11px] text-ink-soft">
             {SERIES.map((s) => (
               <span key={s.key} className="inline-flex items-center gap-1">
                 <span className="inline-block h-0.5 w-4 rounded-full" style={{ background: s.color }} />
@@ -227,11 +229,11 @@ export default function RankVisibilityChart({ projectId, group }: { projectId: s
               <span className="inline-block h-0.5 w-4 border-t border-dashed" style={{ borderColor: POS_COLOR }} />
               Posición media
             </span>
-            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">· eje izq: nº keywords · eje der: posición</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">· eje izq: nº keywords · eje der: posición</span>
           </div>
         </>
       )}
-      {n === 1 && <p className="mt-1 text-xs text-gray-400">Necesita al menos 2 días con chequeos para ver la evolución.</p>}
+      {n === 1 && <p className="mt-1 text-xs text-ink-faint">Necesita al menos 2 días con chequeos para ver la evolución.</p>}
     </div>
   );
 }

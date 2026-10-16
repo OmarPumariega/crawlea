@@ -36,7 +36,7 @@ const STEPS: StepDescriptor[] = [
 
 const INPUT =
   "w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors";
-const LABEL = "block text-sm font-medium text-gray-700";
+const LABEL = "block text-sm font-medium text-ink-soft";
 
 type GscSite = { siteUrl: string; permissionLevel: string };
 type Ga4Property = { propertyId: string; displayName: string; accountName: string };
@@ -284,24 +284,24 @@ export default function ProjectWizard() {
     <div className="space-y-6">
       <Link
         href="/app/proyectos"
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
+        className="flex items-center gap-1 text-sm text-ink-soft hover:text-ink"
       >
         <ArrowLeft className="h-4 w-4" />
         Proyectos
       </Link>
 
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Nuevo proyecto</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-xl font-semibold text-ink">Nuevo proyecto</h1>
+        <p className="text-sm text-ink-soft mt-1">
           Configura el proyecto paso a paso. Los opcionales puedes omitirlos y completarlos después.
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 sm:p-6">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 sm:p-6">
         <Stepper steps={STEPS} current={step} onStepClick={(i) => gotoStep(i)} />
       </div>
 
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 sm:p-6 space-y-4">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 sm:p-6 space-y-4">
         {/* PASO 1 */}
         {step === 0 && (
           <div className="space-y-4">
@@ -337,7 +337,7 @@ export default function ProjectWizard() {
                 onChange={(e) => setDomain(e.target.value)}
                 placeholder="pumariega.com (sin https://)"
               />
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-ink-faint">
                 Necesario para rastrear el sitio (auditoría, geogrid, etc.). Puedes omitirlo y
                 añadirlo luego, pero sin él la auditoría no puede lanzarse.
               </p>
@@ -365,7 +365,7 @@ export default function ProjectWizard() {
                 onChange={(e) => setIsLocalBusiness(e.target.checked)}
                 className="h-4 w-4"
               />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-ink-soft">
                 Es un negocio local con ubicación física (activa SEO local / geogrid)
               </span>
             </label>
@@ -386,14 +386,14 @@ export default function ProjectWizard() {
                         if (c.address) setAddress(c.address);
                       }}
                     />
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-ink-faint">
                       Busca tu negocio por nombre y selecciónalo: rellena automáticamente el nombre, la
                       dirección, el Place ID y las coordenadas — necesarias para el geogrid (mapa de
                       calor de posicionamiento local).
                     </p>
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-ink-faint">
                     Guarda el paso 1 primero para poder buscar la ficha de Google del negocio.
                   </p>
                 )}
@@ -411,7 +411,7 @@ export default function ProjectWizard() {
                 <button
                   type="button"
                   onClick={() => setShowAdvancedLocal((v) => !v)}
-                  className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-900"
+                  className="flex items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink"
                 >
                   <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showAdvancedLocal && "rotate-180")} />
                   Avanzado: introducir dirección/coordenadas a mano
@@ -436,7 +436,7 @@ export default function ProjectWizard() {
                         <input className={INPUT} value={lng} onChange={(e) => setLng(e.target.value)} inputMode="decimal" placeholder="-5.8486" />
                       </div>
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-ink-faint">
                       Solo necesario si el negocio no aparece en el buscador de arriba.
                     </p>
                   </div>
@@ -444,7 +444,7 @@ export default function ProjectWizard() {
               </>
             )}
             {!isLocalBusiness && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-ink-soft">
                 Si no es un negocio local, omite este paso. Podrás activarlo más tarde desde la ficha
                 del proyecto.
               </p>
@@ -456,14 +456,14 @@ export default function ProjectWizard() {
         {step === 2 && (
           <div className="space-y-4">
             {propLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+              <Loader2 className="h-5 w-5 animate-spin text-ink-faint" />
             ) : propNotConnected ? (
-              <div className="text-sm text-gray-600 space-y-2">
+              <div className="text-sm text-ink-soft space-y-2">
                 <p>Todavía no hay ninguna cuenta de Google conectada.</p>
-                <Link href="/app/configuracion" className="text-gray-900 font-medium underline">
+                <Link href="/app/configuracion" className="text-ink font-medium underline">
                   Conéctala en Configuración →
                 </Link>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-ink-faint">
                   Puedes omitir este paso y conectar Search Console / Analytics más tarde.
                 </p>
               </div>
@@ -472,15 +472,15 @@ export default function ProjectWizard() {
                 <div className="space-y-1">
                   <label className={LABEL}>Search Console</label>
                   <Select.Root value={gscSiteUrl || undefined} onValueChange={setGscSiteUrl}>
-                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white">
+                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-surface">
                       <Select.Value placeholder="Sin seleccionar" />
-                      <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+                      <Select.Icon><ChevronDown className="h-4 w-4 text-ink-faint" /></Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
-                      <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                      <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                         <Select.Viewport>
                           {gscSites.map((s) => (
-                            <Select.Item key={s.siteUrl} value={s.siteUrl} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100">
+                            <Select.Item key={s.siteUrl} value={s.siteUrl} className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-surface-muted">
                               <Select.ItemText>{s.siteUrl}</Select.ItemText>
                             </Select.Item>
                           ))}
@@ -492,15 +492,15 @@ export default function ProjectWizard() {
                 <div className="space-y-1">
                   <label className={LABEL}>Google Analytics (GA4)</label>
                   <Select.Root value={ga4PropertyId || undefined} onValueChange={setGa4PropertyId}>
-                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white">
+                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-surface">
                       <Select.Value placeholder="Sin seleccionar" />
-                      <Select.Icon><ChevronDown className="h-4 w-4 text-gray-400" /></Select.Icon>
+                      <Select.Icon><ChevronDown className="h-4 w-4 text-ink-faint" /></Select.Icon>
                     </Select.Trigger>
                     <Select.Portal>
-                      <Select.Content className="bg-white border border-line rounded-xl shadow-lg overflow-hidden z-50">
+                      <Select.Content className="bg-surface border border-line rounded-xl shadow-lg overflow-hidden z-50">
                         <Select.Viewport>
                           {ga4Properties.map((p) => (
-                            <Select.Item key={p.propertyId} value={p.propertyId} className="px-3 py-2 text-sm text-gray-900 outline-none cursor-pointer data-[highlighted]:bg-gray-100">
+                            <Select.Item key={p.propertyId} value={p.propertyId} className="px-3 py-2 text-sm text-ink outline-none cursor-pointer data-[highlighted]:bg-surface-muted">
                               <Select.ItemText>{p.accountName} — {p.displayName}</Select.ItemText>
                             </Select.Item>
                           ))}
@@ -535,11 +535,11 @@ export default function ProjectWizard() {
                 onChange={(e) => setSeedKeywords(e.target.value)}
                 placeholder={"barbería Gijón\ncorte de pelo hombre\narreglo de barba"}
               />
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-ink-faint">
                 Si dejas vacío, se crea un estudio en blanco (gratis) que rellenarás después. Con
                 semillas se resuelve volumen e intención vía DataForSEO.
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-ink-soft">
                 Al lanzar el proyecto, estas keywords se importarán automáticamente al Rank Tracking
                 y se chequeará su posición real en Google (lo que también alimentará el módulo
                 TF-IDF sin coste adicional).
@@ -555,7 +555,7 @@ export default function ProjectWizard() {
         {/* PASO 5 */}
         {step === 4 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-ink-soft">
               Añade los dominios competidores. Al lanzar el proyecto se analizarán automáticamente
               (visibilidad real + top keywords + content gap frente a tu dominio).
             </p>
@@ -570,7 +570,7 @@ export default function ProjectWizard() {
               <button
                 type="button"
                 onClick={addCompetitor}
-                className="px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 shrink-0 inline-flex items-center gap-1"
+                className="px-3 py-2 bg-surface-muted text-ink-soft text-sm font-medium rounded-lg hover:bg-surface-muted shrink-0 inline-flex items-center gap-1"
               >
                 <Plus className="h-4 w-4" /> Añadir
               </button>
@@ -579,11 +579,11 @@ export default function ProjectWizard() {
               <ul className="space-y-1.5">
                 {competitors.map((d) => (
                   <li key={d} className="flex items-center justify-between gap-2 px-3 py-2 bg-background rounded-lg">
-                    <span className="text-sm text-gray-700 truncate">{d}</span>
+                    <span className="text-sm text-ink-soft truncate">{d}</span>
                     <button
                       type="button"
                       onClick={() => setCompetitors((prev) => prev.filter((x) => x !== d))}
-                      className="text-gray-400 hover:text-red-600 shrink-0"
+                      className="text-ink-faint hover:text-alert-ink shrink-0"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -598,16 +598,16 @@ export default function ProjectWizard() {
         {step === 5 && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">Resumen</p>
+              <p className="text-sm font-medium text-ink-soft">Resumen</p>
               <ul className="space-y-1.5 text-sm">
                 {STEPS.slice(0, 5).map((s, i) => (
                   <li key={s.title} className="flex items-center gap-2">
                     {stepStatus[i] === "done" ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-accent-ink shrink-0" />
                     ) : (
-                      <span className="h-4 w-4 flex items-center justify-center text-gray-300 shrink-0">–</span>
+                      <span className="h-4 w-4 flex items-center justify-center text-ink-faint shrink-0">–</span>
                     )}
-                    <span className={stepStatus[i] === "done" ? "text-gray-900" : "text-gray-400"}>
+                    <span className={stepStatus[i] === "done" ? "text-ink" : "text-ink-faint"}>
                       {s.title}
                       {stepStatus[i] === "skipped" && " (omitido)"}
                     </span>
@@ -615,14 +615,14 @@ export default function ProjectWizard() {
                 ))}
               </ul>
             </div>
-            <div className="text-xs text-gray-600 bg-background border border-line rounded-xl p-3 space-y-1">
-              <p className="font-medium text-gray-700">Al pulsar “Crear y lanzar” se ejecutará en segundo plano:</p>
+            <div className="text-xs text-ink-soft bg-background border border-line rounded-xl p-3 space-y-1">
+              <p className="font-medium text-ink-soft">Al pulsar “Crear y lanzar” se ejecutará en segundo plano:</p>
               <ul className="list-disc pl-4 space-y-0.5">
                 <li>Importar las keywords del estudio al Rank Tracking y comprobar su posición.</li>
                 <li>Generar el análisis TF-IDF de cada keyword (gratis, reutiliza el SERP ya pagado).</li>
                 <li>Analizar cada competidor (visibilidad + content gap).</li>
               </ul>
-              <p className="text-gray-500">
+              <p className="text-ink-soft">
                 El coste real se registra en el panel de Costes. Puedes ver el progreso al entrar en
                 la ficha del proyecto.
               </p>
@@ -635,8 +635,8 @@ export default function ProjectWizard() {
                 className="h-4 w-4 mt-0.5"
               />
               <span>
-                <span className="text-sm font-medium text-gray-900">Ejecutar auditoría técnica ahora</span>
-                <span className="block text-xs text-gray-500">
+                <span className="text-sm font-medium text-ink">Ejecutar auditoría técnica ahora</span>
+                <span className="block text-xs text-ink-soft">
                   Rastrea el sitio (enlaces rotos, HTTPS, canonicals, on-page…). Requiere dominio.
                 </span>
               </span>
@@ -644,23 +644,23 @@ export default function ProjectWizard() {
           </div>
         )}
 
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+        {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
 
         {/* Navegación */}
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-line">
           {step === 0 ? (
-            <Link href="/app/proyectos" className="text-sm text-gray-500 hover:text-gray-900 inline-flex items-center gap-1">
+            <Link href="/app/proyectos" className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-1">
               <ArrowLeft className="h-4 w-4" /> Cancelar
             </Link>
           ) : (
-            <button type="button" onClick={back} className="text-sm text-gray-500 hover:text-gray-900 inline-flex items-center gap-1">
+            <button type="button" onClick={back} className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-1">
               <ArrowLeft className="h-4 w-4" /> Atrás
             </button>
           )}
 
           <div className="flex items-center gap-2">
             {step > 0 && !isLast && (
-              <button type="button" onClick={skip} className="px-3 py-2 text-sm text-gray-500 hover:text-gray-900">
+              <button type="button" onClick={skip} className="px-3 py-2 text-sm text-ink-soft hover:text-ink">
                 Omitir paso
               </button>
             )}
@@ -669,7 +669,7 @@ export default function ProjectWizard() {
                 type="button"
                 onClick={goNext}
                 disabled={saving || (step === 0 && !canContinueStep0)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
               >
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 Continuar <ArrowRight className="h-4 w-4" />
@@ -679,7 +679,7 @@ export default function ProjectWizard() {
                 type="button"
                 onClick={finish}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                 Crear y lanzar

@@ -24,20 +24,20 @@ export default function Modal({
       role="presentation"
     >
       <div
-        className="bg-white rounded-2xl border border-line shadow-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5 space-y-4 animate-[pop_0.14s_ease-out]"
+        className="bg-surface rounded-2xl border border-line shadow-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5 space-y-4 animate-[pop_0.14s_ease-out]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
         <div className="flex items-center justify-between gap-3">
-          <h3 id="modal-title" className="text-sm font-semibold text-gray-900">
+          <h3 id="modal-title" className="text-sm font-semibold text-ink">
             {title}
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-900 shrink-0"
+            className="p-1 text-ink-faint hover:text-ink shrink-0"
             title="Cerrar"
           >
             <X className="h-4 w-4" />

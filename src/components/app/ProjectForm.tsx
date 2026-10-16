@@ -91,11 +91,11 @@ export default function ProjectForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-900">Datos generales</h2>
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-ink">Datos generales</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Nombre del proyecto</label>
+            <label className="block text-sm font-medium text-ink-soft">Nombre del proyecto</label>
             <input
               type="text"
               value={form.name}
@@ -116,7 +116,7 @@ export default function ProjectForm({
           </div>
           {showSlug && (
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Identificador (slug)</label>
+              <label className="block text-sm font-medium text-ink-soft">Identificador (slug)</label>
               <input
                 type="text"
                 value={form.slug}
@@ -131,7 +131,7 @@ export default function ProjectForm({
             </div>
           )}
           <div className="space-y-1 sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Dominio</label>
+            <label className="block text-sm font-medium text-ink-soft">Dominio</label>
             <input
               type="text"
               value={form.domain}
@@ -141,8 +141,8 @@ export default function ProjectForm({
             />
           </div>
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">
-              Tope de gasto mensual (USD) <span className="text-gray-400 font-normal">(opcional)</span>
+            <label className="block text-sm font-medium text-ink-soft">
+              Tope de gasto mensual (USD) <span className="text-ink-faint font-normal">(opcional)</span>
             </label>
             <input
               type="number"
@@ -154,21 +154,21 @@ export default function ProjectForm({
               className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
             />
           </div>
-          <p className="text-xs text-gray-400 sm:col-span-1 self-end">
+          <p className="text-xs text-ink-faint sm:col-span-1 self-end">
             Bloquea las llamadas a DataForSEO de este proyecto al superarlo (se suma al tope global).
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-900">Negocio local (NAP)</h2>
-          <label className="flex items-center gap-2 text-sm text-gray-600">
+          <h2 className="text-sm font-semibold text-ink">Negocio local (NAP)</h2>
+          <label className="flex items-center gap-2 text-sm text-ink-soft">
             <input
               type="checkbox"
               checked={form.isLocalBusiness}
               onChange={(e) => set("isLocalBusiness", e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-line"
             />
             Es un negocio local
           </label>
@@ -185,7 +185,7 @@ export default function ProjectForm({
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Teléfono</label>
+                <label className="block text-sm font-medium text-ink-soft">Teléfono</label>
                 <input
                   type="text"
                   value={form.phone}
@@ -194,7 +194,7 @@ export default function ProjectForm({
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Horario</label>
+                <label className="block text-sm font-medium text-ink-soft">Horario</label>
                 <input
                   type="text"
                   value={form.hours}
@@ -208,7 +208,7 @@ export default function ProjectForm({
             <button
               type="button"
               onClick={() => setShowAdvanced((v) => !v)}
-              className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-900"
+              className="flex items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink"
             >
               <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showAdvanced && "rotate-180")} />
               Avanzado: introducir dirección/coordenadas a mano
@@ -216,7 +216,7 @@ export default function ProjectForm({
             {showAdvanced && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 <div className="space-y-1 sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Nombre del negocio</label>
+                  <label className="block text-sm font-medium text-ink-soft">Nombre del negocio</label>
                   <input
                     type="text"
                     value={form.businessName}
@@ -225,7 +225,7 @@ export default function ProjectForm({
                   />
                 </div>
                 <div className="space-y-1 sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Dirección</label>
+                  <label className="block text-sm font-medium text-ink-soft">Dirección</label>
                   <input
                     type="text"
                     value={form.address}
@@ -234,8 +234,8 @@ export default function ProjectForm({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Latitud <span className="text-gray-400 font-normal">(centro del geogrid)</span>
+                  <label className="block text-sm font-medium text-ink-soft">
+                    Latitud <span className="text-ink-faint font-normal">(centro del geogrid)</span>
                   </label>
                   <input
                     type="number"
@@ -247,8 +247,8 @@ export default function ProjectForm({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Longitud <span className="text-gray-400 font-normal">(centro del geogrid)</span>
+                  <label className="block text-sm font-medium text-ink-soft">
+                    Longitud <span className="text-ink-faint font-normal">(centro del geogrid)</span>
                   </label>
                   <input
                     type="number"
@@ -259,7 +259,7 @@ export default function ProjectForm({
                     className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
                   />
                 </div>
-                <p className="text-xs text-gray-400 sm:col-span-2">
+                <p className="text-xs text-ink-faint sm:col-span-2">
                   Solo necesario si el negocio no aparece en el buscador de arriba (ej. ficha de Google
                   todavía no creada). Obtén las coordenadas exactas en Google Maps: clic derecho en el
                   pin → copiar.
@@ -270,12 +270,12 @@ export default function ProjectForm({
         )}
       </div>
 
-      {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+      {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
 
       <button
         type="submit"
         disabled={submitting}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
       >
         {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
         {submitLabel}

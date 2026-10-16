@@ -61,23 +61,23 @@ export default function SchemaTypePicker({
         <Popover.Trigger asChild>
           <button
             type="button"
-            className="w-full flex items-center justify-between gap-2 border border-line rounded-xl px-3 py-2 text-sm bg-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors hover:bg-background"
+            className="w-full flex items-center justify-between gap-2 border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors hover:bg-background"
           >
-            <span className={cn("truncate text-left", current ? "text-gray-900" : "text-gray-400")}>
+            <span className={cn("truncate text-left", current ? "text-ink" : "text-ink-faint")}>
               {current ? current.label : "Selecciona un tipo…"}
             </span>
-            <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
+            <ChevronDown className="h-4 w-4 text-ink-faint shrink-0" />
           </button>
         </Popover.Trigger>
         <Popover.Portal>
           <Popover.Content
             align="start"
             sideOffset={4}
-            className="z-50 bg-white border border-line rounded-xl shadow-lg flex flex-col max-h-96 w-[var(--radix-popover-trigger-width)]"
+            className="z-50 bg-surface border border-line rounded-xl shadow-lg flex flex-col max-h-96 w-[var(--radix-popover-trigger-width)]"
           >
             <div className="p-2 border-b border-line">
               <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-background">
-                <Search className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                <Search className="h-3.5 w-3.5 text-ink-faint shrink-0" />
                 <input
                   autoFocus
                   value={query}
@@ -91,7 +91,7 @@ export default function SchemaTypePicker({
             <div className="overflow-y-auto py-1">
               {grouped.map((g) => (
                 <div key={g.category}>
-                  <p className="px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
+                  <p className="px-3 py-1 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-faint">
                     {g.category}
                   </p>
                   {g.entries.map((e) => (
@@ -100,7 +100,7 @@ export default function SchemaTypePicker({
                 </div>
               ))}
               {totalShown === 0 && (
-                <p className="px-3 py-3 text-sm text-gray-400">Sin resultados.</p>
+                <p className="px-3 py-3 text-sm text-ink-faint">Sin resultados.</p>
               )}
             </div>
           </Popover.Content>
@@ -130,7 +130,7 @@ function Row({
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className={cn("text-sm truncate", active ? "text-gray-900 font-medium" : "text-gray-700")}>
+          <span className={cn("text-sm truncate", active ? "text-ink font-medium" : "text-ink-soft")}>
             {entry.label}
           </span>
           {entry.generator === "deterministic" && (
@@ -139,7 +139,7 @@ function Row({
             </Pill>
           )}
         </div>
-        <p className="text-xs text-gray-400 leading-snug truncate">{entry.description}</p>
+        <p className="text-xs text-ink-faint leading-snug truncate">{entry.description}</p>
       </div>
       {active && <Check className="h-3.5 w-3.5 text-brand shrink-0 mt-1" />}
     </button>

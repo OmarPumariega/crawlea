@@ -53,15 +53,15 @@ type GeogridRun = {
   triggeredAt: string;
 };
 
-// Color de cada celda por posición. Semáforo estándar de geogrids (LocalFalcon
-// y similares): verde en top-3, amarillo top-10, naranja top-20, rojo más allá,
-// gris si el negocio no aparece en ese punto.
+// Color de cada celda por posición, en la escala índigo de la guía de estilo
+// (heatmap: pálido → intenso según mejor posición) y el coral de alerta para
+// las posiciones fuera de página 2. Gris azulado si el negocio no aparece.
 function cellStyle(position: number | null): string {
-  if (position === null) return "bg-gray-200 text-gray-400";
-  if (position <= 3) return "bg-emerald-500 text-white";
-  if (position <= 10) return "bg-amber-400 text-amber-950";
-  if (position <= 20) return "bg-orange-400 text-white";
-  return "bg-red-500 text-white";
+  if (position === null) return "bg-surface-muted text-ink-faint";
+  if (position <= 3) return "bg-brand-500 text-white";
+  if (position <= 10) return "bg-brand-300 text-white";
+  if (position <= 20) return "bg-brand-100 text-brand-700";
+  return "bg-alert text-white";
 }
 
 function sortPoints(points: GridPoint[] | null): GridPoint[] {
@@ -71,10 +71,10 @@ function sortPoints(points: GridPoint[] | null): GridPoint[] {
 // Mismo semáforo que cellStyle pero como color plano, para la insignia
 // numerada del ranking local (fondo de color + número en blanco).
 function badgeColor(position: number): string {
-  if (position <= 3) return "bg-emerald-500";
-  if (position <= 10) return "bg-amber-500";
-  if (position <= 20) return "bg-orange-400";
-  return "bg-red-500";
+  if (position <= 3) return "bg-brand-500";
+  if (position <= 10) return "bg-brand-300";
+  if (position <= 20) return "bg-brand-100 text-brand-700";
+  return "bg-alert";
 }
 
 // Tabla de keywords de un negocio (mismo detalle que Competidores: volumen,
@@ -101,28 +101,28 @@ function BusinessKeywordsTable({
   }
 
   if (items.length === 0) {
-    return <p className="text-xs text-gray-400 py-1">Sin keywords orgánicas encontradas para este dominio.</p>;
+    return <p className="text-xs text-ink-faint py-1">Sin keywords orgánicas encontradas para este dominio.</p>;
   }
 
   return (
     <div className="mt-1.5 mb-1 bg-background rounded-lg p-2 space-y-1.5">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] text-gray-500">{items.length} keywords</p>
+        <p className="text-[11px] text-ink-soft">{items.length} keywords</p>
         <button
           onClick={handleImport}
           disabled={importing}
-          className="flex items-center gap-1 text-[11px] font-medium text-gray-700 hover:text-gray-900 disabled:opacity-50"
+          className="flex items-center gap-1 text-[11px] font-medium text-ink-soft hover:text-ink disabled:opacity-50"
         >
           {importing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
           Importar a estudio
         </button>
       </div>
-      {notice && <p className="text-[11px] text-emerald-700">{notice}</p>}
+      {notice && <p className="text-[11px] text-accent-ink">{notice}</p>}
       <div className="max-h-40 overflow-y-auto space-y-1">
         {items.slice(0, 50).map((k, i) => (
           <div key={i} className="flex items-center justify-between gap-2 text-[11px]">
-            <span className="text-gray-700 truncate">{k.keyword}</span>
-            <span className="text-gray-400 shrink-0 tabular-nums">
+            <span className="text-ink-soft truncate">{k.keyword}</span>
+            <span className="text-ink-faint shrink-0 tabular-nums">
               {k.volume != null ? k.volume.toLocaleString("es-ES") : "—"}
               {k.position != null && ` · #${k.position}`}
               {k.difficulty != null && ` · dif. ${k.difficulty}`}
@@ -202,7 +202,7 @@ function PointRankingPanel({
 
   if (!point) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center gap-2 text-gray-400 py-10">
+      <div className="h-full flex flex-col items-center justify-center text-center gap-2 text-ink-faint py-10">
         <MousePointerClick className="h-5 w-5" />
         <p className="text-xs">Haz clic en un punto del mapa para ver quién gana el pack local ahí.</p>
       </div>
@@ -211,18 +211,18 @@ function PointRankingPanel({
   const top = point.top ?? [];
   return (
     <div className="space-y-1">
-      <p className="text-xs text-gray-400 mb-2">
+      <p className="text-xs text-ink-faint mb-2">
         Punto ({point.row + 1},{point.col + 1}) ·{" "}
         {point.position === null ? "no aparece aquí" : `tú vas #${point.position}`}
       </p>
       {top.length === 0 ? (
-        <p className="text-sm text-gray-500">Sin negocios detectados en este punto.</p>
+        <p className="text-sm text-ink-soft">Sin negocios detectados en este punto.</p>
       ) : (
-        <ul className="divide-y divide-gray-50">
+        <ul className="divide-y divide-line">
           {top.map((item) => (
             <li
               key={item.position}
-              className={cn("py-2 flex gap-2 rounded-md", item.isMatch && "bg-emerald-50 -mx-2 px-2")}
+              className={cn("py-2 flex gap-2 rounded-md", item.isMatch && "bg-accent-tint -mx-2 px-2")}
             >
               <span
                 className={cn(
@@ -233,22 +233,22 @@ function PointRankingPanel({
                 {item.position}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-ink truncate">
                   {item.title}
-                  {item.isMatch && <span className="ml-1 text-[10px] font-semibold text-emerald-700">· TÚ</span>}
+                  {item.isMatch && <span className="ml-1 text-[10px] font-semibold text-accent-ink">· TÚ</span>}
                 </p>
-                <p className="text-xs text-gray-500 flex items-center gap-1 flex-wrap">
+                <p className="text-xs text-ink-soft flex items-center gap-1 flex-wrap">
                   {item.rating !== null ? (
                     <span className="flex items-center gap-0.5">
                       <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                       {item.rating.toFixed(1)}/5.0{item.reviewsCount !== null && ` (${item.reviewsCount})`}
                     </span>
                   ) : (
-                    <span className="text-gray-400">Sin valoraciones</span>
+                    <span className="text-ink-faint">Sin valoraciones</span>
                   )}
-                  {item.category && <span className="text-gray-400">· {item.category}</span>}
+                  {item.category && <span className="text-ink-faint">· {item.category}</span>}
                 </p>
-                {item.address && <p className="text-[11px] text-gray-400 truncate">{item.address}</p>}
+                {item.address && <p className="text-[11px] text-ink-faint truncate">{item.address}</p>}
                 <div className="flex items-center gap-2 mt-0.5">
                   {item.url && <UrlLink url={item.url} className="text-xs" />}
                   {item.domain && (
@@ -256,7 +256,7 @@ function PointRankingPanel({
                       onClick={() => toggleKeywords(item.domain as string)}
                       className={cn(
                         "flex items-center gap-1 text-[11px] shrink-0",
-                        freeDomains.has(item.domain) ? "text-emerald-700 hover:text-emerald-900" : "text-gray-500 hover:text-gray-900"
+                        freeDomains.has(item.domain) ? "text-accent-ink hover:text-accent-ink" : "text-ink-soft hover:text-ink"
                       )}
                       title={
                         freeDomains.has(item.domain)
@@ -276,7 +276,7 @@ function PointRankingPanel({
                 </div>
                 {expandedDomain === item.domain && item.domain && (
                   <>
-                    {kwError && <p className="text-[11px] text-red-600 mt-1">{kwError}</p>}
+                    {kwError && <p className="text-[11px] text-alert-ink mt-1">{kwError}</p>}
                     {keywordsByDomain[item.domain] && (
                       <BusinessKeywordsTable projectId={projectId} domain={item.domain} items={keywordsByDomain[item.domain]} />
                     )}
@@ -318,23 +318,23 @@ function GridWinnersSummary({ points, gridSize }: { points: GridPoint[]; gridSiz
   if (ranked.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+    <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
       <div className="flex items-center gap-2">
-        <Trophy className="h-4 w-4 text-gray-500" />
-        <h3 className="text-sm font-semibold text-gray-900">Quién gana en toda la rejilla</h3>
+        <Trophy className="h-4 w-4 text-ink-soft" />
+        <h3 className="text-sm font-semibold text-ink">Quién gana en toda la rejilla</h3>
       </div>
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-ink-faint">
         En cuántos de los {totals} puntos ({gridSize}×{gridSize}) aparece cada negocio, y su posición
         media — calculado sobre los datos ya guardados de este geogrid, sin coste adicional.
       </p>
-      <ul className="divide-y divide-gray-50">
+      <ul className="divide-y divide-line">
         {ranked.map((b, i) => (
-          <li key={i} className={cn("py-2 flex items-center justify-between gap-2", b.isMatch && "bg-emerald-50 -mx-2 px-2 rounded-md")}>
-            <span className="text-sm text-gray-900 truncate flex items-center gap-1.5">
+          <li key={i} className={cn("py-2 flex items-center justify-between gap-2", b.isMatch && "bg-accent-tint -mx-2 px-2 rounded-md")}>
+            <span className="text-sm text-ink truncate flex items-center gap-1.5">
               {b.title}
-              {b.isMatch && <span className="text-[10px] font-semibold text-emerald-700">· TÚ</span>}
+              {b.isMatch && <span className="text-[10px] font-semibold text-accent-ink">· TÚ</span>}
             </span>
-            <span className="text-xs text-gray-500 shrink-0 tabular-nums">
+            <span className="text-xs text-ink-soft shrink-0 tabular-nums">
               {b.points}/{totals} puntos · media #{b.avgPosition}
             </span>
           </li>
@@ -368,15 +368,15 @@ function Heatmap({ run, compact = false }: { run: { gridSize: number; points: Gr
 
 // Color del delta entre dos runs (A=antes, B=después). Devuelve clase + texto.
 function deltaStyle(posA: number | null, posB: number | null): { cls: string; label: string } {
-  if (posA === null && posB === null) return { cls: "bg-gray-100 text-gray-300", label: "—" };
-  if (posA === null && posB !== null) return { cls: "bg-emerald-300 text-emerald-950", label: `#${posB} ✓` }; // apareció
-  if (posA !== null && posB === null) return { cls: "bg-red-700 text-white", label: "perdido" }; // desapareció
+  if (posA === null && posB === null) return { cls: "bg-surface-muted text-ink-faint", label: "—" };
+  if (posA === null && posB !== null) return { cls: "bg-brand-300 text-accent-ink", label: `#${posB} ✓` }; // apareció
+  if (posA !== null && posB === null) return { cls: "bg-alert text-white", label: "perdido" }; // desapareció
   if (posA !== null && posB !== null) {
-    if (posB < posA) return { cls: "bg-emerald-500 text-white", label: `#${posB} ▼${posA - posB}` }; // mejoró
-    if (posB > posA) return { cls: "bg-red-500 text-white", label: `#${posB} ▲${posB - posA}` }; // empeoró
-    return { cls: "bg-gray-300 text-gray-600", label: `#${posB} =` }; // igual
+    if (posB < posA) return { cls: "bg-brand-500 text-white", label: `#${posB} ▼${posA - posB}` }; // mejoró
+    if (posB > posA) return { cls: "bg-alert text-white", label: `#${posB} ▲${posB - posA}` }; // empeoró
+    return { cls: "bg-ink-faint text-ink-soft", label: `#${posB} =` }; // igual
   }
-  return { cls: "bg-gray-100 text-gray-300", label: "—" };
+  return { cls: "bg-surface-muted text-ink-faint", label: "—" };
 }
 
 const GRID_OPTIONS = [3, 5, 7];
@@ -602,15 +602,15 @@ export default function GeogridView({
           aunque todavía no haya ningún geogrid ejecutado, con un círculo
           numerado por punto (mismo lenguaje visual que LocalFalcon/DinoRank)
           y un panel lateral con el pack local real del punto seleccionado. */}
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
         <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-gray-500" />
+          <MapPin className="h-4 w-4 text-ink-soft" />
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">
+            <h3 className="text-sm font-semibold text-ink">
               {current?.status === "completed" ? current.keyword : businessName ?? "Centro del negocio"}
             </h3>
             {current?.status === "completed" && !canCompare && (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-ink-faint">
                 {current.gridSize}×{current.gridSize} · radio {current.radiusKm} km ·{" "}
                 {current.foundCount ?? 0}/{current.gridSize * current.gridSize} puntos posicionando
                 {current.averagePosition !== null && <> · media #{current.averagePosition}</>}
@@ -621,7 +621,7 @@ export default function GeogridView({
         </div>
 
         {centerLat === null || centerLng === null ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ink-soft">
             Faltan las coordenadas del negocio — defínelas en la ficha del proyecto para ver el mapa
             y poder ejecutar un geogrid.
           </p>
@@ -645,12 +645,12 @@ export default function GeogridView({
         )}
 
         {current?.status === "completed" && current.points && !canCompare && (
-          <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-500 pt-1">
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-emerald-500" /> Top 3</span>
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-amber-500" /> 4–10</span>
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-orange-400" /> 11–20</span>
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-red-500" /> +20</span>
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-gray-400" /> No aparece</span>
+          <div className="flex flex-wrap items-center gap-3 text-[11px] text-ink-soft pt-1">
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-brand-500" /> Top 3</span>
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-brand-300" /> 4–10</span>
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-brand-300" /> 11–20</span>
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-alert" /> +20</span>
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-ink-faint" /> No aparece</span>
           </div>
         )}
       </div>
@@ -659,7 +659,7 @@ export default function GeogridView({
         <GridWinnersSummary points={current.points} gridSize={current.gridSize} />
       )}
 
-      <form onSubmit={handleTrigger} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+      <form onSubmit={handleTrigger} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
         <GbpPicker
           projectId={projectId}
           currentGbpName={gbpName}
@@ -668,7 +668,7 @@ export default function GeogridView({
         />
 
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Keyword</label>
+          <label className="block text-sm font-medium text-ink-soft">Keyword</label>
           <input
             type="text"
             value={keyword}
@@ -680,7 +680,7 @@ export default function GeogridView({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Rejilla</label>
+            <label className="block text-sm font-medium text-ink-soft">Rejilla</label>
             <div className="flex gap-2">
               {GRID_OPTIONS.map((n) => (
                 <button
@@ -689,7 +689,7 @@ export default function GeogridView({
                   onClick={() => setGridSize(n)}
                   className={cn(
                     "px-3 py-2 rounded-lg text-sm font-medium border",
-                    gridSize === n ? "bg-gray-900 text-white border-gray-900" : "border-line text-gray-600 hover:bg-background"
+                    gridSize === n ? "bg-brand-900 text-white border-brand-900" : "border-line text-ink-soft hover:bg-background"
                   )}
                 >
                   {n}×{n}
@@ -698,7 +698,7 @@ export default function GeogridView({
             </div>
           </div>
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Radio (km)</label>
+            <label className="block text-sm font-medium text-ink-soft">Radio (km)</label>
             <input
               type="number"
               min={0.5}
@@ -710,16 +710,16 @@ export default function GeogridView({
             />
           </div>
         </div>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-ink-faint">
           {gridSize * gridSize} consultas · coste estimado ~${geogridCostUsd(gridSize).toFixed(2)} por escaneo
         </p>
 
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+        {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
 
         <button
           type="submit"
           disabled={triggering || current?.status === "pending" || current?.status === "running"}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-brand-900 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50"
         >
           {triggering ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
           Ejecutar geogrid
@@ -727,7 +727,7 @@ export default function GeogridView({
       </form>
 
       {(current?.status === "pending" || current?.status === "running") && (
-        <div className="flex items-center gap-2 text-sm bg-background text-gray-600 px-3 py-2 rounded-lg">
+        <div className="flex items-center gap-2 text-sm bg-background text-ink-soft px-3 py-2 rounded-lg">
           <Loader2 className="h-4 w-4 animate-spin" />
           {current.status === "pending"
             ? "En cola, empezará en breve (el cron lo procesa cada 60s)..."
@@ -736,27 +736,27 @@ export default function GeogridView({
       )}
 
       {current?.status === "failed" && (
-        <div className="flex items-center gap-2 text-sm bg-red-50 text-red-600 px-3 py-2 rounded-lg">
+        <div className="flex items-center gap-2 text-sm bg-alert-tint text-alert-ink px-3 py-2 rounded-lg">
           <XCircle className="h-4 w-4 shrink-0" />
           {current.errorMessage ?? "El geogrid ha fallado."}
         </div>
       )}
 
       {canCompare && runBefore && runAfter && (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-4">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-gray-900">
+              <p className="text-sm font-semibold text-ink">
                 Comparación · {runAfter.keyword}
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-ink-faint">
                 {new Date(runBefore.triggeredAt).toLocaleDateString("es-ES")} →{" "}
                 {new Date(runAfter.triggeredAt).toLocaleDateString("es-ES")}
               </p>
             </div>
             <button
               onClick={() => setCompareIds([])}
-              className="text-xs text-gray-400 hover:text-gray-900"
+              className="text-xs text-ink-faint hover:text-ink"
             >
               Cerrar
             </button>
@@ -764,7 +764,7 @@ export default function GeogridView({
 
           {/* Grid de deltas: el progreso por celda */}
           <div>
-            <p className="text-xs text-gray-500 mb-2">Cambios por punto</p>
+            <p className="text-xs text-ink-soft mb-2">Cambios por punto</p>
             <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${runAfter.gridSize}, minmax(0, 1fr))` }}>
               {deltaCells.map((c, i) => {
                 const d = deltaStyle(c.posA, c.posB);
@@ -784,28 +784,28 @@ export default function GeogridView({
           {/* Los dos mapas lado a lado */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <p className="text-[11px] text-gray-400">Antes · {new Date(runBefore.triggeredAt).toLocaleDateString("es-ES")}</p>
+              <p className="text-[11px] text-ink-faint">Antes · {new Date(runBefore.triggeredAt).toLocaleDateString("es-ES")}</p>
               <Heatmap run={runBefore} compact />
             </div>
             <div className="space-y-1">
-              <p className="text-[11px] text-gray-400">Después · {new Date(runAfter.triggeredAt).toLocaleDateString("es-ES")}</p>
+              <p className="text-[11px] text-ink-faint">Después · {new Date(runAfter.triggeredAt).toLocaleDateString("es-ES")}</p>
               <Heatmap run={runAfter} compact />
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-500">
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-emerald-500" /> Mejoró</span>
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-emerald-300" /> Apareció</span>
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-red-500" /> Empeoró</span>
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-red-700" /> Perdido</span>
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-gray-300" /> Igual</span>
+          <div className="flex flex-wrap items-center gap-3 text-[11px] text-ink-soft">
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-brand-500" /> Mejoró</span>
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-brand-300" /> Apareció</span>
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-alert" /> Empeoró</span>
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-alert" /> Perdido</span>
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-ink-faint" /> Igual</span>
           </div>
         </div>
       )}
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-900">Histórico</h3>
+          <h3 className="text-sm font-semibold text-ink">Histórico</h3>
           {history.filter((r) => r.status === "completed").length >= 2 && (
             <button
               onClick={() => {
@@ -814,7 +814,7 @@ export default function GeogridView({
               }}
               className={cn(
                 "flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg border",
-                compareMode ? "bg-gray-900 text-white border-gray-900" : "text-gray-600 border-line hover:bg-background"
+                compareMode ? "bg-brand-900 text-white border-brand-900" : "text-ink-soft border-line hover:bg-background"
               )}
             >
               <GitCompareArrows className="h-3.5 w-3.5" />
@@ -824,9 +824,9 @@ export default function GeogridView({
         </div>
 
         {loadingHistory ? (
-          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+          <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
         ) : history.length === 0 ? (
-          <p className="text-sm text-gray-500">Todavía no se ha ejecutado ningún geogrid.</p>
+          <p className="text-sm text-ink-soft">Todavía no se ha ejecutado ningún geogrid.</p>
         ) : (
           <div className="space-y-2">
             {history.map((run) => {
@@ -837,9 +837,9 @@ export default function GeogridView({
                 <div
                   key={run.id}
                   className={cn(
-                    "bg-white rounded-lg border p-3 flex items-center gap-3",
-                    current?.id === run.id ? "border-gray-900" : "border-line",
-                    selected && compareMode && "ring-1 ring-gray-900"
+                    "bg-surface rounded-lg border p-3 flex items-center gap-3",
+                    current?.id === run.id ? "border-brand-900" : "border-line",
+                    selected && compareMode && "ring-1 ring-brand-900"
                   )}
                 >
                   {compareMode && completed && (
@@ -847,7 +847,7 @@ export default function GeogridView({
                       onClick={() => toggleCompare(run.id)}
                       className={cn(
                         "h-5 w-5 rounded border flex items-center justify-center shrink-0",
-                        selected ? "bg-gray-900 border-gray-900 text-white" : "border-gray-300"
+                        selected ? "bg-brand-900 border-brand-900 text-white" : "border-line"
                       )}
                       aria-label="Seleccionar para comparar"
                     >
@@ -856,14 +856,14 @@ export default function GeogridView({
                   )}
                   <button onClick={() => !compareMode && loadDetail(run.id)} className="text-left min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-900 truncate">{run.keyword}</span>
+                      <span className="text-sm text-ink truncate">{run.keyword}</span>
                       {delta && (
-                        <span className={cn("text-[11px] font-medium", delta.improved ? "text-emerald-600" : delta.worsened ? "text-red-600" : "text-gray-400")}>
+                        <span className={cn("text-[11px] font-medium", delta.improved ? "text-accent-ink" : delta.worsened ? "text-alert-ink" : "text-ink-faint")}>
                           {delta.improved ? "▼" : delta.worsened ? "▲" : "="}{delta.diff}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-ink-faint">
                       {new Date(run.triggeredAt).toLocaleDateString("es-ES")}
                       {completed && (
                         <> · {run.gridSize}×{run.gridSize} · {run.foundCount ?? 0}/{run.gridSize * run.gridSize} puntos
@@ -874,7 +874,7 @@ export default function GeogridView({
                     </p>
                   </button>
                   {compareMode && compareIds.length === 2 && !canCompare && selected && (
-                    <span className="text-[10px] text-amber-600 max-w-[120px] text-right">
+                    <span className="text-[10px] text-accent-ink max-w-[120px] text-right">
                       Misma keyword y rejilla para comparar
                     </span>
                   )}
@@ -889,7 +889,7 @@ export default function GeogridView({
                         run.status === "pending" ||
                         run.status === "running"
                       }
-                      className="p-1 text-gray-300 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                      className="p-1 text-ink-faint hover:text-alert-ink disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                       title={
                         run.status === "pending" || run.status === "running"
                           ? "No se puede borrar mientras se está procesando"
@@ -909,7 +909,7 @@ export default function GeogridView({
           </div>
         )}
         {compareMode && compareIds.length < 2 && (
-          <p className="text-xs text-gray-400">Selecciona 2 geogrids de la misma keyword y rejilla para compararlos.</p>
+          <p className="text-xs text-ink-faint">Selecciona 2 geogrids de la misma keyword y rejilla para compararlos.</p>
         )}
       </div>
     </div>

@@ -66,20 +66,20 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-ink-faint" />
       </div>
     );
   }
 
   if (data?.needsGsc) {
     return (
-      <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 flex items-start gap-3">
-        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
-        <p className="text-sm text-gray-600">
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-accent-ink mt-0.5 shrink-0" />
+        <p className="text-sm text-ink-soft">
           Conecta Search Console (módulo{" "}
           <Link
             href={`/app/proyectos/${projectId}/google`}
-            className="text-gray-900 font-medium underline"
+            className="text-ink font-medium underline"
           >
             Google
           </Link>
@@ -90,7 +90,7 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
   }
 
   if (data?.error) {
-    return <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{data.error}</p>;
+    return <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{data.error}</p>;
   }
 
   return (
@@ -102,29 +102,29 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
       />
 
       {items.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
-          <p className="text-sm text-gray-600">
+        <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
+          <p className="text-sm text-ink-soft">
             No se detectan canibalizaciones en los últimos 90 días.
           </p>
         </div>
       ) : (
         <>
           {/* Filtros de urgencia / importancia */}
-          <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-4 flex flex-wrap items-center gap-3 text-sm">
-            <div className="flex items-center gap-1.5 text-gray-500">
+          <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-4 flex flex-wrap items-center gap-3 text-sm">
+            <div className="flex items-center gap-1.5 text-ink-soft">
               <ArrowDownUp className="h-4 w-4" />
               <span className="text-xs">Ordenar por</span>
             </div>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="px-2 py-1.5 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-white"
+              className="px-2 py-1.5 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors bg-surface"
             >
               {sortOptions.map((o) => (
                 <option key={o.key} value={o.key}>{o.label}</option>
               ))}
             </select>
-            <label className="flex items-center gap-1.5 text-gray-600 cursor-pointer">
+            <label className="flex items-center gap-1.5 text-ink-soft cursor-pointer">
               <input
                 type="checkbox"
                 checked={onlyUrgent}
@@ -133,7 +133,7 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
               />
               <span className="text-xs">Solo urgentes (ganador en top 10)</span>
             </label>
-            <label className="flex items-center gap-1.5 text-gray-600 ml-auto">
+            <label className="flex items-center gap-1.5 text-ink-soft ml-auto">
               <span className="text-xs">Mín. clics</span>
               <input
                 type="number"
@@ -143,39 +143,39 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
                 className="w-20 px-2 py-1.5 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
             </label>
-            <span className="text-xs text-gray-400">{filtered.length} de {items.length}</span>
+            <span className="text-xs text-ink-faint">{filtered.length} de {items.length}</span>
           </div>
 
           {filtered.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5">
-              <p className="text-sm text-gray-600">Ninguna canibalización cumple el filtro actual.</p>
+            <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
+              <p className="text-sm text-ink-soft">Ninguna canibalización cumple el filtro actual.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {filtered.map(({ item, clicks, winnerPos }) => {
                 const [winner, ...rest] = item.pages;
                 return (
-                  <div key={item.query} className="bg-white rounded-2xl border border-line shadow-[0_1px_2px_rgba(26,29,26,0.05),0_4px_16px_-6px_rgba(26,29,26,0.10)] p-5 space-y-3">
+                  <div key={item.query} className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="text-sm font-semibold text-gray-900">“{item.query}”</h3>
+                      <h3 className="text-sm font-semibold text-ink">“{item.query}”</h3>
                       <div className="flex items-center gap-2">
                         {clicks >= 50 && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-600">alto impacto</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-alert-tint text-alert-ink">alto impacto</span>
                         )}
                         {winnerPos <= 10 && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">urgente</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-tint text-accent-ink">urgente</span>
                         )}
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-ink-soft">
                           {item.pages.length} URLs · {clicks} clics
                         </span>
                       </div>
                     </div>
 
                     <ul className="space-y-2">
-                      <li className={cn("flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 border-emerald-200 bg-emerald-50")}>
-                        <Crown className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <li className={cn("flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 border-brand-100 bg-accent-tint")}>
+                        <Crown className="h-4 w-4 text-accent-ink shrink-0" />
                         <UrlLink url={winner.url} className="text-sm flex-1" />
-                        <span className="text-xs font-medium text-emerald-700">
+                        <span className="text-xs font-medium text-accent-ink">
                           {winner.clicks} clics · {winner.impressions} impr. · pos. {winner.position.toFixed(1)}
                         </span>
                       </li>
@@ -188,9 +188,9 @@ export default function CanibalizacionesView({ projectId }: { projectId: string 
                         const ctr = page.impressions > 0 ? ((page.clicks / page.impressions) * 100).toFixed(1) : null;
                         return (
                           <li key={page.url} className="flex flex-wrap items-center gap-2 rounded-lg border border-line px-3 py-2">
-                            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                            <AlertTriangle className="h-4 w-4 text-accent-ink shrink-0" />
                             <UrlLink url={page.url} className="text-sm flex-1" />
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-ink-soft">
                               {page.clicks} clics · {page.impressions} impr.{ctr !== null && ` (CTR ${ctr}%)`} · pos. {page.position.toFixed(1)}
                             </span>
                           </li>
