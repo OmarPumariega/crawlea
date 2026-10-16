@@ -38,6 +38,7 @@ import {
 import { cn } from "@/lib/utils";
 import ProjectSwitcher, { pushRecent } from "@/components/app/ProjectSwitcher";
 import Logo from "@/components/app/Logo";
+import CreditsMeter from "@/components/app/CreditsMeter";
 import { useProjectIdFromPath } from "@/lib/hooks/useProjectIdFromPath";
 
 const NAV_ITEMS = [
@@ -402,6 +403,9 @@ export default function AdminSidebar({
               <p className="px-3 text-sm text-ink-faint">Sin resultados para “{query}”.</p>
             )}
         </nav>
+
+        {/* Créditos del mes, siempre a la vista (no aparece para el admin) */}
+        <CreditsMeter />
 
         {/* Tarjeta de usuario: enlace al perfil (datos, plan y consumo) */}
         <div className="border-t border-line p-3">
