@@ -154,35 +154,58 @@ export default function AdminSidebar({
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
   const [query, setQuery] = useState("");
 
-  // Carga la lista de proyectos (para el selector) cuando se está dentro de un
-  // proyecto. El sidebar vive en el shell (nivel panel) y no recibe el proyecto
-  // del layout del proyecto — lo deduce de la URL y pide la lista a la API.
+  // Proyecto elegido cuando NO se está dentro de uno (Panel general, lista…):
+  // los módulos se ven siempre y apuntan al último proyecto usado o, si no hay,
+  // al primero. Se recuerda en localStorage; dentro de un proyecto manda la URL.
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [projectsLoaded, setProjectsLoaded] = useState(false);
+  const inProjects = pathname.startsWith("/app/proyectos");
+
+  // Carga la lista de proyectos (para el selector y para los módulos). El
+  // sidebar vive en el shell y no recibe el proyecto del layout — lo deduce de
+  // la URL. Se recarga al entrar/salir de la sección de proyectos por si se
+  // creó o borró alguno.
   useEffect(() => {
     let cancelled = false;
-    if (!projectId) {
-      Promise.resolve().then(() => {
-        if (!cancelled) setProjects([]);
-      });
-      return () => {
-        cancelled = true;
-      };
-    }
     fetch("/api/proyectos")
       .then((r) => (r.ok ? r.json() : []))
       .then((list: ProjectInfo[]) => {
         if (!cancelled && Array.isArray(list)) {
           setProjects(list.map((p) => ({ id: p.id, name: p.name, isLocalBusiness: !!p.isLocalBusiness })));
+          setProjectsLoaded(true);
         }
       })
       .catch(() => {});
-    // Registra el proyecto actual en "recientes" (localStorage) para el switcher.
-    pushRecent(projectId);
     return () => {
       cancelled = true;
     };
+  }, [inProjects]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    // Registra el proyecto actual en "recientes" (localStorage) para el switcher.
+    pushRecent(projectId);
+    try {
+      localStorage.setItem("crawlea:selectedProject", projectId);
+    } catch {}
   }, [projectId]);
 
-  const project = projects.find((p) => p.id === projectId) ?? null;
+  // Lee la selección guardada tras montar (no en el render: evita desajustes de hidratación).
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      try {
+        setSelectedId(localStorage.getItem("crawlea:selectedProject"));
+      } catch {}
+    });
+  }, []);
+
+  const activeId =
+    projectId ??
+    (selectedId && projects.some((p) => p.id === selectedId) ? selectedId : null) ??
+    projects[0]?.id ??
+    null;
+
+  const project = projects.find((p) => p.id === activeId) ?? null;
   const base = project ? `/app/proyectos/${project.id}` : "";
   const nav = useMemo(
     () => (project ? projectNav(base, project.isLocalBusiness) : null),
@@ -230,7 +253,16 @@ export default function AdminSidebar({
   // Segmento de módulo actual (para mantenerlo al cambiar de proyecto).
   // P.ej. estando en .../KEYWORDS, al cambiar de proyecto se va al Keywords del nuevo.
   function switchProject(newId: string) {
-    if (!newId || newId === projectId) return;
+    if (!newId || newId === activeId) return;
+    if (!projectId) {
+      // Fuera de un proyecto: solo cambia el proyecto de los módulos, sin navegar.
+      setSelectedId(newId);
+      pushRecent(newId);
+      try {
+        localStorage.setItem("crawlea:selectedProject", newId);
+      } catch {}
+      return;
+    }
     const rest = projectId ? pathname.replace(`/app/proyectos/${projectId}`, "") : "";
     const rawSeg = rest.replace(/^\//, "").split("/")[0] ?? "";
     const seg = LEGACY_MODULE_SEGMENTS[rawSeg] ?? rawSeg;
@@ -306,12 +338,12 @@ export default function AdminSidebar({
           {/* Contexto de proyecto: selector + módulos (solo dentro de un
               proyecto). El selector permite cambiar de proyecto sin ir a la
               lista (1 clic), y mantiene el módulo activo al cambiar. */}
-          {projectId && navFiltered && (
+          {navFiltered && (
             <div className="space-y-4">
               <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
                 Proyecto
               </p>
-              <ProjectSwitcher projects={projects} currentId={projectId} onSelect={switchProject} />
+              <ProjectSwitcher projects={projects} currentId={activeId} onSelect={switchProject} />
 
               <div className="space-y-1">
                 {navFiltered.top.map((m) => (
@@ -385,6 +417,20 @@ export default function AdminSidebar({
                 className="block px-3 pt-1 text-[13px] text-ink-faint hover:text-brand transition-colors"
               >
                 Gestionar proyectos →
+              </Link>
+            </div>
+          )}
+
+          {!navFiltered && projectsLoaded && projects.length === 0 && !searching && (
+            <div className="mx-1 rounded-xl border border-line bg-surface-muted p-3 text-[13px] text-ink-soft">
+              <p className="font-semibold text-ink">Aún no tienes proyectos</p>
+              <p className="mt-1">Crea el primero y aquí verás todos sus módulos.</p>
+              <Link
+                href="/app/proyectos/nuevo"
+                onClick={onClose}
+                className="mt-2 inline-block font-semibold text-brand hover:text-brand-strong"
+              >
+                Crear proyecto →
               </Link>
             </div>
           )}
