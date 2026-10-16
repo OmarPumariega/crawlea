@@ -84,7 +84,50 @@ por ID → 404, config de plataforma → 403, 2º proyecto → 402. `tsc` y `bui
   y `perfil`.
 - **Pendiente de la Fase 3:** el webhook de Stripe no debe pisar el plan si `planOverride`.
 
-## Fase 3 — Suscripciones con Stripe + gating de módulos (CÓDIGO HECHO; en modo PRUEBA)
+## Fase 3 — Suscripciones con Stripe + gating de módulos (HECHA; Stripe en modo REAL)
+
+> **Producción en modo real** (cuenta hija «Crawlea» de la organización «Omar Pumariega»):
+> productos Basic/Pro, destino de eventos `crawlea-suscripciones`, portal de clientes y clave
+> restringida `crawlea-app-produccion` (`rk_live_`, sin operaciones que muevan fondos) ya
+> creados en modo real; las 4 variables `STRIPE_*` del `.env` del VPS apuntan a ellos
+> (copia de las de prueba en `.env.bak-test`). Las obligaciones fiscales (alta, IVA,
+> facturación) son del titular y no las resuelve el código.
+
+- **Planes** (`src/lib/plans.ts`): free/pro/business con `topeUsdMes` y
+  `maxProyectos` (cifras placeholder, ajustables ahí). Enforcement: tres niveles en
+  `assertWithinSpendLimit()` (global → plan → proyecto) y 402 al superar el máximo de
+  proyectos en `POST /api/proyectos`. **De momento free incluye todos los módulos**:
+  sin vía de pago no se bloquea a nadie; el gating real llega con Stripe (Fase 3).
+- **Avisos por email** al dueño del proyecto (`notify({ userId, ... })`); el tope
+  global de plataforma sigue avisando al admin. `checkSpendNotifications()` añade el
+  aviso de tope de plan por usuario.
+
+Verificado con usuario de prueba: ve 0 proyectos (el admin tiene 5), proyecto ajeno
+por ID → 404, config de plataforma → 403, 2º proyecto → 402. `tsc` y `build` limpios.
+
+## Fase 2 — Panel de administración de cuentas (`/admin`, role admin) (HECHA)
+
+- **Layout** `src/app/admin/layout.tsx`: `requireSession()` + `isAdmin` (si no, a `/app`),
+  shell propio (`src/components/admin/PlatformShell.tsx`: Resumen · Usuarios · Costes ·
+  volver a la herramienta). Enlace "Administración" en `AdminSidebar` solo para el admin.
+- **`/admin`**: cuentas, altas 30 días, gasto DataForSEO del mes vs tope global, cuentas
+  ≥80% de su tope, cuentas por plan, top por gasto. **Sin ingresos/margen**: llegan con
+  Stripe (Fase 3) — no hay fuente real todavía.
+- **`/admin/usuarios`** (+ `[id]`): listado con búsqueda y filtros, gasto del mes por
+  cuenta (`src/lib/admin/users.ts`, query agrupada). Acciones vía
+  `PATCH|DELETE /api/admin/usuarios/[id]`: suspender/reactivar (efectivo al instante),
+  cambiar plan (marca `planOverride`), tope de gasto manual (`spendLimitOverrideUsd`,
+  sustituye al del plan) y borrar cuenta. Las cuentas admin no se tocan desde aquí.
+- **`/admin/costes`**: gasto del mes por cuenta; el detalle por tipo de llamada y por
+  proyecto sigue en `/app/costes` (vista global del admin).
+- Migración `20261016180000_fase2_admin_cuentas`: `User.planOverride`,
+  `User.spendLimitOverrideUsd`. El tope efectivo (`effectiveUserLimitUsd` en `plans.ts`)
+  lo usan `assertWithinSpendLimit`, los avisos, el perfil, el panel y `/api/costes`.
+- Los redirects legacy `/admin/*` → `/app/*` quedan solo para `proyectos`, `configuracion`
+  y `perfil`.
+- **Pendiente de la Fase 3:** el webhook de Stripe no debe pisar el plan si `planOverride`.
+
+## Fase 3 — Suscripciones con Stripe + gating de módulos (HECHA; Stripe en modo REAL)
 
 > **Requisito previo (no técnico):** antes de activar cobros reales hay que tener la
 > actividad dada de alta fiscalmente (autónomo o sociedad) y definir cómo se factura y
@@ -112,7 +155,7 @@ por ID → 404, config de plataforma → 403, 2º proyecto → 402. `tsc` y `bui
   (evento `begin_checkout`), sin sesión envía a `/registro`; sin Stripe, «Pago disponible
   próximamente». `/app/perfil` muestra renovación y «Gestionar suscripción»; la vuelta de
   Checkout (`?pago=ok`) emite `purchase`.
-- Stripe (cuenta en prueba): productos «Crawlea Basic» y «Crawlea Pro» (mensual), destino de
+- Stripe (cuenta Crawlea; hay copia equivalente en modo prueba): productos «Crawlea Basic» y «Crawlea Pro» (mensual), destino de
   eventos `crawlea-suscripciones` → `https://crawlea.com/api/stripe/webhook`, portal de
   clientes con la configuración por defecto (sin cambio de plan desde el portal: se cancela
   y se contrata el otro).

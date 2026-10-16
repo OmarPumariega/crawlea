@@ -29,7 +29,7 @@ Estado de la transición (fases aprobadas):
 - **Fase 2 — hecha:** panel de administración de cuentas (`/admin`: resumen, usuarios
   con suspensión/plan manual/tope manual/borrado, costes por cuenta). Sin margen vs
   ingresos hasta que exista Stripe.
-- **Fase 3 — código hecho (Stripe en modo PRUEBA):** planes Gratis/Basic 9 €/Pro 25 €, checkout + portal + webhook (`src/lib/stripe/`), gating de módulos de pago (`moduleGate`). Antes de cobrar en real: alta fiscal (ver `docs/06-roadmap-saas.md`).
+- **Fase 3 — hecha (Stripe en modo REAL):** planes Gratis/Basic 9 €/Pro 25 €, checkout + portal + webhook (`src/lib/stripe/`), gating de módulos de pago (`moduleGate`). Antes de cobrar en real: alta fiscal (ver `docs/06-roadmap-saas.md`).
 - **Fase 4 — hecha:** web pública en `/` (home, precios, contacto, legales con huecos
   pendientes de textos de Omar, sitemap/robots/OG, CSP).
 - **Fase 5 — pendiente:** dominio crawlea.com (compra en trámite), OAuth de Google
