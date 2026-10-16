@@ -25,8 +25,8 @@ un `User` (multi-tenant simple, sin organizaciones). La Fase 1 ya está hecha:
 registro con Google OAuth (credentials queda solo para el admin de la plataforma),
 aislamiento por usuario en todas las rutas y páginas (`src/lib/auth-guards.ts`),
 panel en `/app`, perfil `/app/perfil`, planes con límites (`src/lib/plans.ts`) y
-conexión Google por usuario. Pendiente: panel de administración de cuentas (F2),
-Stripe + gating de módulos (F3), web pública (F4) y dominio/OAuth verificado (F5).
+conexión Google por usuario. Panel de administración de cuentas en `/admin` (F2: resumen,
+usuarios, costes por cuenta). Pendiente: Stripe + gating de módulos (F3), web pública (F4) y dominio/OAuth verificado (F5).
 Alrededor de cada proyecto cuelgan, módulo a módulo: keyword research,
 títulos/metas, schema, rank tracking, integraciones Google, generación de
 contenido, auditoría técnica y geogrid local SEO — los 9 módulos del spec están
@@ -140,6 +140,10 @@ informe para todos los proyectos).
 Ver [`docs/02-arquitectura.md`](./docs/02-arquitectura.md).
 
 ## Panel de administración — secciones
+
+> **`/admin` es el panel de la PLATAFORMA (solo role admin, Fase 2):** Resumen,
+> Usuarios (suspender/reactivar, plan manual, tope de gasto manual, borrar) y Costes
+> por cuenta. Lo que sigue describe la herramienta de proyectos, que vive en `/app`.
 
 La navegación **ya no usa pestañas horizontales dentro de la ficha de proyecto**
 (el antiguo `ProjectSubNav.tsx` no existe). Todo el nav vive en el sidebar global

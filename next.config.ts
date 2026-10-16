@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
     ];
   },
   // Redirects legacy del paso a SaaS: el panel interno vivía en /admin/* y
-  // ahora es /app/* (en /admin vivirá el panel de administración de la
+  // ahora es /app/* (en /admin vive el panel de administración de la
   // plataforma, Fase 2). Además siguen vigentes los de la fusión de módulos
   // (Arquitectura→Keywords, TF-IDF→Contenido, Enlaces/Canibalizaciones→
   // Auditoría): bookmarks e historial siguen funcionando. Los query params
@@ -59,9 +59,21 @@ const nextConfig: NextConfig = {
         destination: "/app/proyectos/:id/auditoria/canibalizaciones",
         permanent: false,
       },
+      // Rutas del antiguo panel interno (single-tenant). /admin, /admin/usuarios
+      // y /admin/costes son ahora el panel de administración de la plataforma.
       {
-        source: "/admin/:path*",
-        destination: "/app/:path*",
+        source: "/admin/proyectos/:path*",
+        destination: "/app/proyectos/:path*",
+        permanent: false,
+      },
+      {
+        source: "/admin/configuracion",
+        destination: "/app/configuracion",
+        permanent: false,
+      },
+      {
+        source: "/admin/perfil",
+        destination: "/app/perfil",
         permanent: false,
       },
     ];

@@ -15,6 +15,10 @@ la plataforma, con password bcrypt). Campos clave:
   `currentPeriodEnd`: suscripción. `plan` responde a los ids de
   `src/lib/plans.ts` (`"free"` por defecto); los campos stripe* los sincroniza el
   webhook (Fase 3) y hoy son null.
+- `planOverride` / `spendLimitOverrideUsd` (Fase 2): gestión manual desde `/admin`.
+  `planOverride` = plan asignado a mano (el webhook de Stripe de la Fase 3 no debe
+  pisarlo); `spendLimitOverrideUsd` = tope mensual de la cuenta que SUSTITUYE el del
+  plan (`effectiveUserLimitUsd()` en `src/lib/plans.ts`).
 - `name` / `image` / `emailVerified`: perfil OAuth de Google.
 
 ## `Project`

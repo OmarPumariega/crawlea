@@ -50,6 +50,9 @@ emitir/refresh, así `role`/`plan`/`status` de la sesión van frescos.
   email (en memoria — con más de una réplica, migrar a Redis).
 - Suspensión: `User.status = "suspended"` → `requireSession` devuelve null (401) y
   el callback `signIn` deniega el login OAuth.
+- Panel de administración (`/admin`, Fase 2): layout con `requireSession()` + `isAdmin`;
+  API `/api/admin/usuarios/**` con gate `isAdmin` → 403. Las cuentas `admin` (y la propia)
+  no se suspenden, degradan ni borran desde ahí.
 - Borrado de cuenta: `DELETE /api/perfil` (cascada de proyectos); bloqueado para el
   admin de plataforma.
 

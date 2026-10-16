@@ -70,7 +70,7 @@ src/
 │   │           (el nav de módulos vive en el sidebar global; las
 │   │            sub-herramientas fusionadas son pestañas por ruta —
 │   │            ver "Navegación" abajo)
-│   ├── (admin — Fase 2)           # panel de administración de cuentas
+│   ├── admin/                      # panel de administración (Fase 2): resumen, usuarios, costes
 │   ├── (marketing — Fase 4)       # web pública: home, precios, legales
 │   └── api/
 │       ├── auth/[...nextauth]/

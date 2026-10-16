@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db/prisma";
 import { requireSession, isAdmin } from "@/lib/auth-guards";
 import { getUserMonthSpendUsd } from "@/lib/dataforseo/spend";
-import { getPlan } from "@/lib/plans";
+import { getPlan, effectiveUserLimitUsd } from "@/lib/plans";
+
 import PageHeader from "@/components/app/PageHeader";
 import GoogleConnectionCard from "@/components/app/GoogleConnectionCard";
 import DeleteAccountButton from "@/app/app/perfil/DeleteAccountButton";
@@ -38,6 +39,7 @@ export default async function PerfilPage({
         name: true,
         image: true,
         plan: true,
+        spendLimitOverrideUsd: true,
         createdAt: true,
         _count: { select: { projects: true } },
       },
@@ -52,7 +54,8 @@ export default async function PerfilPage({
 
   const admin = isAdmin(session);
   const plan = getPlan(user.plan);
-  const pct = plan.topeUsdMes ? Math.min(100, (spentUsd / plan.topeUsdMes) * 100) : 0;
+  const limitUsd = effectiveUserLimitUsd(user.plan, user.spendLimitOverrideUsd);
+  const pct = limitUsd ? Math.min(100, (spentUsd / limitUsd) * 100) : 0;
   const errorMessage = params.error ? ERROR_MESSAGES[params.error] ?? "Error al conectar con Google." : null;
 
   return (
@@ -119,10 +122,10 @@ export default async function PerfilPage({
               <div className="flex items-center justify-between text-sm">
                 <span className="text-ink-soft">Consumo de API del mes (incluido en el plan)</span>
                 <span className="font-medium text-ink">
-                  {spentUsd.toFixed(2)}$ {plan.topeUsdMes !== null && `/ ${plan.topeUsdMes.toFixed(2)}$`}
+                  {spentUsd.toFixed(2)}$ {limitUsd !== null && `/ ${limitUsd.toFixed(2)}$`}
                 </span>
               </div>
-              {plan.topeUsdMes !== null && (
+              {limitUsd !== null && (
                 <div className="h-2 rounded-full bg-surface-muted overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-[width] ${
@@ -132,7 +135,7 @@ export default async function PerfilPage({
                   />
                 </div>
               )}
-              {plan.topeUsdMes !== null && pct >= 80 && (
+              {limitUsd !== null && pct >= 80 && (
                 <p className="text-xs text-accent-ink">
                   {pct >= 100
                     ? "Has agotado el gasto incluido este mes: las nuevas llamadas de pago están bloqueadas hasta el mes que viene."

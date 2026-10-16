@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { isEmailConfigured, sendEmail } from "@/lib/notifications/email";
 import { getMonthSpendUsd, getMonthlyLimitUsd, getUserMonthSpendUsd } from "@/lib/dataforseo/spend";
-import { getPlan } from "@/lib/plans";
+import { effectiveUserLimitUsd } from "@/lib/plans";
 
 // Punto único de entrada para avisos por email. Dedupe: si ya existe un
 // NotificationLog con (userId, type, key), no se reenvía. Así una auditoría
@@ -95,10 +95,10 @@ export async function checkSpendNotifications(): Promise<void> {
   // Tope del plan de cada cuenta (vista de cliente).
   const users = await prisma.user.findMany({
     where: { role: "user", status: "active" },
-    select: { id: true, plan: true },
+    select: { id: true, plan: true, spendLimitOverrideUsd: true },
   });
   for (const user of users) {
-    const userLimit = getPlan(user.plan).topeUsdMes;
+    const userLimit = effectiveUserLimitUsd(user.plan, user.spendLimitOverrideUsd);
     if (userLimit === null) continue;
 
     const spent = await getUserMonthSpendUsd(user.id);

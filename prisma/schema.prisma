@@ -28,6 +28,13 @@ model User {
   stripeSubscriptionId String?   @unique
   currentPeriodEnd     DateTime?
 
+  // Gestión manual desde el panel de administración (Fase 2).
+  // planOverride: el plan lo asignó el admin a mano; el webhook de Stripe
+  // (Fase 3) no debe pisarlo. spendLimitOverrideUsd: tope mensual de la cuenta
+  // que, si existe, SUSTITUYE el topeUsdMes del plan.
+  planOverride          Boolean   @default(false)
+  spendLimitOverrideUsd Float?
+
   createdAt DateTime    @default(now())
   projects  Project[]
   googleConnection GoogleConnection?

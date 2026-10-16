@@ -1,8 +1,7 @@
 import { requireSession, isAdmin, projectForSession } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { getMonthlyLimitUsd } from "@/lib/dataforseo/spend";
-import { getPlan } from "@/lib/plans";
+import { getMonthlyLimitUsd, getUserLimitUsd } from "@/lib/dataforseo/spend";
 
 // Panel de costes (sección 5 del spec): consumo acumulado del mes por API,
 // endpoint y proyecto. Cubre TODA la actividad de API de pago registrada en
@@ -129,7 +128,7 @@ export async function GET(req: NextRequest) {
   );
 
   const dataforseoSpent = dataforseoAgg._sum.costUsd ? Number(dataforseoAgg._sum.costUsd) : 0;
-  const limit = admin ? await getMonthlyLimitUsd() : getPlan(session.user.plan).topeUsdMes;
+  const limit = admin ? await getMonthlyLimitUsd() : await getUserLimitUsd(session.user.id);
 
   return NextResponse.json({
     monthLabel,

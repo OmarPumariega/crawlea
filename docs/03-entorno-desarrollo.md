@@ -31,7 +31,7 @@ aparece y se entra como admin con contraseña — suficiente para la mayoría de
 | `/` | Redirige a `/app` (será la home pública en la Fase 4) |
 | `/acceso` · `/registro` | Login y registro públicos (Google + acceso interno) |
 | `/app` | La herramienta (requiere sesión) |
-| `/admin/*` | Reservado al panel de administración de plataforma (role admin, Fase 2); hoy `/admin/x` redirige a `/app/x` |
+| `/admin` · `/admin/usuarios` · `/admin/costes` | Panel de administración de la plataforma (solo role admin, Fase 2) |
 
 **Pruebas multi-tenant:** para verificar aislamiento, crea un usuario de prueba con
 password conocido en la BD dev, entra con él por /acceso (acceso interno), comprueba

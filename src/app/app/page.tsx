@@ -3,8 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { requireSession } from "@/lib/auth-guards";
-import { getMonthSpendUsd, getMonthlyLimitUsd, getUserMonthSpendUsd } from "@/lib/dataforseo/spend";
-import { getPlan } from "@/lib/plans";
+import { getMonthSpendUsd, getMonthlyLimitUsd, getUserMonthSpendUsd, getUserLimitUsd } from "@/lib/dataforseo/spend";
 import PageHeader from "@/components/app/PageHeader";
 import StatHero from "@/components/app/StatHero";
 import {
@@ -78,7 +77,7 @@ export default async function DashboardPage() {
       _sum: { costUsd: true },
     }),
     admin ? getMonthSpendUsd() : getUserMonthSpendUsd(session.user.id),
-    admin ? getMonthlyLimitUsd() : Promise.resolve(getPlan(session.user.plan).topeUsdMes),
+    admin ? getMonthlyLimitUsd() : getUserLimitUsd(session.user.id),
     // Auditorías fallidas recientes (últimos 30 días).
     prisma.auditRun.findMany({
       where: { ...own, status: "failed", triggeredAt: { gte: recentWindow } },

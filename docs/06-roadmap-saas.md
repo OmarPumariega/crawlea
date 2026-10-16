@@ -22,7 +22,7 @@ ya tomadas — se actualiza en el mismo commit que el cambio de fase.
 | Fase | Estado | Commit |
 |---|---|---|
 | 1 — Fundación multi-usuario | ✅ **Hecha** | `49e26fb` |
-| 2 — Panel de administración de cuentas | ⬜ Pendiente | — |
+| 2 — Panel de administración de cuentas | ✅ **Hecha** (pendiente verificar en BD dev) | — |
 | 3 — Suscripciones con Stripe + gating de módulos | ⬜ Pendiente | — |
 | 4 — Web pública (marketing) | ⬜ Pendiente | — |
 | 5 — Lanzamiento e infra | 🔶 **En progreso** | — |
@@ -62,20 +62,27 @@ La barrera de seguridad que hacía imposible abrir al público, resuelta:
 Verificado con usuario de prueba: ve 0 proyectos (el admin tiene 5), proyecto ajeno
 por ID → 404, config de plataforma → 403, 2º proyecto → 402. `tsc` y `build` limpios.
 
-## Fase 2 — Panel de administración de cuentas (`/admin`, role admin)
+## Fase 2 — Panel de administración de cuentas (`/admin`, role admin) (HECHA)
 
-Objetivo: control y visibilidad de todas las cuentas desde un panel propio.
-
-- `/admin` dashboard: usuarios totales, registros de los últimos 30 días, gasto
-  DataForSEO total vs ingresos Stripe del mes (margen) — depende de Stripe para el
-  ingreso; sin Stripe, solo gasto.
-- `/admin/usuarios`: listado (email, nombre, plan, estado, nº proyectos, gasto del
-  mes) + detalle por usuario + acciones: suspender/reactivar (efectivo al instante
-  gracias a `requireSession`), cambiar plan manualmente (override sin Stripe),
-  tope de gasto adicional manual, borrar cuenta.
-- La pestaña de costes global actual (`/app/costes` para el admin) se integra aquí
-  como sección del panel admin.
-- Middleware ya prepara el terreno (`/admin/*` exige role admin).
+- **Layout** `src/app/admin/layout.tsx`: `requireSession()` + `isAdmin` (si no, a `/app`),
+  shell propio (`src/components/admin/PlatformShell.tsx`: Resumen · Usuarios · Costes ·
+  volver a la herramienta). Enlace "Administración" en `AdminSidebar` solo para el admin.
+- **`/admin`**: cuentas, altas 30 días, gasto DataForSEO del mes vs tope global, cuentas
+  ≥80% de su tope, cuentas por plan, top por gasto. **Sin ingresos/margen**: llegan con
+  Stripe (Fase 3) — no hay fuente real todavía.
+- **`/admin/usuarios`** (+ `[id]`): listado con búsqueda y filtros, gasto del mes por
+  cuenta (`src/lib/admin/users.ts`, query agrupada). Acciones vía
+  `PATCH|DELETE /api/admin/usuarios/[id]`: suspender/reactivar (efectivo al instante),
+  cambiar plan (marca `planOverride`), tope de gasto manual (`spendLimitOverrideUsd`,
+  sustituye al del plan) y borrar cuenta. Las cuentas admin no se tocan desde aquí.
+- **`/admin/costes`**: gasto del mes por cuenta; el detalle por tipo de llamada y por
+  proyecto sigue en `/app/costes` (vista global del admin).
+- Migración `20261016180000_fase2_admin_cuentas`: `User.planOverride`,
+  `User.spendLimitOverrideUsd`. El tope efectivo (`effectiveUserLimitUsd` en `plans.ts`)
+  lo usan `assertWithinSpendLimit`, los avisos, el perfil, el panel y `/api/costes`.
+- Los redirects legacy `/admin/*` → `/app/*` quedan solo para `proyectos`, `configuracion`
+  y `perfil`.
+- **Pendiente de la Fase 3:** el webhook de Stripe no debe pisar el plan si `planOverride`.
 
 ## Fase 3 — Suscripciones con Stripe + gating de módulos
 

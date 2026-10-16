@@ -26,8 +26,9 @@ Estado de la transición (fases aprobadas):
   máximo de proyectos), conexión Google (GSC/GA4) por usuario, avisos por email
   al dueño. El admin de la plataforma ve todos los proyectos y no tiene límites
   de plan.
-- **Fase 2 — pendiente:** panel de administración de cuentas (`/admin`: usuarios,
-  suspensiones, planes manuales, métricas de margen).
+- **Fase 2 — hecha:** panel de administración de cuentas (`/admin`: resumen, usuarios
+  con suspensión/plan manual/tope manual/borrado, costes por cuenta). Sin margen vs
+  ingresos hasta que exista Stripe.
 - **Fase 3 — pendiente:** Stripe (checkout, webhooks, portal) + gating de módulos
   por plan (por ahora el plan free incluye todos los módulos: no hay vía de pago).
 - **Fase 4 — pendiente:** web pública en `/` (home, precios, contacto, legales).

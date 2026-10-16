@@ -382,6 +382,14 @@ export default function AdminSidebar({
             </div>
           )}
 
+          {session?.user?.role === "admin" && !searching && (
+            <div className="space-y-1">
+              <NavLink href="/admin" active={false} icon={<ShieldCheck className="h-[18px] w-[18px]" />} onClick={onClose}>
+                Administración
+              </NavLink>
+            </div>
+          )}
+
           {searching &&
             navItemsFiltered.length === 0 &&
             (!navFiltered || (navFiltered.top.length === 0 && navFiltered.groups.length === 0 && navFiltered.bottom.length === 0)) && (

@@ -81,6 +81,16 @@ export function getPlan(planId: string | null | undefined): PlanDef {
   return PLANS[planId ?? DEFAULT_PLAN_ID] ?? PLANS[DEFAULT_PLAN_ID];
 }
 
+// Tope mensual efectivo de una cuenta: el override manual del admin (si existe)
+// sustituye al del plan. null = sin tope de cuenta.
+export function effectiveUserLimitUsd(
+  planId: string | null | undefined,
+  overrideUsd: number | null | undefined
+): number | null {
+  if (overrideUsd !== null && overrideUsd !== undefined && overrideUsd > 0) return overrideUsd;
+  return getPlan(planId).topeUsdMes;
+}
+
 export function planAllowsModule(planId: string | null | undefined, moduleId: ModuleId): boolean {
   return getPlan(planId).modulos.includes(moduleId);
 }

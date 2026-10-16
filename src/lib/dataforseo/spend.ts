@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/db/prisma";
 import { getSetting } from "@/lib/settings";
-import { getPlan } from "@/lib/plans";
+import { effectiveUserLimitUsd } from "@/lib/plans";
 
 // Tope de gasto mensual de DataForSEO (sección 5 del spec: "topes de gasto
 // configurables, con opción de bloquear nuevas llamadas al superarlo").
 // Tres niveles, de fuera hacia dentro:
 //   1. Global de plataforma: DATAFORSEO_MONTHLY_LIMIT_USD (AppSetting/env).
-//   2. Por cuenta (SaaS): topeUsdMes del plan del dueño del proyecto. El
+//   2. Por cuenta (SaaS): topeUsdMes del plan del dueño del proyecto (o el
+//      override manual del admin, que lo sustituye). El
 //      admin de la plataforma no está limitado por plan.
 //   3. Por proyecto: Project.spendLimitUsd (ajuste fino manual).
 // El cómputo suma el coste real registrado en ApiUsageLog (api='dataforseo')
@@ -78,6 +79,16 @@ export async function getUserMonthSpendUsd(userId: string): Promise<number> {
   return agg._sum.costUsd ? Number(agg._sum.costUsd) : 0;
 }
 
+// Tope mensual efectivo de una cuenta (override manual → plan). Para mostrarlo
+// en la UI; assertWithinSpendLimit calcula lo mismo por su cuenta.
+export async function getUserLimitUsd(userId: string): Promise<number | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { plan: true, spendLimitOverrideUsd: true },
+  });
+  return user ? effectiveUserLimitUsd(user.plan, user.spendLimitOverrideUsd) : null;
+}
+
 // Comprueba los TRES topes (global → plan del usuario → proyecto si tiene
 // tope propio). Llamar ANTES de cualquier llamada nueva a DataForSEO. Si no
 // hay topes configurados, no hace nada. Las lecturas de caché no gastan → no
@@ -97,14 +108,14 @@ export async function assertWithinSpendLimit(projectId?: string): Promise<void> 
     select: {
       userId: true,
       spendLimitUsd: true,
-      user: { select: { role: true, plan: true } },
+      user: { select: { role: true, plan: true, spendLimitOverrideUsd: true } },
     },
   });
   if (!project) return;
 
   // Tope del plan del dueño (el admin de la plataforma no está limitado).
   if (project.user.role !== "admin") {
-    const userLimit = getPlan(project.user.plan).topeUsdMes;
+    const userLimit = effectiveUserLimitUsd(project.user.plan, project.user.spendLimitOverrideUsd);
     if (userLimit !== null) {
       const userSpent = await getUserMonthSpendUsd(project.userId);
       if (userSpent >= userLimit) throw new DataForSeoSpendLimitError(userSpent, userLimit, "user");
