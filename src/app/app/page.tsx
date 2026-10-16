@@ -265,7 +265,7 @@ export default async function DashboardPage() {
       <PageHeader
         eyebrow="Sala de control"
         title="Panel general"
-        description={admin ? "Resumen de toda la instalación: proyectos, costes, posicionamiento y avisos." : "Resumen de tus proyectos: costes, posicionamiento y avisos."}
+        description={admin ? "Resumen de toda la instalación: proyectos, costes, posicionamiento y avisos." : "Resumen de tus proyectos: posicionamiento, auditorías y avisos."}
       />
 
       {/* Bento superior: presupuesto (héroe de tinta) + stats clave */}
@@ -284,7 +284,7 @@ export default async function DashboardPage() {
           <div className="relative flex flex-col gap-5 h-full">
             <div className="flex items-start justify-between gap-3">
               <p className="text-[13px] font-medium text-white/60">
-                {admin ? "Presupuesto DataForSEO" : "Créditos"} · <span className="capitalize">{monthLabel}</span>
+                {admin ? "Presupuesto DataForSEO" : "Créditos"} · <span>{monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)}</span>
               </p>
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white/80">
                 <Gauge className="h-4 w-4" />
@@ -295,7 +295,7 @@ export default async function DashboardPage() {
                 {money(dfsSpent)}
               </span>
               <span className="text-sm text-white/50">
-                {dfsLimit !== null ? `de ${money(dfsLimit)}${moneyUnit}` : "sin tope configurado"}
+                {dfsLimit !== null ? `de ${money(dfsLimit)}${moneyUnit}` : admin ? "sin tope configurado" : "sin límite"}
               </span>
             </div>
             {dfsLimit !== null && (
