@@ -1,43 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Anchor,
-  FileText,
-  Globe,
-  Key,
-  Map,
-  PenLine,
-  ShieldCheck,
-  TrendingUp,
-  Users,
-  FileBarChart2,
-} from "lucide-react";
+import { ArrowRight, Check, Info } from "lucide-react";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
+import { FAQ } from "@/lib/marketing-content";
+import SectionHead from "@/components/marketing/SectionHead";
+import CtaBand from "@/components/marketing/CtaBand";
+import Reveal from "@/components/marketing/Reveal";
+import FeatureCarousel from "@/components/marketing/FeatureCarousel";
+import FeatureCard from "@/components/marketing/FeatureCard";
+import PricingCards from "@/components/marketing/PricingCards";
+import { CrawlGrid, FactTile, RankStrip, SchemaCode, StepAdd, StepCrawl, StepFix } from "@/components/marketing/StepVisuals";
+import LogoMarquee from "@/components/marketing/LogoMarquee";
+import HeroAnalyzer from "@/components/marketing/HeroAnalyzer";
+import {
+  AlertCard, BacklinksMini, CompetitorBars, ContentMini, DashboardMockup, Donut, GeoHeat,
+  KeywordRows, Pill, RankLine,
+} from "@/components/marketing/mockups";
 
 export const metadata: Metadata = {
   title: "Crawlea · El SEO esencial, a tu alcance",
   description: SITE_DESCRIPTION,
   alternates: { canonical: "/" },
 };
-
-const FEATURES = [
-  { icon: TrendingUp, title: "Posiciones", text: "Mira en qué puesto sale tu web en Google, por ubicación, y cómo evoluciona." },
-  { icon: ShieldCheck, title: "Auditoría", text: "Rastreamos tu web entera y te decimos qué problemas corregir primero." },
-  { icon: Key, title: "Palabras clave", text: "Volumen estimado, intención y estacionalidad de cada palabra clave." },
-  { icon: Anchor, title: "Backlinks", text: "Qué webs te enlazan, cuánta autoridad tienen y cuáles enlazan a tu competencia." },
-  { icon: Users, title: "Competidores", text: "Descubre las palabras por las que ellos posicionan y tú no." },
-  { icon: Map, title: "SEO local", text: "Un mapa de calor con tu posición en Google Maps, punto a punto." },
-  { icon: FileText, title: "Títulos y datos estructurados", text: "Títulos, descripciones y schema listos para tus páginas, a partir de su contenido real." },
-  { icon: PenLine, title: "Contenido con IA", text: "Genera textos y optimiza páginas existentes con cambios concretos." },
-  { icon: Globe, title: "Search Console y Analytics", text: "Tus datos de Google en el mismo sitio que el resto del trabajo." },
-  { icon: FileBarChart2, title: "Informes", text: "Un informe claro por proyecto, listo para imprimir o guardar en PDF." },
-];
-
-const STEPS = [
-  { n: "1", title: "Añade tu web", text: "Crea un proyecto con el dominio que quieres seguir." },
-  { n: "2", title: "Lanza el primer rastreo", text: "Tarda unos minutos y detecta los problemas de tu web." },
-  { n: "3", title: "Mejora lo primero", text: "Cada dato viene con una pista de qué hacer a continuación." },
-];
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -55,97 +39,203 @@ export default function HomePage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* Hero */}
-      <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:py-24">
-        <div className="space-y-6">
-          <h1 className="text-4xl font-extrabold leading-[1.08] tracking-[-0.03em] text-ink sm:text-5xl">
-            El SEO esencial, a tu alcance
-          </h1>
-          <p className="max-w-lg text-lg leading-relaxed text-ink-soft">
-            Rastrea tu web, sigue tus posiciones y aprende qué mejorar primero.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/registro" className="rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white shadow-[0_6px_16px_-6px_rgba(79,92,245,0.5)] hover:bg-brand-strong">
-              Empieza gratis
-            </Link>
-            <Link href="/precios" className="rounded-full border border-line bg-surface px-6 py-3 text-sm font-semibold text-ink hover:bg-surface-muted">
-              Mira los precios
-            </Link>
-          </div>
-          <p className="text-sm text-ink-faint">El plan Gratis no pide tarjeta.</p>
-        </div>
+      {/* ============ HERO ============ */}
+      <section className="relative overflow-hidden bg-[#0E1033] pb-8 pt-32 text-white sm:pt-40">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={{ background: "radial-gradient(ellipse 80% 55% at 50% -10%, rgba(79,92,245,0.65), transparent 70%), radial-gradient(ellipse 50% 40% at 85% 30%, rgba(115,129,255,0.28), transparent 70%)" }} />
+        <div className="mk-grid-bg pointer-events-none absolute inset-0" aria-hidden="true" />
+        <div className="mk-glow pointer-events-none absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-brand blur-[120px]" aria-hidden="true" />
 
-        {/* Tarjeta de muestra: ilustra el formato dato + pista + fuente. */}
-        <div className="rounded-[20px] border border-line bg-surface p-6 shadow-[0_1px_2px_rgba(17,20,43,0.04),0_10px_28px_-14px_rgba(17,20,43,0.10)]" aria-label="Ejemplo de cómo se muestra un dato">
-          <p className="text-xs font-semibold text-ink-faint">Posición media</p>
-          <div className="mt-1 flex items-baseline gap-3">
-            <span className="text-5xl font-extrabold tracking-[-0.03em] text-ink tabular-nums">8,4</span>
-            <span className="rounded-full bg-accent-tint px-2.5 py-0.5 text-xs font-bold text-accent-ink">▲ 1,2 pts</span>
-          </div>
-          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-            Estás cerca de la primera página. Mejora el título de tus 3 páginas más cercanas.
-          </p>
-          <div className="mt-5 flex items-end gap-1.5" aria-hidden="true">
-            {[34, 42, 38, 52, 58, 70, 82].map((h, i) => (
-              <span key={i} className={i === 6 ? "w-full rounded-t-lg bg-brand" : "w-full rounded-t-lg bg-brand-100"} style={{ height: h }} />
-            ))}
-          </div>
-          <p className="mt-4 text-xs text-ink-faint">Datos de ejemplo.</p>
-        </div>
-      </section>
-
-      {/* Funciones */}
-      <section id="funciones" className="scroll-mt-20 border-y border-line bg-surface">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="text-3xl font-extrabold tracking-[-0.02em] text-ink">Lo que puedes hacer</h2>
-          <p className="mt-2 max-w-2xl text-ink-soft">Seguimiento, backlinks, auditorías y optimización de títulos en un solo sitio.</p>
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map(({ icon: Icon, title, text }) => (
-              <li key={title} className="rounded-[20px] border border-line bg-background p-5">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-muted text-brand">
-                  <Icon className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <h3 className="mt-4 font-bold text-ink">{title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{text}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* Datos reales */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-          <div>
-            <h2 className="text-3xl font-extrabold tracking-[-0.02em] text-ink">Datos reales, sin inventos</h2>
-            <p className="mt-3 leading-relaxed text-ink-soft">
-              Cada cifra viene de una fuente comprobable: Search Console, Analytics, PageSpeed, los resultados de Google y el rastreo de tu propia web. Cuando un dato es una estimación, lo decimos.
+        <div className="relative mx-auto max-w-[1360px] px-5 sm:px-8 lg:px-10">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-xs font-semibold text-white/80 backdrop-blur">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-200" />
+              Herramienta SEO con datos reales
             </p>
+            <h1 className="mt-6 text-[2.6rem] font-extrabold leading-[1.04] tracking-[-0.035em] sm:text-6xl lg:text-7xl">
+              El SEO esencial,{" "}
+              <span className="inline-block bg-gradient-to-r from-white via-brand-100 to-brand-300 bg-clip-text text-transparent">a tu alcance</span>
+            </h1>
+            <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-white/70">
+              Rastrea tu web, sigue tus posiciones y aprende qué mejorar primero.
+            </p>
+            <HeroAnalyzer />
           </div>
-          <ol className="space-y-4">
-            {STEPS.map((s) => (
-              <li key={s.n} className="flex gap-4 rounded-[20px] border border-line bg-surface p-5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">{s.n}</span>
-                <div>
-                  <h3 className="font-bold text-ink">{s.title}</h3>
-                  <p className="mt-0.5 text-sm text-ink-soft">{s.text}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+
+          {/* Producto */}
+          <div className="relative mx-auto mt-16 max-w-5xl">
+            <div className="pointer-events-none absolute -inset-x-10 -bottom-10 -top-6 rounded-[40px] bg-brand/30 blur-3xl" aria-hidden="true" />
+            <div className="mk-tilt relative">
+              <DashboardMockup />
+            </div>
+            <div className="mk-float-a absolute -left-4 top-24 hidden w-44 rounded-2xl border border-line bg-surface p-3.5 text-ink shadow-[0_24px_50px_-12px_rgba(10,12,50,0.6)] lg:block xl:-left-14">
+              <p className="text-[11px] font-semibold text-ink-faint">«software seo»</p>
+              <p className="mt-0.5 flex items-center gap-2 text-2xl font-extrabold tracking-[-0.03em] tabular-nums">3 <Pill>▲ 4</Pill></p>
+              <p className="mt-1 text-[11px] text-ink-soft">Ya estás en la primera página.</p>
+            </div>
+            <div className="mk-float-b absolute -right-4 top-40 hidden lg:block xl:-right-12"><AlertCard /></div>
+            <div className="mk-float-a absolute -bottom-6 right-24 hidden w-40 rounded-2xl border border-line bg-surface p-3 text-ink shadow-[0_24px_50px_-12px_rgba(10,12,50,0.6)] lg:block">
+              <p className="mb-2 text-[11px] font-bold">Mapa de calor local</p>
+              <GeoHeat className="gap-1" />
+            </div>
+          </div>
+          <p className="mt-10 text-center text-xs text-white/40">Maqueta con datos de ejemplo.</p>
         </div>
       </section>
 
-      {/* CTA final */}
-      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
-        <div className="rounded-[24px] bg-brand px-6 py-12 text-center text-white sm:px-12">
-          <h2 className="text-3xl font-extrabold tracking-[-0.02em]">SEO claro, a un precio justo</h2>
-          <p className="mx-auto mt-3 max-w-xl text-white/80">Crea tu cuenta con Google y rastrea tu primera web hoy.</p>
-          <Link href="/registro" className="mt-6 inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-700 hover:bg-brand-50">
-            Rastrea mi web
+      {/* ============ FUENTES ============ */}
+      <section className="border-b border-line bg-surface py-8" aria-label="Fuentes de datos">
+        <LogoMarquee />
+      </section>
+
+      {/* ============ FUNCIONES (carrusel) ============ */}
+      <section className="overflow-hidden bg-background py-24">
+        <Reveal>
+          <FeatureCarousel count={7} title="Lo esencial del SEO, en un solo sitio">
+            <FeatureCard id="posiciones" text="Comprueba en qué puesto de Google sale tu web para cada palabra clave, por ubicación y con la frecuencia que elijas." points={["Top 10, 30, 50 o 100 resultados", "Comprobación diaria, semanal o mensual", "Histórico y aviso si caes 10 puestos o más"]} kicker="Posiciones" title="Sigue dónde sales en Google">
+              <p className="text-[11px] font-semibold text-ink-faint">Posición media</p>
+              <p className="flex items-center gap-2 text-3xl font-extrabold tracking-[-0.03em] tabular-nums">8,4 <Pill>▲ 1,2 pts</Pill></p>
+              <RankLine className="mt-2 text-ink" />
+            </FeatureCard>
+            <FeatureCard id="auditoria" text="Rastreamos tu web entera, hasta 5.000 páginas, y te decimos qué corregir primero." points={["Enlaces rotos, títulos, H1 e imágenes sin alt", "PageSpeed de tu página principal", "Tareas automáticas con lo que arreglar"]} kicker="Auditoría" title="Encuentra qué corregir primero">
+              <div className="flex items-center gap-5">
+                <Donut value={82} className="w-28 shrink-0" />
+                <ul className="space-y-2 text-[13px] text-ink-soft">
+                  <li className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-alert" />38 enlaces rotos</li>
+                  <li className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand" />4 páginas sin título</li>
+                  <li className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand-200" />9 imágenes sin alt</li>
+                </ul>
+              </div>
+            </FeatureCard>
+            <FeatureCard id="seo-local" text="Un mapa de calor de Google Maps: ves en qué puntos de tu zona aparece tu negocio y en cuáles no." points={["Rejillas de 3×3 a 7×7 puntos", "Radio de cobertura configurable", "Comparación entre dos mediciones"]} kicker="SEO local" title="Tu posición en el mapa, punto a punto">
+              <p className="mb-3 text-[11px] font-bold">Mapa de calor local</p>
+              <GeoHeat className="mx-auto max-w-[190px]" />
+            </FeatureCard>
+            <FeatureCard id="backlinks" text="Mira qué webs te enlazan, con cuánta autoridad, y cuáles enlazan a tu competencia y todavía no a ti." points={["Autoridad de dominio y dominios de referencia", "Dofollow, nofollow y enlaces rotos", "Dominios que te faltan frente a la competencia"]} kicker="Backlinks" title="Quién te enlaza y cuánto pesa">
+              <BacklinksMini />
+            </FeatureCard>
+            <FeatureCard id="palabras-clave" text="Estudia qué busca tu gente antes de escribir: volumen estimado, intención y estacionalidad." points={["Volumen mensual estimado y coste por clic", "Intención informativa, comercial o mixta", "Estructura de URLs propuesta"]} kicker="Palabras clave" title="Descubre qué busca tu gente">
+              <KeywordRows />
+            </FeatureCard>
+            <FeatureCard id="competidores" text="Compara tu visibilidad con la de cualquier dominio y descubre las palabras que ellos posicionan y tú no." points={["Tráfico orgánico estimado", "Distribución en top 3, 10 y 100", "Añade palabras a tu seguimiento con un clic"]} kicker="Competidores" title="Mídete con quien compite contigo">
+              <CompetitorBars />
+            </FeatureCard>
+            <FeatureCard id="contenido" text="Genera títulos, descripciones y textos a partir de tu página real, y optimiza las que ya tienes." points={["Tres variantes de título y descripción", "Datos estructurados (schema) validados", "Lista de cambios para páginas existentes"]} kicker="Contenido con IA" title="Títulos y textos a partir de tu página">
+              <ContentMini />
+            </FeatureCard>
+          </FeatureCarousel>
+        </Reveal>
+        <div className="mx-auto mt-6 max-w-[1360px] px-5 sm:px-8 lg:px-10">
+          <Link href="/funciones" className="inline-flex items-center gap-2 text-[15px] font-bold text-brand hover:text-brand-strong">
+            Ver todas las funciones <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </section>
+
+      {/* ============ DATOS REALES (oscura) ============ */}
+      <section className="relative overflow-hidden bg-[#0E1033] py-24 text-white">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={{ background: "radial-gradient(ellipse 60% 60% at 15% 50%, rgba(79,92,245,0.4), transparent 70%)" }} />
+        <div className="mk-grid-bg pointer-events-none absolute inset-0" aria-hidden="true" />
+        <div className="relative mx-auto grid max-w-[1360px] items-center gap-14 px-5 sm:px-8 lg:px-10 lg:grid-cols-2">
+          <Reveal>
+            <p className="text-sm font-bold uppercase tracking-wider text-brand-200">Datos reales</p>
+            <h2 className="mt-3 text-4xl font-extrabold tracking-[-0.03em] sm:text-5xl">Cada dato, con su pista</h2>
+            <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/70">
+              No te dejamos con un número suelto. Cada cifra viene con una línea que dice qué significa o qué hacer, y la explicación completa a un clic. Si un dato es una estimación, lo decimos.
+            </p>
+            <ul className="mt-8 space-y-3 text-white/80">
+              {["El dato, limpio y fácil de leer", "Una pista visible: qué significa o qué hacer", "La explicación, a un clic, con la fuente y su frescura"].map((t) => (
+                <li key={t} className="flex items-start gap-3"><span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand"><Check className="h-3 w-3" /></span>{t}</li>
+              ))}
+            </ul>
+          </Reveal>
+          <Reveal delay={100}>
+            <div className="rounded-[24px] border border-line bg-surface p-6 text-ink shadow-[0_40px_90px_-30px_rgba(10,12,50,0.8)]">
+              <p className="text-xs font-semibold text-ink-faint">Posición media</p>
+              <p className="mt-1 flex items-center gap-3 text-5xl font-extrabold tracking-[-0.03em] tabular-nums">8,4 <Pill>▲ 1,2 pts</Pill> <Info className="h-5 w-5 text-brand" aria-hidden="true" /></p>
+              <p className="mt-3 text-sm leading-relaxed text-ink-soft">Estás cerca de la primera página. Mejora el título de tus 3 páginas más cercanas.</p>
+              <div className="mt-4 rounded-2xl bg-surface-muted p-4 text-xs leading-relaxed text-ink-soft">
+                <p className="font-bold text-ink">¿Qué es?</p>
+                Es la media de tus posiciones en Google. Pasar del puesto 10 al 9 te lleva a la primera página, donde se concentran los clics.
+                <p className="mt-2 text-ink-faint">Fuente: Search Console · actualizado hoy, 08:12 · Datos de ejemplo.</p>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============ CÓMO FUNCIONA ============ */}
+      <section className="border-b border-line bg-background">
+        <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
+          <Reveal><SectionHead n="01" label="Cómo funciona" title="Del dominio al plan de mejora" text="Sin instalar nada: entras con tu cuenta de Google y en unos minutos sabes qué corregir primero." /></Reveal>
+
+          {/* Qué cubre: límites reales del producto */}
+          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Reveal><FactTile big="5.000" label="páginas por rastreo: el sitio entero, no una muestra"><CrawlGrid /></FactTile></Reveal>
+            <Reveal delay={70}><FactTile big="Top 100" label="profundidad del seguimiento de posiciones"><RankStrip /></FactTile></Reveal>
+            <Reveal delay={140}><FactTile big="7×7" label="puntos de mapa de calor en Google Maps"><GeoHeat className="mx-auto max-w-[130px] gap-1" /></FactTile></Reveal>
+            <Reveal delay={210}><FactTile big="20" label="tipos de datos estructurados (schema)"><SchemaCode /></FactTile></Reveal>
+          </div>
+
+          {/* Pasos */}
+          <ol className="relative mt-16 grid gap-5 md:grid-cols-3">
+            <div className="pointer-events-none absolute left-[16%] right-[16%] top-[19px] hidden border-t-2 border-dashed border-brand/30 md:block" aria-hidden="true" />
+            {[
+              { n: "1", title: "Añade tu web", text: "Crea un proyecto con el dominio que quieres seguir.", visual: <StepAdd /> },
+              { n: "2", title: "Lanza el primer rastreo", text: "Tarda unos minutos y detecta los problemas de tu web.", visual: <StepCrawl /> },
+              { n: "3", title: "Mejora lo primero", text: "Cada dato viene con una pista de qué hacer a continuación.", visual: <StepFix /> },
+            ].map((st, i) => (
+              <Reveal key={st.n} delay={i * 90}>
+                <li className="relative h-full">
+                  <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-brand text-sm font-extrabold text-white ring-8 ring-background">{st.n}</span>
+                  <div className="mt-5 rounded-[22px] border border-line bg-surface p-6">
+                    <div className="rounded-2xl bg-surface-muted p-4">{st.visual}</div>
+                    <h3 className="mt-5 text-xl font-extrabold tracking-[-0.02em] text-ink">{st.title}</h3>
+                    <p className="mt-1.5 leading-relaxed text-ink-soft">{st.text}</p>
+                  </div>
+                </li>
+              </Reveal>
+            ))}
+          </ol>
+          <p className="mt-4 text-xs text-ink-faint">Las pantallas de los pasos son una maqueta con datos de ejemplo.</p>
+        </div>
+      </section>
+
+      {/* ============ PRECIOS ============ */}
+      <section className="border-y border-line bg-surface">
+        <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
+          <Reveal><SectionHead n="02" label="Precios" title="SEO claro, a un precio justo" text="Empieza gratis y sube de plan cuando lo necesites." /></Reveal>
+          <Reveal className="mt-14"><PricingCards /></Reveal>
+          <div className="mt-8">
+            <Link href="/precios" className="inline-flex items-center gap-2 text-[15px] font-bold text-brand hover:text-brand-strong">Compara los planes <ArrowRight className="h-4 w-4" /></Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ FAQ ============ */}
+      <section className="bg-background">
+        <div className="mx-auto grid max-w-[1360px] gap-12 px-5 py-24 sm:px-8 lg:px-10 lg:grid-cols-[1fr_1.6fr]">
+          <Reveal>
+            <p className="text-sm font-bold text-ink"><span className="text-brand">03</span><span className="mx-2 text-ink-faint">/</span>Preguntas</p>
+            <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl">Preguntas frecuentes</h2>
+            <p className="mt-4 max-w-xs text-ink-soft">¿Te queda alguna duda? <Link href="/contacto" className="font-bold text-brand hover:text-brand-strong">Escríbenos</Link>.</p>
+          </Reveal>
+          <Reveal delay={80}>
+            <div className="divide-y divide-line border-y border-line">
+              {FAQ.map((f) => (
+                <details key={f.q} className="group py-5">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold text-ink">
+                    {f.q}
+                    <span className="text-2xl font-light text-brand transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+                  </summary>
+                  <p className="mt-3 max-w-xl leading-relaxed text-ink-soft">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <CtaBand />
     </>
   );
 }

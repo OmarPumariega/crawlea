@@ -1,0 +1,70 @@
+/* Animaciones de la web pública. Todo respeta prefers-reduced-motion. */
+@keyframes mk-float-a { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
+@keyframes mk-float-b { 0%,100% { transform: translateY(0) } 50% { transform: translateY(8px) } }
+@keyframes mk-draw { from { stroke-dashoffset: var(--len, 600) } to { stroke-dashoffset: 0 } }
+@keyframes mk-glow { 0%,100% { opacity: .55 } 50% { opacity: .9 } }
+@keyframes mk-grow { from { transform: scaleY(0) } to { transform: scaleY(1) } }
+@keyframes mk-fade { from { opacity: 0 } to { opacity: 1 } }
+
+.mk-float-a { animation: mk-float-a 7s ease-in-out infinite; }
+.mk-float-b { animation: mk-float-b 8s ease-in-out infinite; }
+.mk-glow { animation: mk-glow 6s ease-in-out infinite; }
+.mk-draw { stroke-dasharray: var(--len, 600); animation: mk-draw 2.2s .3s ease-out both; }
+.mk-grow { transform-origin: bottom; animation: mk-grow .9s cubic-bezier(.2,.8,.2,1) both; }
+.mk-fade { animation: mk-fade 1.2s .6s both; }
+
+/* Aparición al hacer scroll (componente Reveal) */
+.rv-hide { opacity: 0; transform: translateY(24px); }
+.rv-in { opacity: 1; transform: none; transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1); transition-delay: var(--rv-delay, 0ms); }
+
+.mk-grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 75%);
+}
+.mk-tilt { transform: perspective(2000px) rotateX(9deg) rotateY(-4deg) scale(.98); transform-origin: 50% 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-float-a, .mk-float-b, .mk-glow, .mk-draw, .mk-grow, .mk-fade { animation: none; }
+  .mk-draw { stroke-dashoffset: 0; }
+  .rv-hide { opacity: 1; transform: none; }
+}
+@media (max-width: 1024px) { .mk-tilt { transform: none; } }
+
+.mk-grid-light {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--line) 80%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--line) 80%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, #000, transparent);
+}
+
+/* Trama diagonal de las tarjetas del carrusel de funciones */
+.mk-hatch::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 70%;
+  height: 46%;
+  background: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--color-brand-500, #4f5cf5) 38%, transparent) 6px 7px);
+  mask-image: linear-gradient(135deg, transparent 35%, #000 90%);
+  pointer-events: none;
+}
+.mk-no-scrollbar { scrollbar-width: none; }
+.mk-no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Fondo de las tarjetas del carrusel: un paso más intenso que accent-tint
+   para que se distinga del fondo de la página sin llamar la atención. */
+.mk-card-tint { background: linear-gradient(160deg, #c3caff 0%, #d9deff 100%); }
+[data-theme="dark"] .mk-card-tint { background: linear-gradient(160deg, #343c93 0%, #272d70 100%); }
+
+/* Cinta de logos: desplazamiento lento y continuo; se pausa al pasar el ratón
+   y se detiene con prefers-reduced-motion. Bordes con desvanecido. */
+@keyframes mk-marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+.mk-marquee { mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+.mk-marquee-track { animation: mk-marquee 55s linear infinite; }
+.mk-marquee:hover .mk-marquee-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .mk-marquee-track { animation: none; } }

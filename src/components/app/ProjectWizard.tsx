@@ -41,7 +41,7 @@ const LABEL = "block text-sm font-medium text-ink-soft";
 type GscSite = { siteUrl: string; permissionLevel: string };
 type Ga4Property = { propertyId: string; displayName: string; accountName: string };
 
-export default function ProjectWizard() {
+export default function ProjectWizard({ initialDomain = "" }: { initialDomain?: string }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [projectId, setProjectId] = useState<string | null>(null);
@@ -54,7 +54,7 @@ export default function ProjectWizard() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
-  const [domain, setDomain] = useState("");
+  const [domain, setDomain] = useState(initialDomain);
   const [spendLimit, setSpendLimit] = useState("");
 
   // --- Paso 2: negocio local ---

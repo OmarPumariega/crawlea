@@ -113,6 +113,14 @@ Objetivo: la gente puede pagar y los módulos se bloquean por plan.
   `POST /api/contacto`: honeypot, rate limit 5/h por IP, envía por el SMTP existente a
   `ALERT_TO` con reply-to; 503 si no hay SMTP), `/legal/{privacidad,terminos,cookies}`
   **con huecos marcados** `[...]` — Omar aporta los textos definitivos.
+- **Analizador del hero (conversión):** el visitante escribe su web →
+  `POST /api/analizar-web` hace una revisión rápida REAL de la home (`src/lib/analyzer/
+  quick-check.ts`: HTTPS, título, descripción, H1, canonical, viewport, alt, robots.txt,
+  sitemap; sin APIs de pago; guarda SSRF y rate limit por IP) → recuento real de
+  problemas y comprobaciones superadas (sin nota inventada) → el detalle sale borroso
+  y el botón lleva a `/registro?web=dominio` → Google → directo a
+  `/app/proyectos/nuevo?dominio=...` (asistente con el dominio ya puesto). No se pide email.
+- Carrusel de funciones de la home arrastrable con ratón (y táctil nativo).
 - Copy según `Guia de comunicación/GUIA-DE-COMUNICACION.md` (sin nombrar competencia,
   sin promesas; la «formación» de la marca NO se anuncia: no existe aún).
 - SEO: `metadataBase` (de `NEXTAUTH_URL`), metadata + canonical por página, JSON-LD

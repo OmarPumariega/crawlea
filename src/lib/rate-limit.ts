@@ -20,6 +20,10 @@ export const contactIpLimiter = new RateLimiterMemory({
   duration: 3600,
 });
 
+// Analizador público de la home: hace peticiones salientes, así que se limita
+// bastante (6 análisis cada 10 minutos por IP).
+export const analyzeIpLimiter = new RateLimiterMemory({ points: 6, duration: 600 });
+
 /**
  * Devuelve la IP real del cliente leyendo X-Forwarded-For (cabecera que
  * inyecta Traefik en producción). Fallback "unknown" si no está presente.

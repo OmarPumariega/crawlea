@@ -9,7 +9,7 @@ import Logo from "@/components/app/Logo";
 // Panel compartido de /acceso y /registro. El SaaS se entra con Google (vía
 // pública); el formulario email+contraseña queda como "acceso interno" para
 // el admin de la plataforma (única cuenta con password).
-export default function AuthPanel({ variant }: { variant: "acceso" | "registro" }) {
+export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: "acceso" | "registro"; callbackUrl?: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +25,7 @@ export default function AuthPanel({ variant }: { variant: "acceso" | "registro" 
     setGoogleLoading(true);
     // redirect true: Google navega a su pantalla de consentimiento; no hay
     // resultado que inspeccionar aquí (los errores llegan por query param).
-    await signIn("google", { callbackUrl: "/app" });
+    await signIn("google", { callbackUrl });
   }
 
   async function handleSubmit(e: React.FormEvent) {
