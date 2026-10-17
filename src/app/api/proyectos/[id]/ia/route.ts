@@ -26,7 +26,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         checks: {
           orderBy: { checkedAt: "desc" },
           take: 12, // suficiente para la última por plataforma y una mini tendencia
-          select: { id: true, platform: true, model: true, cited: true, mentioned: true, citedRank: true, sources: true, answer: true, checkedAt: true },
+          select: { id: true, platform: true, model: true, cited: true, mentioned: true, citedRank: true, sources: true, answer: true, checkedAt: true, fanOutQueries: true },
         },
       },
     }),

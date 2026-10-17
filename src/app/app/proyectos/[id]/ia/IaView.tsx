@@ -21,6 +21,7 @@ type Check = {
   citedRank: number | null;
   sources: Source[];
   answer: string;
+  fanOutQueries?: string[] | null;
   checkedAt: string;
 };
 type Prompt = { id: string; prompt: string; createdAt: string; checks: Check[] };
@@ -322,6 +323,16 @@ export default function IaView({ projectId }: { projectId: string }) {
                                     ) : (
                                       <>
                                         <p className="max-h-40 overflow-y-auto whitespace-pre-line text-xs text-ink-soft">{c.answer || "Sin texto en la respuesta."}</p>
+                                        {c.fanOutQueries && c.fanOutQueries.length > 0 && (
+                                          <div className="text-xs">
+                                            <p className="mb-1 font-semibold text-ink-soft">Lo que buscó la IA para responder</p>
+                                            <div className="flex flex-wrap gap-1">
+                                              {c.fanOutQueries.map((q) => (
+                                                <span key={q} className="rounded-full bg-surface-muted px-2 py-0.5 text-ink-soft">{q}</span>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
                                         {c.sources.length > 0 ? (
                                           <ul className="space-y-1">
                                             {c.sources.slice(0, 8).map((s) => (

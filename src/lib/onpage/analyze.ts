@@ -15,7 +15,9 @@ const ONPAGE_FRESH_MS = 7 * 24 * 60 * 60 * 1000;
 async function getFreshOnPageAnalysis(projectId: string, url: string) {
   const cutoff = new Date(Date.now() - ONPAGE_FRESH_MS);
   return prisma.onPageAnalysis.findFirst({
-    where: { projectId, url, fetchedAt: { gt: cutoff } },
+    // extras: los análisis anteriores a ese campo no lo tienen → no cuentan como
+    // frescos, se vuelven a pedir (0,0015 $) para completar los datos nuevos.
+    where: { projectId, url, fetchedAt: { gt: cutoff }, NOT: { extras: { equals: Prisma.DbNull } } },
     orderBy: { fetchedAt: "desc" },
   });
 }
@@ -77,6 +79,7 @@ export async function analyzeOnPage(
       internalLinksCount: result.internalLinksCount,
       externalLinksCount: result.externalLinksCount,
       hasBrokenLinks: result.hasBrokenLinks,
+      extras: result.extras as unknown as Prisma.InputJsonValue,
     },
   });
 

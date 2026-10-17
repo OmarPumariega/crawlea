@@ -75,6 +75,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             sources: det.sources.slice(0, 20),
             answer: ans.answer.slice(0, 4000),
             costUsd: ans.costUsd,
+            fanOutQueries: ans.fanOutQueries,
+            inputTokens: ans.inputTokens,
+            outputTokens: ans.outputTokens,
           },
         });
         if (ans.costUsd !== null) {

@@ -546,6 +546,35 @@ sitio; ver el apartado "Copilot" más abajo.
   extraída a `src/lib/copilot/useCopilotThreads.ts`. No tiene tool-calling — no puede
   modificar datos del proyecto.
 
+## Regla: toda la respuesta de DataForSEO se guarda y se muestra
+
+Cada petición a DataForSEO ya está pagada: **no se descarta ningún campo**. Si llega un dato,
+se guarda (columna o `Json`) y tiene sitio en alguna vista, el Copilot o el Informe. Los
+parsers viven en archivos puros (solo imports relativos) para probarlos contra respuestas
+reales con `node --experimental-strip-types`:
+
+- **Labs / Competidores** (`src/lib/competitors/parse.ts`, `types.ts`): valor del tráfico,
+  movimiento (nuevas/suben/bajan/perdidas), anuncios de pago y, por keyword, tráfico (etv),
+  intención, tendencia, puja, enlaces necesarios, bloques del SERP. `VisibilitySnapshot.dataVersion`
+  (2 = completo): un snapshot v1 no cuenta como fresco y "Analizar" lo vuelve a pagar.
+  `src/lib/keywords/parse-labs.ts` es la lectura común de Labs (estacionalidad `search_volume`,
+  competición numérica) y `parseKeywordExtras` → `Keyword.extras`/`KeywordDataCache.extras`
+  (puja, índice de competición, tendencia mensual/trimestral/anual, enlaces medios del top).
+- **Rank Tracking** (`src/lib/serp/`): `SerpCache.panorama` y `RankPosition.serp` guardan los
+  bloques del SERP (AI Overview, mapa, snippet, PAA...), el pack local y cómo se ve tu resultado.
+- **Backlinks** (`src/lib/backlinks/parse.ts`): `BacklinkSnapshot.profile` = calidad del perfil
+  (spam score, IPs/subredes, TLD, países, tipo de web, atributos, CMS/servidor); cada backlink
+  guarda país/IP de origen, atributos, spam de destino, keywords de la página que enlaza.
+- **Geogrid** (`src/lib/geogrid/maps.ts`): cada negocio del pack guarda teléfono, horario, fotos,
+  si la ficha está reclamada, distribución de valoraciones, categorías adicionales, precio y
+  justificaciones; el resumen de la rejilla compara a los competidores locales.
+- **On-Page** (`src/lib/onpage/parse-extras.ts`): `OnPageAnalysis.extras` = tiempos, CLS, peso,
+  recursos, coherencia título/meta↔contenido, duplicados, Open Graph, cabeceras. Un análisis sin
+  `extras` no cuenta como fresco.
+- **Visibilidad IA**: `AiCheck.fanOutQueries` (búsquedas internas del asistente) y tokens.
+- **Copilot** (`src/lib/copilot/context.ts`) e **Informe** (competidores, backlinks) leen todo
+  esto sin llamadas nuevas.
+
 ## Convenciones de UI (guía de estilo)
 
 **Barra superior de módulo y historial:** todos los módulos con subpantallas, historial o

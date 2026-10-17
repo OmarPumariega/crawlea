@@ -133,6 +133,7 @@ export async function POST(
         dofollowBacklinks: summary.data.dofollowBacklinks,
         nofollowBacklinks: summary.data.nofollowBacklinks,
         brokenBacklinks: summary.data.brokenBacklinks,
+        profile: summary.data.profile as unknown as Prisma.InputJsonValue,
         topBacklinks: items as unknown as Prisma.InputJsonValue,
       },
     });

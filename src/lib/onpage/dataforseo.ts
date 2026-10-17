@@ -1,4 +1,7 @@
 import { postTask } from "@/lib/dataforseo/client";
+import { parseOnPageExtras, type OnPageExtras } from "./parse-extras";
+
+export type { OnPageExtras } from "./parse-extras";
 
 // Análisis on-page de UNA URL vía DataForSEO On-Page API, modo Live
 // (`instant_pages` — un único POST, sin crear/consultar una tarea de crawl).
@@ -35,6 +38,7 @@ export type OnPageResult = {
   internalLinksCount: number | null;
   externalLinksCount: number | null;
   hasBrokenLinks: boolean | null;
+  extras: OnPageExtras; // rendimiento, peso, recursos, coherencia, redes... (antes se descartaba)
 };
 
 type OnPageItem = {
@@ -102,5 +106,6 @@ export async function fetchInstantPageAnalysis(url: string): Promise<OnPageResul
     internalLinksCount: typeof item.meta?.internal_links_count === "number" ? item.meta.internal_links_count : null,
     externalLinksCount: typeof item.meta?.external_links_count === "number" ? item.meta.external_links_count : null,
     hasBrokenLinks: typeof item.broken_links === "boolean" ? item.broken_links : null,
+    extras: parseOnPageExtras(item as unknown as Record<string, unknown>),
   };
 }

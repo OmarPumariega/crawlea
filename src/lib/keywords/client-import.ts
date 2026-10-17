@@ -11,6 +11,7 @@ export type ImportableKeyword = {
   cpc: number | null;
   monthlySearches: number[] | null;
   difficulty?: number | null;
+  extras?: Record<string, unknown> | null;
 };
 
 export async function importKeywordsToDefaultStudy(
@@ -42,6 +43,7 @@ export async function importKeywordsToDefaultStudy(
         cpc: k.cpc,
         monthlySearches: k.monthlySearches,
         difficulty: k.difficulty ?? null,
+        extras: k.extras ?? null,
         source,
       })),
       locationCode: sourceLocation?.locationCode,

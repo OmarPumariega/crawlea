@@ -281,6 +281,9 @@ model AiCheck {
   sources    Json // [{ domain, url, title }] — todas las fuentes citadas
   answer     String   @db.Text // respuesta (recortada a 4000 caracteres)
   costUsd    Decimal? @db.Decimal(10, 6)
+  fanOutQueries Json? // string[] — búsquedas internas que lanzó el asistente (fan_out_queries)
+  inputTokens   Int?
+  outputTokens  Int?
   checkedAt  DateTime @default(now())
 
   @@index([promptId, checkedAt])
@@ -479,6 +482,8 @@ model Keyword {
   // disponible vía DataForSEO Labs (Sugerencias), no en el endpoint plano de
   // volumen ("pegar lista"), así que null es un estado normal, no un fallo.
   difficulty   Int?
+  // Resto de métricas de Labs (puja, tendencia, enlaces para competir...) — KeywordExtras.
+  extras       Json?
   priority     Int // 0-100, cuota de volumen dentro del estudio
   // Procedencia legible ("Competidor x.com", "TF-IDF: keyword", "Geogrid:
   // dominio") — null si se añadió a mano (sugerencias/pegar lista). Con el
@@ -509,6 +514,7 @@ model KeywordDataCache {
   monthlySearches Json?
   // Dificultad SEO (0-100) de Labs; null en filas anteriores a Keyword Overview.
   difficulty   Int?
+  extras       Json? // KeywordExtras de Labs (puja, tendencia, enlaces para competir...)
   fetchedAt    DateTime @default(now())
 
   @@unique([keyword, languageCode, locationCode])
@@ -561,6 +567,7 @@ model RankPosition {
   url           String? // URL del proyecto que posiciona, si apareció
   title         String? // title del resultado en el SERP
   description   String? // snippet (description) con el que Google lo mostraba
+  serp          Json? // panorama del SERP ese día: { features, resultsCount, localPack, featuredSnippet, own… }
 
   @@index([rankKeywordId, checkedAt])
 }
@@ -754,6 +761,7 @@ model SerpCache {
   peopleAlsoAsk   Json? // [{question, answer?}]
   relatedSearches Json? // string[]
   featuredSnippet Json? // {title, url, description} | null
+  panorama     Json? // { features, resultsCount, localPack, featuredSnippet, peopleAlsoAsk }
   fetchedAt    DateTime @default(now())
 
   @@unique([keyword, locationCode, languageCode, device])
@@ -770,6 +778,7 @@ model Competitor {
   domain       String // dominio normalizado (sin esquema/www)
   contentGap   Json? // [{keyword, volume, position, competition, competitionIndex, cpc, monthlySearches, title, url, description}] — keywords que rankea y el proyecto no
   contentGapAt DateTime?
+  contentGapVersion Int @default(1) // 1 = formato antiguo; 2 = con todos los campos de Labs
   createdAt    DateTime  @default(now())
 
   @@unique([projectId, domain])
@@ -794,7 +803,14 @@ model VisibilitySnapshot {
   organicTraffic  Float? // metrics.organic.etv (tráfico orgánico estimado mensual)
   organicKeywords Int? // metrics.organic.count (nº de SERPs orgánicas)
   positionBuckets Json? // { top3, top10, top100 } — nº de keywords en cada rango
-  avgPosition     Float? // metrics.organic.avg_position (posición media del dominio)
+  avgPosition     Float? // OBSOLETO: Labs no devuelve posición media (siempre null)
+  trafficValue    Float? // metrics.organic.estimated_paid_traffic_cost: lo que costaría ese tráfico en Google Ads
+  movement        Json? // { new, up, down, lost } — keywords que han entrado, subido, bajado o salido
+  paid            Json? // { keywords, traffic, cost } — presencia de pago del dominio (null si no tiene anuncios)
+  // 1 = formato antiguo (sin los campos ampliados de Labs); 2 = completo. Un
+  // snapshot v1 no cuenta como "fresco" aunque tenga <7 días, para volver a pedirlo
+  // y rellenar lo que antes se descartaba.
+  dataVersion     Int      @default(1)
   topKeywords     Json? // [{keyword, position, volume, competition, competitionIndex, cpc, monthlySearches, title, url, description}]
   fetchedAt       DateTime @default(now())
 
@@ -824,6 +840,7 @@ model BacklinkSnapshot {
   nofollowBacklinks    Int?
   brokenBacklinks      Int?
   topBacklinks         Json? // [{urlFrom, domainFrom, domainFromRank, anchor, dofollow, firstSeen}]
+  profile              Json? // BacklinkProfile: calidad del perfil (spam, IPs, TLD, países, plataformas, atributos, sitio)
   fetchedAt            DateTime @default(now())
 
   @@index([projectId, domain, fetchedAt])
@@ -860,6 +877,7 @@ model OnPageAnalysis {
   internalLinksCount Int?
   externalLinksCount Int?
   hasBrokenLinks     Boolean? // `broken_links` — booleano real de la API, no un conteo
+  extras             Json? // OnPageExtras: tiempos, CLS, peso, recursos, coherencia, duplicados, redes, cabeceras...
   fetchedAt          DateTime @default(now())
 
   @@index([projectId, url, fetchedAt])

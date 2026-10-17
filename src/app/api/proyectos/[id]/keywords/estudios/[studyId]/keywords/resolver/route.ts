@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { requireSession, projectForSession } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -82,6 +83,7 @@ export async function POST(
           intent: d?.intent ?? null,
           monthlySearches: d?.monthlySearches ?? undefined,
           difficulty: d?.difficulty ?? null,
+          extras: (d?.extras ?? undefined) as unknown as Prisma.InputJsonValue | undefined,
           source,
           priority: 0,
         };

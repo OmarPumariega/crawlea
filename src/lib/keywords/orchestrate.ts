@@ -1,4 +1,5 @@
 import { fetchKeywordOverview, type IntentValue } from "@/lib/keywords/dataforseo";
+import type { KeywordExtras } from "@/lib/keywords/parse-labs";
 import { getFreshCache, upsertCache } from "@/lib/keywords/cache";
 import { assertWithinSpendLimit } from "@/lib/dataforseo/spend";
 import { keywordOverviewCostUsd } from "@/lib/dataforseo/pricing";
@@ -19,6 +20,7 @@ export type KeywordDatum = {
   intent: IntentValue | null;
   monthlySearches: number[] | null;
   difficulty: number | null;
+  extras: KeywordExtras | null;
 };
 
 export type UsageLogInput = {
@@ -54,6 +56,7 @@ export async function fetchKeywordData(params: {
         intent: cached.intent as IntentValue | null,
         monthlySearches: cached.monthlySearches,
         difficulty: cached.difficulty,
+        extras: cached.extras,
       });
     }
   }
@@ -81,6 +84,7 @@ export async function fetchKeywordData(params: {
       intent: o?.intent ?? null,
       monthlySearches: o?.monthlySearches ?? null,
       difficulty: o?.difficulty ?? null,
+      extras: o?.extras ?? null,
     });
   }
 

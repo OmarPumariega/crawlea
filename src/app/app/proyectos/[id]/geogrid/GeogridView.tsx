@@ -254,6 +254,21 @@ function PointRankingPanel({
                   {item.category && <span className="text-ink-faint">· {item.category}</span>}
                 </p>
                 {item.address && <p className="text-[11px] text-ink-faint truncate">{item.address}</p>}
+                {(item.phone || item.totalPhotos != null || item.isClaimed != null) && (
+                  <p className="text-[11px] text-ink-faint">
+                    {[
+                      item.phone,
+                      item.totalPhotos != null ? `${item.totalPhotos} fotos` : null,
+                      item.isClaimed != null ? (item.isClaimed ? "ficha reclamada" : "ficha sin reclamar") : null,
+                      item.priceLevel,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                )}
+                {item.hours && <p className="text-[11px] text-ink-faint">{item.hours}</p>}
+                {item.additionalCategories && <p className="text-[11px] text-ink-faint">También: {item.additionalCategories.join(", ")}</p>}
+                {item.localJustifications && <p className="text-[11px] italic text-ink-faint">{item.localJustifications[0]}</p>}
                 <div className="flex items-center gap-2 mt-0.5">
                   {item.url && <UrlLink url={item.url} className="text-xs" />}
                   {item.domain && (
@@ -304,12 +319,36 @@ function GridWinnersSummary({ points, gridSize }: { points: GridPoint[]; gridSiz
   const totals = points.length;
   const byBusiness = new Map<
     string,
-    { title: string; rating: number | null; points: number; posSum: number; isMatch: boolean }
+    {
+      title: string;
+      rating: number | null;
+      reviews: number | null;
+      points: number;
+      posSum: number;
+      isMatch: boolean;
+      phone: string | null;
+      photos: number | null;
+      claimed: boolean | null;
+      category: string | null;
+    }
   >();
   for (const p of points) {
     for (const item of p.top ?? []) {
       const key = item.placeId || item.title;
-      const cur = byBusiness.get(key) ?? { title: item.title, rating: item.rating, points: 0, posSum: 0, isMatch: item.isMatch };
+      const cur =
+        byBusiness.get(key) ??
+        {
+          title: item.title,
+          rating: item.rating,
+          reviews: item.reviewsCount,
+          points: 0,
+          posSum: 0,
+          isMatch: item.isMatch,
+          phone: item.phone ?? null,
+          photos: item.totalPhotos ?? null,
+          claimed: item.isClaimed ?? null,
+          category: item.category,
+        };
       cur.points += 1;
       cur.posSum += item.position;
       byBusiness.set(key, cur);
@@ -332,19 +371,38 @@ function GridWinnersSummary({ points, gridSize }: { points: GridPoint[]; gridSiz
         En cuántos de los {totals} puntos ({gridSize}×{gridSize}) aparece cada negocio, y su posición
         media — calculado sobre los datos ya guardados de este geogrid, sin coste adicional.
       </p>
-      <ul className="divide-y divide-line">
-        {ranked.map((b, i) => (
-          <li key={i} className={cn("py-2 flex items-center justify-between gap-2", b.isMatch && "bg-accent-tint -mx-2 px-2 rounded-md")}>
-            <span className="text-sm text-ink truncate flex items-center gap-1.5">
-              {b.title}
-              {b.isMatch && <span className="text-[10px] font-semibold text-accent-ink">· TÚ</span>}
-            </span>
-            <span className="text-xs text-ink-soft shrink-0 tabular-nums">
-              {b.points}/{totals} puntos · media #{b.avgPosition}
-            </span>
-          </li>
-        ))}
-      </ul>
+      <table className="data-table data-table-compact w-full text-xs">
+        <thead>
+          <tr className="text-left text-ink-faint">
+            <th className="font-medium">Negocio</th>
+            <th className="text-right font-medium">Puntos</th>
+            <th className="text-right font-medium">Media</th>
+            <th className="text-right font-medium">Valoración</th>
+            <th className="text-right font-medium">Fotos</th>
+            <th className="font-medium">Ficha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ranked.map((b, i) => (
+            <tr key={i} className={cn(b.isMatch && "bg-accent-tint")}>
+              <td className="max-w-[200px]">
+                <p className="truncate text-sm text-ink">
+                  {b.title}
+                  {b.isMatch && <span className="ml-1 text-[10px] font-semibold text-accent-ink">· TÚ</span>}
+                </p>
+                <p className="truncate text-[11px] text-ink-faint">{[b.category, b.phone].filter(Boolean).join(" · ")}</p>
+              </td>
+              <td className="text-right tabular-nums text-ink-soft">{b.points}/{totals}</td>
+              <td className="text-right tabular-nums text-ink-soft">#{b.avgPosition}</td>
+              <td className="text-right tabular-nums text-ink-soft">
+                {b.rating !== null ? `${b.rating.toFixed(1)}${b.reviews !== null ? ` (${b.reviews})` : ""}` : "—"}
+              </td>
+              <td className="text-right tabular-nums text-ink-soft">{b.photos ?? "—"}</td>
+              <td className="text-ink-soft">{b.claimed === null ? "—" : b.claimed ? "reclamada" : "sin reclamar"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

@@ -22,13 +22,24 @@ export function estimateCostUsd(platforms: AiPlatform[], prompts: number): numbe
 
 type Section = { type?: string; text?: string | null; annotations?: { url?: string | null; title?: string | null }[] | null };
 type Item = { type?: string; sections?: Section[] | null };
-type LlmResult = { model_name?: string; items?: Item[] | null };
+type LlmResult = {
+  model_name?: string;
+  items?: Item[] | null;
+  fan_out_queries?: unknown;
+  input_tokens?: number;
+  output_tokens?: number;
+};
 
 export type AiAnswer = {
   model: string | null;
   answer: string;
   annotations: { url?: string | null; title?: string | null }[];
   costUsd: number | null;
+  // Búsquedas internas que el asistente lanzó para responder (fan-out): muestra
+  // qué consultas reales usa la IA, útil para decidir qué contenido cubrir.
+  fanOutQueries: string[];
+  inputTokens: number | null;
+  outputTokens: number | null;
 };
 
 export async function askAssistant(platform: AiPlatform, userPrompt: string): Promise<AiAnswer> {
@@ -55,5 +66,10 @@ export async function askAssistant(platform: AiPlatform, userPrompt: string): Pr
     answer: texts.join("\n\n"),
     annotations,
     costUsd: typeof task.cost === "number" ? task.cost : null,
+    fanOutQueries: Array.isArray(result?.fan_out_queries)
+      ? (result.fan_out_queries as unknown[]).filter((q): q is string => typeof q === "string" && q !== "")
+      : [],
+    inputTokens: typeof result?.input_tokens === "number" ? result.input_tokens : null,
+    outputTokens: typeof result?.output_tokens === "number" ? result.output_tokens : null,
   };
 }
