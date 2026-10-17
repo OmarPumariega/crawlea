@@ -1,5 +1,6 @@
 "use client";
 
+import ContentBriefCard from "@/components/app/ContentBriefCard";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -36,6 +37,7 @@ type FullResult = {
   headingTerms: HeadingTerm[];
   sources: string[];
   competitors?: CompetitorSerp[];
+  pageWordCounts?: number[];
   costUsd?: number | null;
   // Funcionalidades del SERP más allá de los orgánicos — misma respuesta ya
   // pagada, antes se descartaban. Fuente de ideas de contenido directa.
@@ -355,6 +357,7 @@ export default function TfidfView({ projectId }: { projectId: string }) {
       {/* Resultados */}
       {result && (
         <div className="space-y-4">
+          <ContentBriefCard result={{ keyword, ...result }} />
           {/* Cómo lo muestran los competidores en Google (top-10 con snippet).
               El snippet es el dato de copy más accionable: cómo vende Google a
               quienes ya posicionan. Llega gratis con el SERP que paga el

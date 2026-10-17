@@ -18,6 +18,7 @@ export default async function ContenidoLayout({
       <ModuleTabs
         tabs={[
           { href: `${base}/contenido`, label: "Contenido", hint: "Genera y optimiza textos" },
+          { href: `${base}/contenido/editor`, label: "Editor", hint: "Puntúa tu texto en vivo" },
           { href: `${base}/contenido/tfidf`, label: "TF-IDF", hint: "Términos del top 10 de Google" },
         ]}
       />

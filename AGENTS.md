@@ -222,3 +222,29 @@ relativos) para probarlos con respuestas reales: `src/lib/competitors/parse.ts`,
 pago, `dataVersion`), `SerpCache.panorama`/`RankPosition.serp`, `BacklinkSnapshot.profile`,
 `OnPageAnalysis.extras`, `Keyword.extras`/`KeywordDataCache.extras`, `AiCheck.fanOutQueries`;
 el Geogrid guarda la ficha completa de cada negocio del pack. Detalle en CLAUDE.md.
+
+## Mejoras añadidas tras comparar con Semrush/Ahrefs/DinoRank (local, sin desplegar)
+
+- **Oportunidades** (módulo propio, gratis, solo Search Console; `src/lib/opportunities/compute.ts`):
+  pestaña *Mejoras rápidas* (página 2, cerca del top 3, CTR bajo; clics extra estimados con el CTR
+  REAL del sitio, sin curva genérica; excluye marca) y *Páginas que bajan* (−30 % y ≥10 clics vs
+  el periodo anterior). Botón «Crear tarea».
+- **Brief de contenido** (`ContentBriefCard`, en TF-IDF) y **Editor** con puntuación en vivo
+  (`src/lib/tfidf/editor-score.ts`, pestaña de Contenido). `TfidfResult.pageWordCounts` nuevo.
+- **Auditoría**: pestañas *Cambios* (`src/lib/audit/diff.ts`: arregladas/nuevas entre las dos
+  últimas auditorías) y *Velocidad* (`PageSpeedCheck`, PageSpeed por página, gratis).
+- **Keywords → Clusters** (`src/lib/keywords/cluster.ts`): agrupa por top-10 compartido (≥3 URLs),
+  usa SERP cacheado y paga solo el que falta (con coste a la vista).
+- **Rank Tracking**: tarjeta *Cuota de visibilidad* frente a competidores (`share-of-voice.ts`).
+- **Alertas** (`src/lib/notifications/alerts.ts`): auditoría que empeora, sale del top 10, AI
+  Overview deja de citarte, competidor que crece, backlinks perdidos.
+- Informe: sección *Velocidad de la web*; Copilot: velocidad y cambio de auditoría.
+- **Competidores**: *Descubrir* (Labs `competitors_domain`, ≈0,013 $) y *Evolución* (curva mensual
+  `TrafficHistory`, Labs `historical_rank_overview`, ≈0,13 $ por dominio, guardada 30 días).
+  **Backlinks**: anchors y enlaces nuevos/perdidos (`BacklinkSnapshot.anchors/newLost`, ≈0,05 $,
+  botón aparte). Parsers verificados contra respuestas reales de producción.
+- **Google ya no es un módulo del menú**: es la pestaña *Google* de la **Ficha** (conectar la cuenta,
+  elegir propiedades y ver los paneles de este proyecto; la URL sigue siendo `/proyectos/[id]/google`,
+  ahora dentro del grupo `(ficha)`). El OAuth vuelve a la ficha vía cookie `google_oauth_return`.
+- **Pendiente**: reseñas de Google y Google Trends (sin probar su endpoint), portal de cliente con login.
+

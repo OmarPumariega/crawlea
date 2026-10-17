@@ -14,7 +14,7 @@ export default async function ProjectDetailPage({
   const hours = project.hours as { text?: string } | null;
 
   // Resumen del proyecto: datos ya guardados (sin coste), para ver su estado de un vistazo.
-  const [lastAudit, rankCount, studyCount, competitorCount, openTasks] = await Promise.all([
+  const [lastAudit, rankCount, studyCount, competitorCount, openTasks, googleConn] = await Promise.all([
     prisma.auditRun.findFirst({
       where: { projectId: id, status: "completed", overallScore: { not: null } },
       orderBy: { triggeredAt: "desc" },
@@ -24,10 +24,12 @@ export default async function ProjectDetailPage({
     prisma.keyword.count({ where: { study: { projectId: id } } }),
     prisma.competitor.count({ where: { projectId: id } }),
     prisma.todoItem.count({ where: { projectId: id, done: false } }),
+    prisma.googleConnection.findUnique({ where: { userId: project.userId }, select: { googleEmail: true } }),
   ]);
 
   return (
     <ProjectEditView
+      google={{ email: googleConn?.googleEmail ?? null, gscSelected: !!project.gscSiteUrl, ga4Selected: !!project.ga4PropertyId }}
       summary={{
         auditScore: lastAudit?.overallScore ?? null,
         auditDate: lastAudit?.triggeredAt.toISOString() ?? null,

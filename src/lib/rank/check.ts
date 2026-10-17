@@ -1,3 +1,4 @@
+import { alertAiOverviewChange } from "@/lib/notifications/alerts";
 import { prisma } from "@/lib/db/prisma";
 import { assertWithinSpendLimit } from "@/lib/dataforseo/spend";
 import { rankCheckCostUsd } from "@/lib/dataforseo/pricing";
@@ -102,6 +103,14 @@ export async function checkRankKeyword(rankKeywordId: string): Promise<{
     withAiOverview,
   });
 
+  const prevOverview = aiOverview
+    ? await prisma.aiOverviewCheck.findFirst({
+        where: { rankKeywordId: rk.id },
+        orderBy: { checkedAt: "desc" },
+        select: { hasOverview: true, cited: true },
+      })
+    : null;
+
   const now = new Date();
   await prisma.$transaction([
     prisma.rankPosition.create({
@@ -168,6 +177,10 @@ export async function checkRankKeyword(rankKeywordId: string): Promise<{
         ]
       : []),
   ]);
+
+  if (aiOverview) {
+    await alertAiOverviewChange(rk.projectId, rk.id, rk.keyword, prevOverview, { hasOverview: aiOverview.hasOverview, cited: aiOverview.cited });
+  }
 
   if (costUsd !== null) {
     await prisma.apiUsageLog.create({

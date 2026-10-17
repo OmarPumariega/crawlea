@@ -1,5 +1,7 @@
 "use client";
 
+import DiscoverCompetitorsModal from "@/components/app/DiscoverCompetitorsModal";
+import TrafficHistoryModal from "@/components/app/TrafficHistoryModal";
 import { Fragment, useEffect, useState } from "react";
 import {
   Loader2, Plus, Trash2, Target, TrendingUp, AlertTriangle,
@@ -824,6 +826,8 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
   // Detalle completo de un dominio: id de competidor o "__own" para el propio.
   const [detailId, setDetailId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [discoverOpen, setDiscoverOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   // Al añadir un competidor, analizarlo en el acto (con el coste a la vista).
   const [analyzeOnAdd, setAnalyzeOnAdd] = useState(true);
   // Autoridad/backlinks por dominio (propio + competidores), del módulo Backlinks.
@@ -1209,12 +1213,26 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
         title="Competidores"
         description="Todo lo de un competidor en un sitio: tráfico y keywords estimados, autoridad y backlinks, y el content gap con CPC, dificultad y el snippet con el que posicionan."
         actions={
-          <button
-            onClick={() => setAddOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-strong"
-          >
-            <Plus className="h-4 w-4" /> Añadir competidor
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setHistoryOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-soft hover:bg-surface-muted"
+            >
+              Evolución
+            </button>
+            <button
+              onClick={() => setDiscoverOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-soft hover:bg-surface-muted"
+            >
+              Descubrir
+            </button>
+            <button
+              onClick={() => setAddOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-strong"
+            >
+              <Plus className="h-4 w-4" /> Añadir competidor
+            </button>
+          </div>
         }
       />
 
@@ -1758,6 +1776,17 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
           </Modal>
         );
       })()}
+
+      <DiscoverCompetitorsModal projectId={projectId} open={discoverOpen} onClose={() => setDiscoverOpen(false)} onAdded={() => load()} />
+      <TrafficHistoryModal
+        projectId={projectId}
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        domains={[
+          ...(data?.projectDomain ? [{ domain: data.projectDomain, isOwn: true }] : []),
+          ...(data?.competitors ?? []).map((c) => ({ domain: c.domain, isOwn: false })),
+        ]}
+      />
 
       <Modal open={addOpen} title="Añadir competidor" onClose={() => setAddOpen(false)}>
         <div className="space-y-1">

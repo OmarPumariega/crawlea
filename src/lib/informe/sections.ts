@@ -23,6 +23,7 @@ export type SectionKey =
   | "competitors"
   | "backlinks"
   | "tfidf"
+  | "velocidad"
   | "ia"
   | "costs";
 
@@ -42,6 +43,7 @@ export const SECTION_KEYS: SectionKey[] = [
   "competitors",
   "backlinks",
   "tfidf",
+  "velocidad",
   "ia",
   "costs",
 ];
@@ -61,6 +63,7 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   competitors: "Competidores",
   backlinks: "Backlinks",
   tfidf: "TF-IDF",
+  velocidad: "Velocidad de la web",
   ia: "Visibilidad en IA",
   costs: "Consumo de créditos",
 };

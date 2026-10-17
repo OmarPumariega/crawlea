@@ -18,6 +18,8 @@ export default async function AuditoriaLayout({
       <ModuleTabs
         tabs={[
           { href: `${base}/auditoria`, label: "Auditoría", hint: "Salud técnica del sitio" },
+          { href: `${base}/auditoria/velocidad`, label: "Velocidad", hint: "Core Web Vitals por página" },
+          { href: `${base}/auditoria/cambios`, label: "Cambios", hint: "Qué ha cambiado entre auditorías" },
           { href: `${base}/auditoria/enlaces`, label: "Enlaces", hint: "PageRank y enlazado interno" },
           { href: `${base}/auditoria/canibalizaciones`, label: "Canibalizaciones", hint: "Páginas que compiten entre sí" },
         ]}

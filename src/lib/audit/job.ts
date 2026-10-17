@@ -5,6 +5,7 @@ import { getPsiMetrics } from "@/lib/audit/psi";
 import { crossReferenceGsc } from "@/lib/audit/gsc-crossref";
 import { computeScore } from "@/lib/audit/scoring";
 import { notify } from "@/lib/notifications/notify";
+import { alertAuditRegression } from "@/lib/notifications/alerts";
 import { ISSUE_META } from "@/lib/audit/issue-meta";
 
 // Con MAX_PAGES=5000 (crawler.ts) un sitio grande puede tardar legítimamente
@@ -255,6 +256,8 @@ export async function runAuditJob(): Promise<{ processed: number }> {
       subject: `Auditoría completada — ${run.project.name} (${overallScore}/100)`,
       body: `La auditoría de ${run.project.name} (${run.project.domain ?? "sin dominio"}) ha terminado con una puntuación de ${overallScore}/100 sobre ${crawl.pages.length} páginas rastreadas. Detalle en el panel: /app/proyectos/${run.projectId}/auditoria`,
     });
+
+    await alertAuditRegression(run.id, run.projectId);
 
     return { processed: 1 };
   } catch (error) {

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { DataForSeoError } from "@/lib/dataforseo/client";
+import { alertBacklinksLost } from "@/lib/notifications/alerts";
 import { DataForSeoSpendLimitError, assertWithinSpendLimit } from "@/lib/dataforseo/spend";
 import { backlinkAnalysisCostUsd } from "@/lib/dataforseo/pricing";
 import {
@@ -122,6 +123,11 @@ export async function POST(
       costs.push({ endpoint: "backlinks.top", costUsd: top.costUsd });
     }
 
+    const previous = await prisma.backlinkSnapshot.findFirst({
+      where: { projectId: id, domain },
+      orderBy: { fetchedAt: "desc" },
+      select: { referringDomains: true },
+    });
     const snapshot = await prisma.backlinkSnapshot.create({
       data: {
         projectId: id,
@@ -137,6 +143,8 @@ export async function POST(
         topBacklinks: items as unknown as Prisma.InputJsonValue,
       },
     });
+
+    await alertBacklinksLost(id, domain, previous?.referringDomains ?? null, summary.data.referringDomains);
 
     for (const { endpoint, costUsd } of costs) {
       if (costUsd !== null) {

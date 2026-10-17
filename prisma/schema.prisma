@@ -156,6 +156,8 @@ model Project {
   backlinkSnapshots    BacklinkSnapshot[]
   onPageAnalyses       OnPageAnalysis[]
   gscSnapshots         GscSnapshot[]
+  pageSpeedChecks      PageSpeedCheck[]
+  trafficHistories     TrafficHistory[]
   ga4Snapshots         Ga4Snapshot[]
   tfidfResults         TfidfResult[]
 
@@ -840,6 +842,8 @@ model BacklinkSnapshot {
   nofollowBacklinks    Int?
   brokenBacklinks      Int?
   topBacklinks         Json? // [{urlFrom, domainFrom, domainFromRank, anchor, dofollow, firstSeen}]
+  anchors              Json? // AnchorRow[] — textos de enlace más usados (se pide aparte, pago)
+  newLost              Json? // { newBacklinks, lostBacklinks } del periodo reciente (se pide junto a los anchors)
   profile              Json? // BacklinkProfile: calidad del perfil (spam, IPs, TLD, países, plataformas, atributos, sitio)
   fetchedAt            DateTime @default(now())
 
@@ -976,4 +980,41 @@ model GlobalSetting {
   key       String   @id // "INFORME_DEFAULT_CONFIG", ...
   value     Json // shape depende de la clave (ver doc en cada caller)
   updatedAt DateTime @updatedAt
+}
+
+// Medición de velocidad (PageSpeed Insights, API gratuita de Google) de una
+// página concreta del proyecto. Histórico append-only: permite ver si mejora
+// tras los cambios. fieldData = Core Web Vitals REALES de usuarios (CrUX) si la
+// URL u origen tienen tráfico suficiente; el resto es simulación de laboratorio.
+model PageSpeedCheck {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url           String
+  strategy      String // mobile | desktop
+  performance   Int? // 0-100
+  accessibility Int?
+  bestPractices Int?
+  seo           Int?
+  lcpMs         Float? // laboratorio
+  cls           Float?
+  inpMs         Float?
+  fieldData     Json? // PsiFieldData
+  opportunities Json? // PsiOpportunity[]
+  fetchedAt     DateTime @default(now())
+
+  @@index([projectId, url, strategy, fetchedAt])
+}
+
+// Curva mensual de tráfico y keywords de un dominio (Labs historical_rank_overview,
+// ~0,13 $ por dominio: se paga una vez y se guarda). `points` = HistoryPoint[].
+model TrafficHistory {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  domain    String
+  points    Json
+  fetchedAt DateTime @default(now())
+
+  @@index([projectId, domain, fetchedAt])
 }

@@ -37,6 +37,9 @@ export type TfidfResult = {
   // competencia hoy" — ejemplo de copy accionable sin coste extra, porque
   // estos datos ya llegaban en el SERP que paga el rank tracking / TF-IDF.
   competitors: CompetitorSerp[];
+  // Palabras del cuerpo de cada página scrapeada del top-10 (para la longitud
+  // recomendada del brief). Resultados guardados antes de este campo no lo tienen.
+  pageWordCounts?: number[];
 };
 
 // Una entrada del SERP del top-10 tal cual la ve Google. El snippet
@@ -106,6 +109,7 @@ export async function computeTfidf(top: SerpTopResult[]): Promise<TfidfResult> {
 
   // --- Fase 1: scraping del corpus (tolerante a fallos por página) ---
   const sources: string[] = [];
+  const pageWordCounts: number[] = [];
   const docs: Map<string, number>[] = []; // tf por documento: term → count
   const docFreq = new Map<string, number>(); // nº de docs que contienen el term
   // Headings por página (para el análisis de cobertura de temas).
@@ -137,6 +141,7 @@ export async function computeTfidf(top: SerpTopResult[]): Promise<TfidfResult> {
     }
 
     sources.push(url);
+    if (bodyText.trim()) pageWordCounts.push(bodyText.trim().split(/\s+/).length);
 
     // --- Cobertura de temas (H2/H3) ---
     const pageHeadings = new Set<string>();
@@ -209,5 +214,5 @@ export async function computeTfidf(top: SerpTopResult[]): Promise<TfidfResult> {
     .sort((a, b) => b.count - a.count)
     .slice(0, 30);
 
-  return { terms, topics, headingsByPage, headingTerms, sources, competitors };
+  return { terms, topics, headingsByPage, headingTerms, sources, competitors, pageWordCounts };
 }

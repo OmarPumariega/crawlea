@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, ChevronRight, ExternalLink, ShieldAlert, Filter, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { backlinkAnalysisCostUsd } from "@/lib/dataforseo/pricing";
+import { backlinkAnalysisCostUsd, BACKLINK_ANCHORS_COST_USD } from "@/lib/dataforseo/pricing";
 import { fmtCredits } from "@/lib/credits";
 import PageHeader from "@/components/app/PageHeader";
 import Pill from "@/components/app/Pill";
@@ -61,6 +61,7 @@ type TopBacklink = {
   keywordsTop100?: number | null;
 };
 
+type AnchorRow = { anchor: string; backlinks: number; referringDomains: number; referringPages: number; firstSeen: string | null; spamScore: number | null; nofollowPct: number | null };
 type Dist = { key: string; count: number }[];
 type Profile = {
   firstSeen: string | null;
@@ -95,6 +96,8 @@ type Snapshot = {
   brokenBacklinks: number | null;
   topBacklinks: TopBacklink[] | null;
   profile?: Profile;
+  anchors?: AnchorRow[] | null;
+  newLost?: { newBacklinks: number | null; lostBacklinks: number | null } | null;
   fetchedAt: string;
 } | null;
 
@@ -397,10 +400,78 @@ function ProfileQuality({ snapshot }: { snapshot: NonNullable<Snapshot> }) {
   );
 }
 
+// Anchors más usados y enlaces nuevos/perdidos: pago aparte (~25 créditos), por
+// eso es un botón. Un anchor con spam alto (texto de venta de enlaces, PBN) es la
+// señal más clara de enlaces tóxicos.
+function AnchorsCard({ projectId, domain, snapshot }: { projectId: string; domain: string; snapshot: NonNullable<Snapshot> }) {
+  const [anchors, setAnchors] = useState<AnchorRow[] | null>(snapshot.anchors ?? null);
+  const [newLost, setNewLost] = useState(snapshot.newLost ?? null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function load() {
+    setBusy(true);
+    setError("");
+    const res = await fetch(`/api/proyectos/${projectId}/backlinks/anchors`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain }) });
+    const d = await res.json();
+    if (!res.ok) setError(d.error ?? "No se pudo obtener");
+    else {
+      setAnchors(d.anchors);
+      setNewLost(d.newLost);
+    }
+    setBusy(false);
+  }
+
+  if (!anchors) {
+    return (
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
+        <p className="text-sm text-ink-soft">Mira con qué textos te enlazan y cuántos enlaces has ganado y perdido recientemente.</p>
+        <button onClick={load} disabled={busy} className="inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-xs font-semibold text-white hover:bg-brand-strong disabled:opacity-50">
+          {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          Ver anchors y cambios ({fmtCredits(BACKLINK_ANCHORS_COST_USD)})
+        </button>
+        {error && <p className="w-full text-xs text-alert-ink">{error}</p>}
+      </div>
+    );
+  }
+  const toxic = anchors.filter((a) => (a.spamScore ?? 0) >= 50);
+  return (
+    <div className="mt-6 border-t border-line pt-5">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-sm font-bold text-ink">Anchors y cambios recientes</p>
+        {newLost && (
+          <p className="text-sm text-ink-soft">
+            Enlaces nuevos <strong className="tabular-nums text-ink">{newLost.newBacklinks ?? "—"}</strong> · perdidos <strong className={cn("tabular-nums", (newLost.lostBacklinks ?? 0) > 0 ? "text-alert-ink" : "text-ink")}>{newLost.lostBacklinks ?? "—"}</strong>
+          </p>
+        )}
+      </div>
+      {toxic.length > 0 && (
+        <p className="mb-3 rounded-lg bg-alert-tint px-3 py-2 text-xs text-alert-ink">
+          {toxic.length} anchors con spam alto: suelen ser enlaces comprados o de redes de baja calidad. Revísalos antes de desautorizarlos.
+        </p>
+      )}
+      <table className="data-table data-table-compact w-full">
+        <thead><tr><th>Texto del enlace</th><th className="num">Enlaces</th><th className="num">Dominios</th><th className="num">Spam</th></tr></thead>
+        <tbody>
+          {anchors.slice(0, 15).map((a, i) => (
+            <tr key={i}>
+              <td className="max-w-[360px] truncate">{a.anchor || <span className="text-ink-faint">(sin texto: imagen o redirección)</span>}</td>
+              <td className="num tabular-nums text-ink-soft">{a.backlinks.toLocaleString("es-ES")}</td>
+              <td className="num tabular-nums text-ink-soft">{a.referringDomains}</td>
+              <td className={cn("num tabular-nums", (a.spamScore ?? 0) >= 50 ? "font-semibold text-alert-ink" : "text-ink-soft")}>{a.spamScore ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // Ficha de un dominio. "full" para el propio (sección ancha con gráficos) y
 // "card" para cada competidor (tarjeta compacta en rejilla). El listado
 // completo de backlinks, con filtros, va siempre en una ventana aparte.
 function DomainDetail({
+  projectId,
   label,
   domain,
   snapshot,
@@ -410,6 +481,7 @@ function DomainDetail({
   gap,
   onShowGap,
 }: {
+  projectId: string;
   label: string;
   domain: string | null;
   snapshot: Snapshot;
@@ -685,6 +757,7 @@ function DomainDetail({
         </div>
       )}
       {snapshot && <ProfileQuality snapshot={snapshot} />}
+      {snapshot && domain && <AnchorsCard key={snapshot.id} projectId={projectId} domain={domain} snapshot={snapshot} />}
       {listModal}
     </Section>
   );
@@ -817,6 +890,7 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
       )}
 
       <DomainDetail
+        projectId={projectId}
         label="Tu dominio"
         domain={data?.projectDomain ?? null}
         snapshot={data?.projectSnapshot ?? null}
@@ -835,6 +909,7 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
         <div className="grid items-start gap-4 md:grid-cols-2 2xl:grid-cols-3">
           {data?.competitors.map((c) => (
             <DomainDetail
+        projectId={projectId}
               key={c.domain}
               variant="card"
               label="Sin analizar"

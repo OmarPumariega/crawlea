@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2, AlertTriangle } from "lucide-react";
 import ProjectForm, { type ProjectFormValues } from "@/components/app/ProjectForm";
+import GoogleConnectBanner from "@/components/app/GoogleConnectBanner";
 import BootstrapPanel from "@/components/app/BootstrapPanel";
 import PageHeader from "@/components/app/PageHeader";
 import StatTile from "@/components/ui/StatTile";
@@ -20,7 +21,15 @@ type ProjectSummary = {
   openTasks: number;
 };
 
-export default function ProjectEditView({ project, summary }: { project: ProjectRecord; summary: ProjectSummary }) {
+export default function ProjectEditView({
+  project,
+  summary,
+  google,
+}: {
+  project: ProjectRecord;
+  summary: ProjectSummary;
+  google: { email: string | null; gscSelected: boolean; ga4Selected: boolean };
+}) {
   const router = useRouter();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -67,6 +76,8 @@ export default function ProjectEditView({ project, summary }: { project: Project
           </button>
         }
       />
+
+      <GoogleConnectBanner projectId={project.id} email={google.email} gscSelected={google.gscSelected} ga4Selected={google.ga4Selected} />
 
       {/* Estado del proyecto de un vistazo; cada tarjeta lleva a su módulo */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
