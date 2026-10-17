@@ -11,7 +11,6 @@ import FeatureCarousel from "@/components/marketing/FeatureCarousel";
 import FeatureCard from "@/components/marketing/FeatureCard";
 import WorkflowTabs from "@/components/marketing/WorkflowTabs";
 import PricingCards from "@/components/marketing/PricingCards";
-import { CrawlGrid, FactTile, RankStrip, AnalyzerChecks } from "@/components/marketing/StepVisuals";
 import LogoMarquee from "@/components/marketing/LogoMarquee";
 import HeroAnalyzer from "@/components/marketing/HeroAnalyzer";
 import { AlertCard, DashboardMockup, GeoHeat, Pill } from "@/components/marketing/mockups";
@@ -109,14 +108,6 @@ export default function HomePage() {
         <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
           <Reveal><SectionHead n="01" label="Cómo se conecta" title="Cada herramienta alimenta a la siguiente" text="Lo que descubres en una pasa a la otra con un clic. Así pasas de un dominio a un plan de mejora sin copiar y pegar." /></Reveal>
           <Reveal><WorkflowTabs /></Reveal>
-
-          {/* Qué cubre: límites reales del producto */}
-          <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Reveal><FactTile big="5.000" label="páginas por rastreo: el sitio entero, no una muestra"><CrawlGrid /></FactTile></Reveal>
-            <Reveal delay={70}><FactTile big="Top 100" label="profundidad del seguimiento de posiciones"><RankStrip /></FactTile></Reveal>
-            <Reveal delay={140}><FactTile big="7×7" label="puntos de mapa de calor en Google Maps"><GeoHeat className="mx-auto max-w-[130px] gap-1" /></FactTile></Reveal>
-            <Reveal delay={210}><FactTile big="0–100" label="puntuación on-page de cualquier URL, con cómo arreglarla"><AnalyzerChecks /></FactTile></Reveal>
-          </div>
         </div>
       </section>
 
