@@ -6,4 +6,4 @@ export const SITE_NAME = "Crawlea";
 export const SITE_URL = (process.env.NEXTAUTH_URL || "https://crawlea.com").replace(/\/$/, "");
 
 export const SITE_DESCRIPTION =
-  "Rastrea tu web, sigue tus posiciones en Google y aprende qué mejorar primero. Auditorías, backlinks, palabras clave y SEO local con datos reales.";
+  "Rastrea tu web, sigue tus posiciones en Google y aprende qué mejorar primero. Auditorías, backlinks, palabras clave y SEO local con los datos de Google y de tu propia web.";

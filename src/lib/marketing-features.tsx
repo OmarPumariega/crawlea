@@ -28,7 +28,7 @@ export const FEATURES: Feature[] = [
   {
     id: "arquitectura", kicker: "Arquitectura de URLs", title: "Qué páginas crear y cómo enlazarlas",
     text: "A partir de tu estudio de palabras clave, propone la estructura de tu web como un árbol: qué páginas merecen URL propia y cuáles palabras reclama cada una.",
-    points: ["La jerarquía sale de la longitud y el volumen reales de cada palabra", "Volumen sumado por rama, de mayor a menor", "H1, encabezados y etiqueta de menú sugeridos por página", "Cada rama se expande y muestra la URL completa"],
+    points: ["La jerarquía sale de la longitud y el volumen de cada palabra", "Volumen sumado por rama, de mayor a menor", "H1, encabezados y etiqueta de menú sugeridos por página", "Cada rama se expande y muestra la URL completa"],
     visual: <TreeMini />,
   },
   {
@@ -39,8 +39,8 @@ export const FEATURES: Feature[] = [
   },
   {
     id: "titulo-meta", kicker: "Título y meta", title: "Títulos y descripciones que sí se leen",
-    text: "Leemos tu página real y te proponemos tres variantes de título y meta descripción, ajustadas a los límites de caracteres de Google.",
-    points: ["Tres variantes por página, con el recuento de caracteres", "Parte del contenido real de la URL, no de una plantilla", "Palabra clave objetivo opcional", "Historial de lo generado"],
+    text: "Leemos tu página y te proponemos tres variantes de título y meta descripción, ajustadas a los límites de caracteres de Google.",
+    points: ["Tres variantes por página, con el recuento de caracteres", "Parte del contenido de tu URL, no de una plantilla", "Palabra clave objetivo opcional", "Historial de lo generado"],
     visual: <SerpPreviewMini />,
   },
   {
@@ -52,7 +52,7 @@ export const FEATURES: Feature[] = [
   {
     id: "tfidf", kicker: "TF-IDF", title: "Qué términos usan los que ya están arriba",
     text: "Analizamos el top 10 de Google para una palabra clave y sacamos los términos que más pesan en esas páginas, para que sepas qué temas cubrir.",
-    points: ["Top 10 real, con el título y el texto que muestra cada resultado", "Por ubicación, con el mismo selector que el seguimiento de posiciones", "Sin coste extra si esa palabra ya se consultó hace poco", "Un botón lleva los términos al generador de contenido"],
+    points: ["El top 10 de Google, con el título y el texto que muestra cada resultado", "Por ubicación, con el mismo selector que el seguimiento de posiciones", "Sin coste extra si esa palabra ya se consultó hace poco", "Un botón lleva los términos al generador de contenido"],
     visual: <TermsMini />,
   },
   {
@@ -82,7 +82,7 @@ export const FEATURES: Feature[] = [
   {
     id: "google", kicker: "Search Console y Analytics", title: "Lo que pasa en tu web, junto al resto",
     text: "Conecta tu cuenta de Google y verás tus datos de Search Console y Analytics dentro del proyecto, sin cambiar de pestaña.",
-    points: ["Clics, impresiones, CTR y posición, con las consultas y páginas principales", "Desglose por dispositivo y país, y evolución de 12 meses", "Sesiones, canales de tráfico y páginas de aterrizaje de Analytics", "Importa tus consultas reales como semilla de un estudio de palabras"],
+    points: ["Clics, impresiones, CTR y posición, con las consultas y páginas principales", "Desglose por dispositivo y país, y evolución de 12 meses", "Sesiones, canales de tráfico y páginas de aterrizaje de Analytics", "Importa las consultas por las que ya te encuentran como semilla de un estudio de palabras"],
     visual: (<><SearchConsoleMini /><Bars values={[40, 52, 47, 60, 66, 74, 90]} className="mt-3 h-16" /></>),
   },
   {

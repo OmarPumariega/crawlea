@@ -188,3 +188,21 @@ export function ProjectMini({ className }: { className?: string }) {
     </div>
   );
 }
+
+export function BootstrapMini({ className }: { className?: string }) {
+  const rows = ["Palabras clave importadas a seguimiento", "TF-IDF calculado sin coste", "Competidores analizados"];
+  return (
+    <div className={cn("space-y-2", className)} aria-hidden="true">
+      <div className="rounded-2xl border border-line bg-surface px-3.5 py-2.5">
+        <p className="text-xs font-extrabold text-ink">Poner en marcha el proyecto</p>
+        <p className="text-[11px] text-ink-faint">ejemplo.es</p>
+      </div>
+      {rows.map((r) => (
+        <div key={r} className={row}>
+          <span className="flex items-center gap-2 font-semibold text-ink"><Check className="h-3.5 w-3.5 text-brand" />{r}</span>
+        </div>
+      ))}
+      <div className="rounded-full bg-brand px-4 py-2 text-center text-xs font-bold text-white">Poner en marcha</div>
+    </div>
+  );
+}

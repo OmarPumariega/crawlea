@@ -57,7 +57,7 @@ export const PLANS: Record<string, PlanDef> = {
   free: {
     id: "free",
     nombre: "Gratis",
-    descripcion: "Para probar la herramienta con un proyecto real.",
+    descripcion: "Para probar la herramienta con tu propia web.",
     precioEurMes: 0,
     creditosMes: 100,
     topeUsdMes: creditsToUsd(100),
