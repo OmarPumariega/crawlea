@@ -51,13 +51,11 @@
 .faq-body > div { overflow: hidden; }
 .faq-open .faq-body { grid-template-rows: 1fr; }
 
-/* Deslizador de la calculadora de créditos */
-.mk-range { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 999px; background: rgba(255,255,255,.18); outline: none; }
-.mk-range::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 999px; background: #fff; border: 5px solid #4F5CF5; cursor: grab; }
-.mk-range::-moz-range-thumb { width: 14px; height: 14px; border-radius: 999px; background: #fff; border: 5px solid #4F5CF5; cursor: grab; }
+@keyframes mk-ring-glow { 0%,100% { box-shadow: 0 0 0 0 rgba(115,129,255,.0), 0 30px 80px -30px rgba(79,92,245,.55) } 50% { box-shadow: 0 0 0 6px rgba(115,129,255,.10), 0 40px 100px -30px rgba(115,129,255,.75) } }
+.mk-ring-glow { animation: mk-ring-glow 4.5s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .mk-stagger > *, .mk-bar, .mk-type, .mk-ring { animation: none; }
+  .mk-stagger > *, .mk-bar, .mk-type, .mk-ring, .mk-ring-glow { animation: none; }
   .mk-bar { width: var(--to, 100%); }
   .cs-row .cs-old, .cs-row .cs-arrow, .cs-row .cs-new { transition: none; transform: none; opacity: 1; }
   .faq-body { transition: none; }

@@ -10,10 +10,8 @@ import Reveal from "@/components/marketing/Reveal";
 import FeatureCarousel from "@/components/marketing/FeatureCarousel";
 import FeatureCard from "@/components/marketing/FeatureCard";
 import ProductTour from "@/components/marketing/ProductTour";
-import DataDeck from "@/components/marketing/DataDeck";
 import Consolidation from "@/components/marketing/Consolidation";
 import Audiences from "@/components/marketing/Audiences";
-import CreditCalculator from "@/components/marketing/CreditCalculator";
 import FaqAccordion from "@/components/marketing/FaqAccordion";
 import PricingCards from "@/components/marketing/PricingCards";
 import LogoMarquee from "@/components/marketing/LogoMarquee";
@@ -120,40 +118,27 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ============ DATOS CON PISTA (oscura) ============ */}
-      <section data-section="datos-con-pista" className="relative overflow-hidden bg-[#0E1033] py-24 text-white">
-        <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={{ background: "radial-gradient(ellipse 60% 60% at 15% 50%, rgba(79,92,245,0.4), transparent 70%)" }} />
+      {/* ============ PRECIOS (banda oscura) ============ */}
+      <section data-section="precios-home" className="relative overflow-hidden bg-[#0E1033] py-24 text-white">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={{ background: "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(79,92,245,0.45), transparent 70%), radial-gradient(ellipse 50% 40% at 100% 100%, rgba(115,129,255,0.25), transparent 70%)" }} />
         <div className="mk-grid-bg pointer-events-none absolute inset-0" aria-hidden="true" />
         <div className="relative mx-auto max-w-[1360px] px-5 sm:px-8 lg:px-10">
-          <div className="grid items-center gap-14 lg:grid-cols-2">
-            <Reveal>
-              <p className="text-sm font-bold uppercase tracking-wider text-brand-200">Datos con pista</p>
-              <h2 className="mt-3 text-4xl font-extrabold tracking-[-0.03em] sm:text-5xl">Cada dato, con su pista</h2>
-              <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/70">
-                Un número suelto no dice qué hacer. Junto a cada cifra, Crawlea escribe una línea con lo que significa y por dónde empezar. Si quieres más, un clic abre la explicación completa con su fuente.
-              </p>
-              <ul className="mt-8 space-y-3 text-white/80">
-                {["El dato, limpio y fácil de leer", "Una pista visible: qué significa o qué hacer", "La explicación, a un clic, con la fuente y cuándo se actualizó"].map((t) => (
-                  <li key={t} className="flex items-start gap-3"><span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand"><Check className="h-3 w-3" /></span>{t}</li>
-                ))}
-              </ul>
-              <p className="mt-8 text-sm text-white/50">Prueba el ejemplo: cambia de dato y pulsa el icono de información.</p>
-            </Reveal>
-            <Reveal delay={100}><DataDeck /></Reveal>
-          </div>
-
-          <div className="mt-16 grid gap-px overflow-hidden rounded-[24px] border border-white/10 bg-white/10 md:grid-cols-3">
-            {[
-              ["Lo que medimos", "Tu rastreo, tus posiciones, Search Console, Analytics y PageSpeed. Son datos de tu web y de Google."],
-              ["Lo que estimamos", "Los volúmenes de búsqueda y el tráfico de otras webs. Son estimaciones y llevan la etiqueta «Estimado»."],
-              ["Lo que no prometemos", "Posiciones ni resultados. Te mostramos qué ocurre y qué mejorar primero; el resto depende de Google y de tu trabajo."],
-            ].map(([h, t]) => (
-              <div key={h} className="bg-[#0E1033] p-7">
-                <h3 className="text-lg font-extrabold">{h}</h3>
-                <p className="mt-2 leading-relaxed text-white/65">{t}</p>
-              </div>
+          <Reveal>
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-xs font-semibold text-white/80"><span className="h-1.5 w-1.5 rounded-full bg-brand-200" />Precios</p>
+              <h2 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-[-0.035em] sm:text-6xl">SEO claro, a un precio justo</h2>
+              <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/70">Empieza gratis y sube de plan cuando lo necesites. Sin tarjeta para empezar y sin permanencia.</p>
+            </div>
+          </Reveal>
+          <Reveal className="mt-14" delay={80}><PricingCards variant="dark" /></Reveal>
+          <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-x-8 gap-y-3 text-sm text-white/70">
+            {["Plan Gratis sin tarjeta", "Cancelas cuando quieras", "IVA incluido"].map((t) => (
+              <li key={t} className="flex items-center gap-2"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand/40"><Check className="h-3 w-3 text-brand-200" aria-hidden="true" /></span>{t}</li>
             ))}
-          </div>
+          </ul>
+          <p className="mt-10 text-center">
+            <Link href="/precios" className="inline-flex items-center gap-2 text-[15px] font-bold text-brand-200 hover:text-white">Compara los planes al detalle <ArrowRight className="h-4 w-4" /></Link>
+          </p>
         </div>
       </section>
 
@@ -179,18 +164,6 @@ export default function HomePage() {
         <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
           <Reveal><SectionHead n="02" label="Para quién" title="Hecho para quien hace SEO a diario" text="Tres formas de usarlo. Elige la tuya y mira cómo sería un día." /></Reveal>
           <Reveal><Audiences /></Reveal>
-        </div>
-      </section>
-
-      {/* ============ PRECIOS ============ */}
-      <section data-section="precios-home" className="border-y border-line bg-surface">
-        <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
-          <Reveal><SectionHead n="03" label="Precios" title="SEO claro, a un precio justo" text="Empieza gratis y sube de plan cuando lo necesites. Calcula antes cuántos créditos usarías." /></Reveal>
-          <Reveal className="mt-14"><CreditCalculator /></Reveal>
-          <Reveal className="mt-8"><PricingCards /></Reveal>
-          <div className="mt-8">
-            <Link href="/precios" className="inline-flex items-center gap-2 text-[15px] font-bold text-brand hover:text-brand-strong">Compara los planes <ArrowRight className="h-4 w-4" /></Link>
-          </div>
         </div>
       </section>
 
