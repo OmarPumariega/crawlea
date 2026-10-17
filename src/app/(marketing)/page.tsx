@@ -10,6 +10,7 @@ import Reveal from "@/components/marketing/Reveal";
 import FeatureCarousel from "@/components/marketing/FeatureCarousel";
 import FeatureCard from "@/components/marketing/FeatureCard";
 import Journey from "@/components/marketing/Journey";
+import ProductTour from "@/components/marketing/ProductTour";
 import DataDeck from "@/components/marketing/DataDeck";
 import Consolidation from "@/components/marketing/Consolidation";
 import Audiences from "@/components/marketing/Audiences";
@@ -105,6 +106,18 @@ export default function HomePage() {
           <Link href="/funciones" data-track="see_all_features_click" className="inline-flex items-center gap-2 text-[15px] font-bold text-brand hover:text-brand-strong">
             Ver todas las funciones <ArrowRight className="h-4 w-4" />
           </Link>
+        </div>
+      </section>
+
+      {/* ============ LA HERRAMIENTA POR DENTRO (capturas) ============ */}
+      <section data-section="herramienta" className="border-b border-line bg-background">
+        <div className="mx-auto max-w-[1360px] px-5 pb-24 pt-8 sm:px-8 lg:px-10">
+          <Reveal>
+            <p className="text-sm font-bold text-ink"><span className="text-brand">Capturas</span><span className="mx-2 text-ink-faint">/</span>La herramienta por dentro</p>
+            <h2 className="mt-4 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-[-0.035em] text-ink sm:text-5xl">Así se ve cada módulo, por dentro</h2>
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft">Elige uno y mira la pantalla tal como la usarás.</p>
+          </Reveal>
+          <ProductTour />
         </div>
       </section>
 
