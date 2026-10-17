@@ -20,6 +20,7 @@ export const MODULE_IDS = [
   "geogrid",
   "backlinks",
   "competidores",
+  "ia",
   "copilot",
   "informe",
   "notas",
@@ -29,7 +30,7 @@ export const MODULE_IDS = [
 export type ModuleId = (typeof MODULE_IDS)[number];
 
 // Módulos que el plan gratuito no incluye (los de mayor coste de API).
-export const PAID_MODULES: readonly ModuleId[] = ["backlinks", "competidores", "geogrid"];
+export const PAID_MODULES: readonly ModuleId[] = ["backlinks", "competidores", "geogrid", "ia"];
 
 export interface PlanDef {
   id: string;
@@ -60,7 +61,7 @@ export const PLANS: Record<string, PlanDef> = {
     creditosMes: 100,
     topeUsdMes: creditsToUsd(100),
     maxProyectos: 1,
-    // Los módulos de más coste de API (backlinks, competidores, geogrid) son
+    // Los módulos de más coste de API (backlinks, competidores, geogrid, visibilidad IA) son
     // de pago. Se aplican con moduleGate() en las rutas y con candados en la UI.
     modulos: MODULE_IDS.filter((m) => !PAID_MODULES.includes(m)),
   },

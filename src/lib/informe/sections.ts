@@ -24,6 +24,7 @@ export type SectionKey =
   | "competitors"
   | "backlinks"
   | "tfidf"
+  | "ia"
   | "costs";
 
 // Orden por defecto = orden de render si el proyecto no ha reordenado.
@@ -43,6 +44,7 @@ export const SECTION_KEYS: SectionKey[] = [
   "competitors",
   "backlinks",
   "tfidf",
+  "ia",
   "costs",
 ];
 
@@ -62,6 +64,7 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   competitors: "Competidores",
   backlinks: "Backlinks",
   tfidf: "TF-IDF",
+  ia: "Visibilidad en IA",
   costs: "Consumo de créditos",
 };
 

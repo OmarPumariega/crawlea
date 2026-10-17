@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { computePageRank, type LinkNode } from "@/lib/links/pagerank";
+import { computeLinkSuggestions } from "@/lib/links/suggestions";
 
 // Valida que el `linkGraph` (Json?) tenga la forma esperada por el crawler:
 // array de { url: string, links: string[] }. Cualquier entrada malformada se
@@ -85,7 +86,10 @@ export async function GET(
   // al grafo interno para mostrar "cuántos y cuáles" salen fuera del sitio.
   const auditPages = await prisma.auditPage.findMany({
     where: { auditRunId: run.id },
-    select: { url: true, externalLinksCount: true, externalDomains: true },
+    select: {
+      url: true, externalLinksCount: true, externalDomains: true,
+      title: true, h1Text: true, metaDescription: true, statusCode: true, isRedirect: true, metaRobots: true,
+    },
   });
   const extByPage = new Map<string, { count: number; domains: string[] }>();
   const domainPageCount = new Map<string, number>(); // dominio -> nº de páginas que lo enlazan
@@ -125,6 +129,24 @@ export async function GET(
     .slice(0, 5)
     .map((p) => p.url);
 
+  // Última posición conocida de cada keyword en seguimiento (URL que posicionó).
+  const latestPositions = await prisma.rankPosition.findMany({
+    where: { rankKeyword: { projectId: id }, url: { not: null } },
+    orderBy: { checkedAt: "desc" },
+    distinct: ["rankKeywordId"],
+    select: { url: true, position: true, rankKeyword: { select: { keyword: true } } },
+  });
+  const suggestions = computeLinkSuggestions({
+    graph,
+    pages: auditPages,
+    pagerank: ranks,
+    tracked: latestPositions.map((p) => ({
+      url: p.url as string,
+      keyword: p.rankKeyword.keyword,
+      position: p.position,
+    })),
+  });
+
   const totalExternalLinks = pages.reduce((sum, p) => sum + p.externalLinks, 0);
 
   return NextResponse.json({
@@ -132,6 +154,7 @@ export async function GET(
     orphans,
     topHubs,
     topExternalDomains,
+    suggestions,
     totalExternalLinks,
     auditDate: run.completedAt ?? run.triggeredAt,
   });

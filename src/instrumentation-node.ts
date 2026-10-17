@@ -61,12 +61,14 @@ export async function register() {
     { runGeogridJob },
     { runBootstrapJob },
     { checkSpendNotifications },
+    { runReportEmailJob },
   ] = await Promise.all([
     import("@/lib/audit/job"),
     import("@/lib/rank/job"),
     import("@/lib/geogrid/job"),
     import("@/lib/projects/bootstrap-job"),
     import("@/lib/notifications/notify"),
+    import("@/lib/informe/share"),
   ]);
 
   // Guard anti-solapamiento: si un crawl largo sigue en marcha cuando llega
@@ -106,6 +108,13 @@ export async function register() {
       if (bootstrap.processed > 0) console.log(`[bootstrap] procesadas=${bootstrap.processed}`);
     } catch (e) {
       console.error("[bootstrap] error en run:", e);
+    }
+    // Envío mensual del informe a los clientes (enlace público por email).
+    try {
+      const reports = await runReportEmailJob();
+      if (reports.sent > 0) console.log(`[informe] enviados=${reports.sent}`);
+    } catch (e) {
+      console.error("[informe] error en envío mensual:", e);
     }
     // Aviso de gasto (tope DataForSEO). Dedupe por día → un aviso/día como máx.
     try {

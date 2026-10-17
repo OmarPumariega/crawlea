@@ -116,7 +116,7 @@ reutiliza llamadas ya pagadas).
 ## Esquema de base de datos (Prisma)
 
 Ver [`docs/04-modelo-de-datos.md`](./docs/04-modelo-de-datos.md) para el detalle
-completo (27 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
+completo (29 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
 NAP, propiedad de Google seleccionada y tope de gasto opcional),
 `TitleMetaGeneration` y `SchemaGeneration` (historial de los Módulos 3 y 4),
 `ApiUsageLog` (coste por llamada a OpenRouter/DataForSEO, base del control de gasto),
@@ -388,7 +388,12 @@ sitio; ver el apartado "Copilot" más abajo.
 - **Enlaces** (pestaña dentro de Auditoría, ruta `/auditoria/enlaces`): PageRank interno
   calculado sobre el grafo de enlaces de la última
   auditoría completada (`AuditRun.linkGraph`), sin coste de API — páginas huérfanas,
-  hubs principales, puntuación por página.
+  hubs principales, puntuación por página. Arriba del todo, **sugerencias de enlaces
+  internos** (`src/lib/links/suggestions.ts`, deterministas y sin coste): páginas huérfanas,
+  con un solo enlace entrante o que posicionan entre el 4 y el 30 (Rank Tracking), y
+  desde qué páginas relacionadas enlazarlas con qué anchor. La relación se mide por
+  términos compartidos en título/H1/meta; si no hay ninguna lo dice
+  (`related=false`), nunca la inventa. Excluye ficheros (PDF...) y páginas no indexables.
 - **Canibalizaciones** (pestaña dentro de Auditoría, ruta `/auditoria/canibalizaciones`):
   consulta directa a Search Console (mismo query posicionando
   varias URLs en 90 días) — requiere GSC conectado para el proyecto, sin coste de
@@ -453,7 +458,26 @@ sitio; ver el apartado "Copilot" más abajo.
   no aparecía), backlinks (autoridad propia y de competidores) y gasto del mes,
   con hoja de estilos de impresión — "Guardar como PDF" es el propio diálogo de
   impresión del navegador, no hay generación de PDF en servidor ni versionado
-  del informe.
+  del informe. Además es **compartible y con marca blanca**: el propietario crea un
+  enlace público de solo lectura (`/informe/[token]`, `Project.reportShareToken`, 192 bits,
+  noindex, revocable; nunca muestra el gasto en APIs) y puede activar el **envío mensual**
+  del enlace por email al cliente (`Project.reportEmailTo`, `runReportEmailJob` en el cron:
+  el día 1 sale el informe del mes anterior, dedupe en `reportEmailLastMonth`; el primer
+  envío es el mes siguiente a activarlo). La **marca** (`User.brandName/brandLogo/brandColor`,
+  logo como data URL ≤150 KB) sustituye a Crawlea en encabezado, pie y emails. La carga de
+  datos vive en `load-report.ts` (compartida por la vista del propietario y la pública, que
+  NO comprueba permisos: lo hace quien la llama). Panel en `SharePanel.tsx`.
+- **Visibilidad IA** (grupo Seguimiento, módulo `ia`, **de pago**): preguntas de cliente
+  seguidas por proyecto (`AiPrompt`, máx. 30) que se lanzan de verdad a ChatGPT
+  (`gpt-4o-mini` con búsqueda web) y Perplexity (`sonar`) vía DataForSEO → AI Optimization →
+  LLM Responses (`src/lib/ai-visibility/llm.ts`, ES). Cada comprobación (`AiCheck`,
+  histórico) guarda si el dominio sale **citado** (entre las fuentes/annotations), solo
+  **mencionado** (en el texto, dominio o marca) y su posición entre las fuentes
+  (`detect.ts`, pura). KPIs de cuota de citas, tabla por pregunta × asistente con respuesta y
+  fuentes desplegables (marcando "Tú"/"Competidor") y ranking "quién se cita". Coste real
+  ~0,01–0,03 $ por consulta (guard de créditos antes de cada una, registrada en
+  `ApiUsageLog` como `ia.<plataforma>`). Sin cita no significa que no existas, y la UI lo
+  dice. Sección propia en el Informe.
 - **Copilot**: widget flotante persistente (`CopilotWidget.tsx`, montado en
   `AdminShell.tsx` — no remonta al navegar entre módulos, así que conserva estado con
   `useState` normal, sin Context ni librería nueva), no una página del nav. Tres

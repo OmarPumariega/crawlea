@@ -40,6 +40,13 @@ model User {
   planOverride          Boolean   @default(false)
   spendLimitOverrideUsd Float?
 
+  // Marca blanca del informe: lo que el cliente final ve en el encabezado y el
+  // pie del informe en lugar de "Crawlea". brandLogo es un data URL (≤150 KB)
+  // para no depender de almacenamiento ni de un host externo.
+  brandName  String?
+  brandLogo  String?
+  brandColor String?
+
   createdAt DateTime    @default(now())
   projects  Project[]
   googleConnection GoogleConnection?
@@ -94,6 +101,14 @@ model Project {
   // si está puesto, las llamadas de este proyecto se bloquean al superarlo (suma
   // de su ApiUsageLog del mes). Se suma al tope global (DATAFORSEO_MONTHLY_LIMIT_USD).
   spendLimitUsd Float?
+  // Informe compartible: token del enlace público de solo lectura (null = sin
+  // enlace) y envío mensual automático del enlace por email al cliente.
+  // reportEmailLastMonth ("2026-09") hace de dedupe: un envío por mes.
+  aiPrompts AiPrompt[]
+  reportShareToken     String? @unique
+  reportEmailTo        String?
+  reportEmailLastMonth String?
+
   reportConfig Json? // { sections: { audit: bool, rank: bool, ... }, order: SectionKey[] } — config del informe por proyecto (ver src/lib/informe/sections.ts)
 
   // Estudio "General" del proyecto: todas las importaciones (Competidores,
@@ -200,6 +215,39 @@ model ApiUsageLog {
   // projectId cuando el tope es global — sin este índice, esa consulta hace
   // sequential scan y se degrada según crece la tabla (que no tiene retención).
   @@index([api, createdAt])
+}
+
+// Visibilidad en IA — preguntas que un cliente real le haría a ChatGPT o
+// Perplexity y si el dominio del proyecto aparece citado o mencionado en la
+// respuesta. Cada comprobación es una llamada real (LLM Responses de
+// DataForSEO, con búsqueda web) y queda como histórico en AiCheck.
+model AiPrompt {
+  id        String    @id @default(cuid())
+  projectId String
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  prompt    String // ≤200 caracteres, tal cual la escribiría un usuario
+  createdAt DateTime  @default(now())
+  checks    AiCheck[]
+
+  @@unique([projectId, prompt])
+  @@index([projectId])
+}
+
+model AiCheck {
+  id         String   @id @default(cuid())
+  promptId   String
+  prompt     AiPrompt @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  platform   String // "chatgpt" | "perplexity"
+  model      String? // el que devolvió la API (puede diferir del pedido)
+  cited      Boolean // el dominio del proyecto está entre las fuentes citadas
+  mentioned  Boolean // el dominio o la marca aparecen en el texto de la respuesta
+  citedRank  Int? // posición del dominio entre las fuentes citadas (1 = la primera)
+  sources    Json // [{ domain, url, title }] — todas las fuentes citadas
+  answer     String   @db.Text // respuesta (recortada a 4000 caracteres)
+  costUsd    Decimal? @db.Decimal(10, 6)
+  checkedAt  DateTime @default(now())
+
+  @@index([promptId, checkedAt])
 }
 
 // Módulo 6 — conexión OAuth2 de un usuario con Google (GSC/GA4). Antes era un

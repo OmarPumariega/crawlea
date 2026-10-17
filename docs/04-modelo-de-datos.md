@@ -253,6 +253,19 @@ queries reales en el system prompt del chat — y queda disponible para que otro
 crujen con datos de tráfico reales sin volver a llamar a la API. Esos datos salen de la
 misma `searchanalytics.query` que el panel, así que no añade conexión ni coste.
 
+## `AiPrompt` / `AiCheck` (Visibilidad IA)
+
+`AiPrompt`: pregunta seguida de un proyecto (`prompt` ≤200, único por proyecto, máx. 30).
+`AiCheck`: una comprobación real (pregunta × asistente) con `cited`, `mentioned`,
+`citedRank`, `sources` (JSON `[{domain,url,title}]`), `answer` (≤4000 car.) y `costUsd`; el
+histórico permite ver la evolución. Cascade desde `Project` → `AiPrompt` → `AiCheck`.
+
+## Informe compartible y marca blanca
+
+`Project.reportShareToken` (único, enlace público), `reportEmailTo` y
+`reportEmailLastMonth` (dedupe `"2026-09"` del envío mensual). `User.brandName`,
+`brandLogo` (data URL ≤150 KB) y `brandColor` (`#RRGGBB`).
+
 ## Evolución prevista (no construida todavía)
 
 Sin modelos pendientes de módulos del spec. Las mejoras transversales (topes por proyecto,

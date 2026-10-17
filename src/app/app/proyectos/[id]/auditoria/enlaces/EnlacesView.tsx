@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, Network, Link2, AlertTriangle, Download } from "lucide-react";
+import { Loader2, Network, Link2, AlertTriangle, Download, ArrowRight } from "lucide-react";
 import { downloadCsv } from "@/lib/csv";
 import UrlLink from "@/components/app/UrlLink";
 import PageHeader from "@/components/app/PageHeader";
@@ -16,7 +16,21 @@ type PageRow = {
   externalDomains: string[];
 };
 
+type LinkSuggestion = {
+  target: { url: string; title: string | null; incoming: number; pagerank: number; keyword: string | null; position: number | null };
+  reason: "opportunity" | "orphan" | "weak";
+  anchor: string;
+  sources: { url: string; title: string | null; pagerank: number; sharedTerms: string[]; related: boolean }[];
+};
+
+const REASON_LABEL: Record<LinkSuggestion["reason"], string> = {
+  opportunity: "Oportunidad",
+  orphan: "Huérfana",
+  weak: "Poca fuerza",
+};
+
 type EnlacesData = {
+  suggestions: LinkSuggestion[];
   pages: PageRow[];
   orphans: string[];
   topHubs: string[];
@@ -90,6 +104,73 @@ export default function EnlacesView({ projectId }: { projectId: string }) {
         {all.length} URLs analizadas · {data.totalExternalLinks} enlaces externos · auditoría del{" "}
         {new Date(data.auditDate).toLocaleDateString("es-ES")}
       </p>
+
+      {/* Sugerencias: lo accionable va arriba */}
+      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">
+        <div className="flex items-center justify-between gap-3 mb-1">
+          <div className="flex items-center gap-2">
+            <Link2 className="h-4 w-4 text-ink-soft" />
+            <h3 className="text-sm font-semibold text-ink">
+              Enlaces internos que te conviene añadir ({data.suggestions.length})
+            </h3>
+          </div>
+          {data.suggestions.length > 0 && (
+            <button
+              onClick={() =>
+                downloadCsv(
+                  `enlaces-sugeridos-${projectId}-${new Date().toISOString().slice(0, 10)}.csv`,
+                  ["Enlazar desde", "Hacia", "Anchor sugerido", "Motivo", "Términos en común"],
+                  data.suggestions.flatMap((sg) =>
+                    sg.sources.map((src) => [src.url, sg.target.url, sg.anchor, REASON_LABEL[sg.reason], src.sharedTerms.join(" ")])
+                  )
+                )
+              }
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-line text-ink-soft text-xs font-medium rounded-lg hover:bg-background"
+            >
+              <Download className="h-3.5 w-3.5" />
+              CSV
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-ink-faint mb-4">
+          Páginas que necesitan más enlaces entrantes (huérfanas, con un solo enlace, o que posicionan entre el 4 y el 30)
+          y desde qué páginas relacionadas enlazarlas. La relación se mide por términos compartidos en título, H1 y meta.
+        </p>
+        {data.suggestions.length === 0 ? (
+          <p className="text-sm text-ink-soft">No hay sugerencias: el enlazado interno está bien repartido.</p>
+        ) : (
+          <div className="space-y-3 max-h-[32rem] overflow-y-auto pr-1">
+            {data.suggestions.map((sg) => (
+              <div key={sg.target.url} className="rounded-xl border border-line p-3 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <UrlLink url={sg.target.url} className="text-sm font-medium" />
+                    <p className="text-xs text-ink-faint mt-0.5">
+                      Anchor sugerido: <span className="text-ink-soft font-medium">«{sg.anchor}»</span>
+                      {sg.target.position !== null && <> · posición #{sg.target.position}</>}
+                      {" · "}{sg.target.incoming} enlace{sg.target.incoming === 1 ? "" : "s"} entrante{sg.target.incoming === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <span className={`shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full ${sg.reason === "orphan" ? "bg-accent-tint text-accent-ink" : "bg-surface-muted text-ink-soft"}`}>
+                    {REASON_LABEL[sg.reason]}
+                  </span>
+                </div>
+                <ul className="space-y-1">
+                  {sg.sources.map((src) => (
+                    <li key={src.url} className="flex items-center gap-2 text-xs">
+                      <ArrowRight className="h-3 w-3 text-ink-faint shrink-0" />
+                      <span className="min-w-0 flex-1"><UrlLink url={src.url} className="text-xs" /></span>
+                      <span className="shrink-0 text-ink-faint">
+                        {src.related ? `comparte: ${src.sharedTerms.join(", ")}` : "sin relación temática detectada"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Tabla completa de PageRank por URL */}
       <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5">

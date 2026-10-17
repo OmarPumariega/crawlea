@@ -5,7 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   ChevronLeft, ChevronRight, FileText, Gauge, Target, Search,
-  MapPin, Wallet, ClipboardCheck, Network, Type, Code2, PenLine, Globe, GitBranch, Hash, Anchor,
+  MapPin, Wallet, Quote, ClipboardCheck, Network, Type, Code2, PenLine, Globe, GitBranch, Hash, Anchor,
 } from "lucide-react";
 import GeogridMap from "@/components/app/GeogridMap";
 import PositionDistribution, { type PositionBuckets } from "@/components/app/PositionDistribution";
@@ -13,6 +13,7 @@ import SectionOrderList from "@/components/app/SectionOrderList";
 import Pill from "@/components/app/Pill";
 import { cn } from "@/lib/utils";
 import PrintButton from "./PrintButton";
+import SharePanel, { type ShareState } from "./SharePanel";
 import { splitManualTask } from "@/lib/tasks";
 import { ISSUE_META } from "@/lib/audit/issue-meta";
 import {
@@ -112,6 +113,12 @@ export type ReportData = {
     own: { rank: number | null; backlinksTotal: number | null; referringDomains: number | null; brokenBacklinks: number | null; fetchedAt: Date | null } | null;
     competitors: { domain: string; rank: number | null; backlinksTotal: number | null; referringDomains: number | null }[];
   } | null;
+  // Visibilidad en IA: última comprobación de cada pregunta seguida por asistente.
+  ia: {
+    total: number; cited: number; seen: number;
+    prompts: { prompt: string; chatgpt: "cited" | "mentioned" | "none" | null; perplexity: "cited" | "mentioned" | "none" | null }[];
+    topDomains: { domain: string; count: number }[];
+  } | null;
   tfidf: {
     keyword: string;
     terms: { term: string; tfidf: number; docs: number }[];
@@ -192,14 +199,23 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   );
 }
 
+export type Branding = { name: string | null; logo: string | null; color: string | null } | null;
+
 type Props = {
   projectId: string;
   data: ReportData;
   initialConfig: ReportSections;
   initialOrder: SectionKey[];
+  branding: Branding;
+  // Panel de compartir/marca blanca: solo en la vista del propietario. Sin él
+  // (vista pública del cliente) el informe se muestra solo, sin controles.
+  share?: ShareState;
 };
 
-export default function InformeBuilder({ projectId, data, initialConfig, initialOrder }: Props) {
+export default function InformeBuilder({ projectId, data, initialConfig, initialOrder, branding, share }: Props) {
+  const readOnly = !share;
+  const brandName = branding?.name?.trim() || null;
+  const brandColor = branding?.color && /^#[0-9a-fA-F]{6}$/.test(branding.color) ? branding.color : null;
   const [config, setConfig] = useState<ReportSections>(initialConfig);
   const [order, setOrder] = useState<SectionKey[]>(initialOrder);
   const [saving, setSaving] = useState(false);
@@ -346,7 +362,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             <Stat label="Con posición registrada" value={String(data.rank.rankedCount)} sub={`de ${data.rank.keywords.length} totales`} />
             <Stat label="Mejor posición media" value={data.rank.rankedCount > 0 ? (data.rank.keywords.filter((k) => k.bestPosition != null).reduce((s, k) => s + (k.bestPosition as number), 0) / Math.max(1, data.rank.keywords.filter((k) => k.bestPosition != null).length)).toFixed(1) : "—"} />
           </div>
-          <div className="overflow-x-auto">
+          <div>
             <table className="w-full text-sm">
               <thead><tr className="text-left text-ink-faint border-b border-line">
                 <th className="py-2 pr-4 font-medium">Keyword</th><th className="py-2 pr-4 font-medium">Dispositivo</th>
@@ -390,7 +406,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       </div>
       {data.keywords.studyCount === 0 && <p className="text-sm text-ink-soft">Aún no hay estudios de keywords para este proyecto.</p>}
       {data.keywords.top.length > 0 && (
-        <div className="overflow-x-auto">
+        <div>
           <table className="w-full text-sm">
             <thead><tr className="text-left text-ink-faint border-b border-line">
               <th className="py-2 pr-4 font-medium">Keyword</th>
@@ -634,7 +650,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             <Stat label="Páginas huérfanas" value={String(data.links.orphans.length)} sub="sin enlaces entrantes" />
             <Stat label="Top distribuidora" value={data.links.topHubs[0] ? (() => { try { return new URL(data.links.topHubs[0]).pathname || "/"; } catch { return data.links.topHubs[0]; } })() : "—"} />
           </div>
-          <div className="overflow-x-auto">
+          <div>
             <table className="w-full text-sm">
               <thead><tr className="text-left text-ink-faint border-b border-line">
                 <th className="py-2 pr-4 font-medium">URL</th><th className="py-2 pr-4 font-medium text-right">PageRank</th>
@@ -697,7 +713,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
         <p className="text-sm text-ink-soft">Sin competidores trackeados.</p>
       ) : (
         <div className="space-y-4">
-          <div className="overflow-x-auto">
+          <div>
             <table className="w-full text-sm">
               <thead><tr className="text-left text-ink-faint border-b border-line">
                 <th className="py-2 pr-4 font-medium">Dominio</th><th className="py-2 pr-4 font-medium text-right">Tráfico orgánico</th>
@@ -802,7 +818,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
       {!data.backlinks ? (
         <p className="text-sm text-ink-soft">Sin backlinks analizados todavía. Ejecuta un análisis desde el módulo Backlinks.</p>
       ) : (
-        <div className="overflow-x-auto">
+        <div>
           <table className="w-full text-sm">
             <thead><tr className="text-left text-ink-faint border-b border-line">
               <th className="py-2 pr-4 font-medium">Dominio</th>
@@ -838,6 +854,46 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             </p>
           )}
         </div>
+      )}
+    </section>
+  );
+
+  const iaLabel = (v: "cited" | "mentioned" | "none" | null) =>
+    v === "cited" ? "Citado" : v === "mentioned" ? "Mencionado" : v === "none" ? "No aparece" : "—";
+  const renderIa = () => (
+    <section className="space-y-4">
+      <SectionTitle icon={<Quote className="h-4 w-4" />}>Visibilidad en IA <span className="text-ink-faint font-normal text-sm">(ChatGPT y Perplexity, última comprobación)</span></SectionTitle>
+      {!data.ia ? (
+        <p className="text-sm text-ink-soft">Sin preguntas comprobadas todavía.</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <Stat label="Te citan en" value={`${data.ia.cited}/${data.ia.total}`} />
+            <Stat label="Te mencionan o citan" value={`${data.ia.seen}/${data.ia.total}`} />
+            <Stat label="Preguntas seguidas" value={String(data.ia.prompts.length)} />
+          </div>
+          <table className="w-full text-sm">
+            <thead><tr className="text-left text-ink-faint border-b border-line">
+              <th className="py-2 pr-4 font-medium">Pregunta</th>
+              <th className="py-2 pr-4 font-medium">ChatGPT</th>
+              <th className="py-2 font-medium">Perplexity</th>
+            </tr></thead>
+            <tbody>
+              {data.ia.prompts.map((p) => (
+                <tr key={p.prompt} className="border-b border-line">
+                  <td className="py-2 pr-4 text-ink">{p.prompt}</td>
+                  <td className="py-2 pr-4 text-ink-soft">{iaLabel(p.chatgpt)}</td>
+                  <td className="py-2 text-ink-soft">{iaLabel(p.perplexity)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {data.ia.topDomains.length > 0 && (
+            <p className="text-xs text-ink-faint">
+              Webs más citadas: {data.ia.topDomains.map((d) => `${d.domain} (${d.count})`).join(" · ")}.
+            </p>
+          )}
+        </>
       )}
     </section>
   );
@@ -962,14 +1018,21 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
     competitors: renderCompetitors,
     backlinks: renderBacklinks,
     tfidf: renderTfidf,
+    ia: renderIa,
     costs: renderCosts,
   };
 
-  const visibleSections = order.filter((k) => config[k]);
+  // El gasto en APIs es interno: el cliente final nunca lo ve en el informe público.
+  const visibleSections = order.filter((k) => config[k] && !(readOnly && k === "costs"));
 
   return (
-    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[19rem_1fr] gap-8 items-start print:block print:max-w-none">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[19rem_minmax(0,1fr)] gap-8 items-start print:block print:max-w-none">
       <style dangerouslySetInnerHTML={{ __html: `
+        /* El informe se ajusta siempre al ancho disponible: ninguna tabla ni texto
+           largo genera scroll horizontal; las celdas parten línea donde haga falta. */
+        .informe-sheet table { width: 100%; max-width: 100%; }
+        .informe-sheet th, .informe-sheet td { overflow-wrap: anywhere; word-break: break-word; }
+        .informe-sheet td.truncate, .informe-sheet td[class*="truncate"] { white-space: normal; }
         @media print {
           @page { margin: 1.5cm; }
           html, body { height: auto !important; overflow: visible !important; background: #fff !important; }
@@ -995,7 +1058,17 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
 
       {/* Columna izquierda: navegación de mes + configuración de secciones.
           Sticky en escritorio; oculta al imprimir. */}
-      <aside className="lg:sticky lg:top-6 self-start space-y-4 print:hidden">
+      {readOnly ? (
+        <div className="flex items-center justify-center gap-1 print:hidden lg:col-span-2">
+          <Link href={data.prevHref} className="p-1.5 text-ink-soft hover:text-ink hover:bg-background rounded-lg transition-colors" title="Mes anterior"><ChevronLeft className="h-4 w-4" /></Link>
+          <span className="text-sm font-medium text-ink px-2">{data.monthLabel}</span>
+          {data.nextHref ? (
+            <Link href={data.nextHref} className="p-1.5 text-ink-soft hover:text-ink hover:bg-background rounded-lg transition-colors" title="Mes siguiente"><ChevronRight className="h-4 w-4" /></Link>
+          ) : <span className="w-8" />}
+          <PrintButton className="ml-3" projectName={data.project.name} />
+        </div>
+      ) : (
+      <aside className="lg:sticky lg:top-6 self-start space-y-4 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:pr-1 print:hidden">
         {/* Navegación de mes a ancho completo (antes compartía fila con el
             botón de imprimir y se cortaba en el aside estrecho). */}
         <div className="flex items-center gap-1 bg-surface border border-line rounded-xl px-1 py-1 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
@@ -1008,6 +1081,9 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           )}
         </div>
         <PrintButton className="w-full" projectName={data.project.name} />
+
+        {/* Compartir y marca: acciones arriba, la lista larga de secciones debajo */}
+        <SharePanel projectId={projectId} share={share!} />
 
         {/* Panel de control: secciones activables + reordenables */}
         <div className="bg-surface rounded-2xl border border-line p-5 shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]">
@@ -1039,13 +1115,21 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           </button>
         </div>
       </aside>
+      )}
 
       {/* Hoja del informe — se renderizan las secciones activadas, en el orden elegido */}
-      <div className="bg-surface rounded-xl border border-line px-8 py-10 space-y-8 print:border-0 print:rounded-none print:px-0 print:py-0">
-        <div className="border-b border-line pb-5">
+      <div className={cn("informe-sheet min-w-0 overflow-x-clip bg-surface rounded-xl border border-line px-8 py-10 space-y-8 print:border-0 print:rounded-none print:px-0 print:py-0", readOnly && "lg:col-span-2")}>
+        <div className="border-b border-line pb-5" style={brandColor ? { borderBottomColor: brandColor, borderBottomWidth: 2 } : undefined}>
           <div className="flex items-center gap-2 text-ink-faint mb-1">
-            <FileText className="h-4 w-4" />
-            <span className="text-xs uppercase tracking-wide font-medium">Informe SEO</span>
+            {branding?.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={branding.logo} alt={brandName ?? "Logo"} className="h-9 max-w-[160px] object-contain mr-1" />
+            ) : (
+              <FileText className="h-4 w-4" />
+            )}
+            <span className="text-xs uppercase tracking-wide font-medium" style={brandColor ? { color: brandColor } : undefined}>
+              {brandName ? `${brandName} · Informe SEO` : "Informe SEO"}
+            </span>
           </div>
           <h1 className="text-2xl font-bold text-ink">{data.project.name}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-soft">
@@ -1060,7 +1144,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
         ))}
 
         <footer className="border-t border-line pt-4 text-xs text-ink-faint print:text-black">
-          Informe generado por Crawlea
+          {brandName ? `Informe elaborado por ${brandName}` : "Informe generado por Crawlea"}
           {!data.isCurrentMonth && " · Informe de un mes anterior — los datos de estado (salud técnica, SEO local) reflejan la última medición hasta el fin de ese mes."}
         </footer>
       </div>

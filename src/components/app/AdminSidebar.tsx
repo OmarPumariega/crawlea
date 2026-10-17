@@ -12,6 +12,7 @@ import {
   CircleUserRound,
   FileBarChart2,
   FileText,
+  MessageSquareText,
   FolderKanban,
   Key,
   LayoutDashboard,
@@ -101,6 +102,7 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
         { href: `${base}/google`, label: "Google", icon: Globe },
         { href: `${base}/competidores`, label: "Competidores", icon: Users },
         { href: `${base}/backlinks`, label: "Backlinks", icon: Anchor },
+        { href: `${base}/ia`, label: "Visibilidad IA", icon: MessageSquareText },
       ],
     },
   ];
