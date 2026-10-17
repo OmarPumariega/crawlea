@@ -10,7 +10,6 @@ import Reveal from "@/components/marketing/Reveal";
 import FeatureCarousel from "@/components/marketing/FeatureCarousel";
 import FeatureCard from "@/components/marketing/FeatureCard";
 import ProductTour from "@/components/marketing/ProductTour";
-import Consolidation from "@/components/marketing/Consolidation";
 import Audiences from "@/components/marketing/Audiences";
 import FaqAccordion from "@/components/marketing/FaqAccordion";
 import PricingCards from "@/components/marketing/PricingCards";
@@ -142,27 +141,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ============ QUÉ REÚNE ============ */}
-      <section data-section="que-reune" className="border-b border-line bg-background">
-        <div className="mx-auto grid max-w-[1360px] items-center gap-14 px-5 py-24 sm:px-8 lg:grid-cols-[1fr_1.1fr] lg:px-10">
-          <Reveal>
-            <p className="text-sm font-bold text-ink"><span className="text-brand">01</span><span className="mx-2 text-ink-faint">/</span>Qué reúne</p>
-            <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl">Seis piezas sueltas, un solo proyecto</h2>
-            <p className="mt-5 max-w-md text-lg leading-relaxed text-ink-soft">
-              Seguir posiciones en una hoja de cálculo, rastrear en otro programa, mirar los enlaces en otro más y montar el informe a mano. Aquí cada pieza vive dentro del proyecto de tu cliente.
-            </p>
-            <Link href="/funciones" data-track="see_all_features_click" className="mt-8 inline-flex items-center gap-2 text-[15px] font-bold text-brand hover:text-brand-strong">
-              Ver las {FEATURES.length} herramientas <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Reveal>
-          <Consolidation />
-        </div>
-      </section>
-
       {/* ============ PARA QUIÉN ============ */}
       <section data-section="para-quien" className="bg-background">
         <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
-          <Reveal><SectionHead n="02" label="Para quién" title="Hecho para quien hace SEO a diario" text="Tres formas de usarlo. Elige la tuya y mira cómo sería un día." /></Reveal>
+          <Reveal><SectionHead n="01" label="Para quién" title="Hecho para quien hace SEO a diario" text="Tres formas de usarlo. Elige la tuya y mira cómo sería un día." /></Reveal>
           <Reveal><Audiences /></Reveal>
         </div>
       </section>

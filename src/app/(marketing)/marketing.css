@@ -40,12 +40,6 @@
 .mk-spot { background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgba(115,129,255,.22), transparent 60%); opacity: 0; transition: opacity .3s; }
 *:hover > .mk-spot { opacity: 1; }
 
-/* «Qué reúne»: las piezas sueltas se ordenan al entrar en pantalla */
-.cs-row .cs-old { transform: translate(var(--x, 0), var(--y, 0)) rotate(var(--r, 0deg)); transition: transform 1s cubic-bezier(.2,.8,.2,1) calc(var(--i, 0) * 90ms); }
-.cs-row .cs-arrow, .cs-row .cs-new { opacity: 0; transform: translateX(-8px); transition: opacity .6s ease calc(.5s + var(--i, 0) * 90ms), transform .6s ease calc(.5s + var(--i, 0) * 90ms); }
-.cs-in .cs-old { transform: none; }
-.cs-in .cs-arrow, .cs-in .cs-new { opacity: 1; transform: none; }
-
 /* Preguntas frecuentes: apertura suave sin medir alturas */
 .faq-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s cubic-bezier(.2,.8,.2,1); }
 .faq-body > div { overflow: hidden; }
@@ -57,7 +51,6 @@
 @media (prefers-reduced-motion: reduce) {
   .mk-stagger > *, .mk-bar, .mk-type, .mk-ring, .mk-ring-glow { animation: none; }
   .mk-bar { width: var(--to, 100%); }
-  .cs-row .cs-old, .cs-row .cs-arrow, .cs-row .cs-new { transition: none; transform: none; opacity: 1; }
   .faq-body { transition: none; }
   .mk-float-a, .mk-float-b, .mk-glow, .mk-draw, .mk-grow, .mk-fade { animation: none; }
   .mk-draw { stroke-dashoffset: 0; }
