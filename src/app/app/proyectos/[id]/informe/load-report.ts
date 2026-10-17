@@ -310,7 +310,23 @@ export async function loadInforme(
       },
     },
   });
-  let iaData: ReportData["ia"] = null;
+  const overviewKw = await prisma.rankKeyword.findMany({
+    where: { projectId: id, aiOverviewChecks: { some: {} } },
+    orderBy: { keyword: "asc" },
+    select: {
+      keyword: true,
+      aiOverviewChecks: { orderBy: { checkedAt: "desc" }, take: 1, select: { hasOverview: true, cited: true, citedRank: true } },
+    },
+  });
+  const overview: NonNullable<ReportData["ia"]>["overview"] = overviewKw.length
+    ? {
+        checked: overviewKw.length,
+        withOverview: overviewKw.filter((k) => k.aiOverviewChecks[0].hasOverview).length,
+        cited: overviewKw.filter((k) => k.aiOverviewChecks[0].cited).length,
+        items: overviewKw.map((k) => ({ keyword: k.keyword, ...k.aiOverviewChecks[0] })),
+      }
+    : null;
+  let iaData: ReportData["ia"] = overview ? { overview, total: 0, cited: 0, seen: 0, prompts: [], topDomains: [] } : null;
   if (aiPrompts.some((p) => p.checks.length > 0)) {
     const status = (c?: { cited: boolean; mentioned: boolean }) =>
       !c ? null : c.cited ? ("cited" as const) : c.mentioned ? ("mentioned" as const) : ("none" as const);
@@ -325,6 +341,7 @@ export async function loadInforme(
       for (const d of new Set(doms)) counts.set(d, (counts.get(d) ?? 0) + 1);
     }
     iaData = {
+      overview,
       total: latestAll.length,
       cited: latestAll.filter((c) => c.cited).length,
       seen: latestAll.filter((c) => c.cited || c.mentioned).length,

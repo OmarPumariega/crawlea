@@ -116,7 +116,7 @@ reutiliza llamadas ya pagadas).
 ## Esquema de base de datos (Prisma)
 
 Ver [`docs/04-modelo-de-datos.md`](./docs/04-modelo-de-datos.md) para el detalle
-completo (29 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
+completo (30 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
 NAP, propiedad de Google seleccionada y tope de gasto opcional),
 `TitleMetaGeneration` y `SchemaGeneration` (historial de los Módulos 3 y 4),
 `ApiUsageLog` (coste por llamada a OpenRouter/DataForSEO, base del control de gasto),
@@ -467,17 +467,21 @@ sitio; ver el apartado "Copilot" más abajo.
   logo como data URL ≤150 KB) sustituye a Crawlea en encabezado, pie y emails. La carga de
   datos vive en `load-report.ts` (compartida por la vista del propietario y la pública, que
   NO comprueba permisos: lo hace quien la llama). Panel en `SharePanel.tsx`.
-- **Visibilidad IA** (grupo Seguimiento, módulo `ia`, **de pago**): preguntas de cliente
-  seguidas por proyecto (`AiPrompt`, máx. 30) que se lanzan de verdad a ChatGPT
-  (`gpt-4o-mini` con búsqueda web) y Perplexity (`sonar`) vía DataForSEO → AI Optimization →
-  LLM Responses (`src/lib/ai-visibility/llm.ts`, ES). Cada comprobación (`AiCheck`,
-  histórico) guarda si el dominio sale **citado** (entre las fuentes/annotations), solo
-  **mencionado** (en el texto, dominio o marca) y su posición entre las fuentes
-  (`detect.ts`, pura). KPIs de cuota de citas, tabla por pregunta × asistente con respuesta y
-  fuentes desplegables (marcando "Tú"/"Competidor") y ranking "quién se cita". Coste real
-  ~0,01–0,03 $ por consulta (guard de créditos antes de cada una, registrada en
-  `ApiUsageLog` como `ia.<plataforma>`). Sin cita no significa que no existas, y la UI lo
-  dice. Sección propia en el Informe.
+- **Visibilidad IA** (grupo Seguimiento, módulo `ia`, **de pago**). Lo principal es el
+  **AI Overview de Google por keyword**: sobre las keywords de Rank Tracking, una consulta
+  al SERP orgánico (`load_async_ai_overview`, ~0,002 $ medidos, estimado a 0,004 $) dice si
+  Google muestra respuesta con IA para esa búsqueda, qué fuentes cita y si te cita
+  (`src/lib/ai-visibility/overview.ts`, modelo `AiOverviewCheck` con histórico). Es una
+  medición estable y funciona en España; en búsquedas locales Google suele mostrar el
+  mapa en vez del AI Overview, y "No lo muestra" es un dato real, no un fallo. Como apoyo,
+  **preguntas de cliente** (`AiPrompt`, máx. 30) lanzadas a ChatGPT (`gpt-4o-mini` con
+  búsqueda web) y Perplexity (`sonar`) vía DataForSEO LLM Responses (`llm.ts`; ~0,027 $
+  medidos en ChatGPT). Esto es una **muestra puntual, no una medición**: una respuesta de IA
+  cambia de una vez a otra, y NO se hace muestreo repetido (carísimo), así que la UI no
+  calcula porcentajes con ellas. `detect.ts` (pura) decide citado/mencionado y trata las
+  fichas de Google Maps (que ChatGPT cita en consultas locales) por el nombre del negocio, no
+  por "google.com". LLM Mentions de DataForSEO queda descartado: ChatGPT solo cubre EE. UU./inglés.
+  Guard de créditos antes de cada consulta (`ApiUsageLog` `ia.*`). Sección propia en el Informe.
 - **Copilot**: widget flotante persistente (`CopilotWidget.tsx`, montado en
   `AdminShell.tsx` — no remonta al navegar entre módulos, así que conserva estado con
   `useState` normal, sin Context ni librería nueva), no una página del nav. Tres

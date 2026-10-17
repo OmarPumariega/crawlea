@@ -1,13 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Loader2, MessageSquareText, Plus, Trash2, Quote, Eye, ListChecks } from "lucide-react";
+import { ChevronDown, ChevronRight, Loader2, MessageSquareText, Plus, Trash2, ListChecks } from "lucide-react";
 import PageHeader from "@/components/app/PageHeader";
 import Modal from "@/components/app/Modal";
 import Pill from "@/components/app/Pill";
 import Section from "@/components/ui/Section";
-import StatTile from "@/components/ui/StatTile";
-import { BarList, RadialGauge } from "@/components/ui/charts";
+import { BarList } from "@/components/ui/charts";
+import AiOverviewSection from "./AiOverviewSection";
 import { fmtCredits } from "@/lib/credits";
 import { cn } from "@/lib/utils";
 
@@ -156,10 +156,6 @@ export default function IaView({ projectId }: { projectId: string }) {
   const latestChecks = data.prompts.flatMap((p) =>
     Object.keys(data.platforms).map((pl) => latest(p, pl)).filter((c): c is Check => Boolean(c))
   );
-  const total = latestChecks.length;
-  const citedN = latestChecks.filter((c) => c.cited).length;
-  const seenN = latestChecks.filter((c) => c.cited || c.mentioned).length;
-  const citedPct = total > 0 ? Math.round((citedN / total) * 100) : 0;
 
   const domainCount = new Map<string, number>();
   for (const c of latestChecks) {
@@ -205,21 +201,31 @@ export default function IaView({ projectId }: { projectId: string }) {
       <PageHeader
         eyebrow="Seguimiento · Visibilidad IA"
         title="Visibilidad en IA"
-        description="Pregunta a ChatGPT y Perplexity lo mismo que preguntaría un cliente y comprueba si tu web aparece citada o mencionada en la respuesta. Cada comprobación es una consulta real con búsqueda web."
-        actions={
-          <button
-            type="button"
-            onClick={() => setAddOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-strong transition-colors"
-          >
-            <Plus className="h-4 w-4" /> Añadir preguntas
-          </button>
-        }
+        description="Comprueba si Google muestra una respuesta con IA (AI Overview) para tus keywords y si te cita como fuente. Debajo, a modo de muestra, qué responden ChatGPT y Perplexity a preguntas de cliente."
       />
 
       {!data.domain && (
         <Pill tone="danger">Añade el dominio del proyecto en Perfil para poder medir si apareces.</Pill>
       )}
+
+      <AiOverviewSection projectId={projectId} />
+
+      <div className="flex flex-wrap items-end justify-between gap-3 pt-2">
+        <div>
+          <h2 className="text-lg font-bold tracking-tight text-ink">Preguntas a ChatGPT y Perplexity</h2>
+          <p className="mt-0.5 max-w-2xl text-sm text-ink-soft">
+            Una respuesta de IA cambia de una vez a otra: esto es una muestra puntual, no una medición. Sirve para ver
+            qué fuentes y competidores salen, no para sacar un porcentaje.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setAddOpen(true)}
+          className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-sm font-medium text-ink-soft hover:bg-background transition-colors"
+        >
+          <Plus className="h-4 w-4" /> Añadir preguntas
+        </button>
+      </div>
 
       {data.prompts.length === 0 ? (
         <Section>
@@ -241,18 +247,6 @@ export default function IaView({ projectId }: { projectId: string }) {
         </Section>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <StatTile highlight label="Te citan en" value={`${citedN}/${total || 0}`} hint="respuestas comprobadas (pregunta × asistente)" icon={<Quote className="h-4 w-4" />} />
-            <StatTile label="Te mencionan o citan" value={`${seenN}/${total || 0}`} hint="aparece tu web o tu marca en el texto" icon={<Eye className="h-4 w-4" />} />
-            <div className="rounded-[20px] border border-line bg-surface p-5 shadow-card flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[13px] font-semibold text-ink-soft">Cuota de citas</p>
-                <p className="mt-2 text-xs text-ink-faint">{data.prompts.length} preguntas seguidas</p>
-              </div>
-              <RadialGauge value={citedPct} />
-            </div>
-          </div>
-
           <div className="flex flex-wrap items-center justify-between gap-3">
             {checkBar}
             {notice && <Pill tone={notice.tone}>{notice.text}</Pill>}

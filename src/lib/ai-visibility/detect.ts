@@ -17,6 +17,18 @@ export type AiDetection = {
   sources: AiSource[];
 };
 
+// En consultas locales ChatGPT cita fichas de Google Maps (google.com/maps/...)
+// con el nombre del negocio como título: el dominio no dice nada (todos son
+// google.com), la identidad útil es el título. Se usa como "dominio" visible.
+function isMapsLink(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return /(^|\.)google\.[a-z.]+$/.test(u.hostname) && u.pathname.startsWith("/maps");
+  } catch {
+    return false;
+  }
+}
+
 export function rootDomain(input: string): string {
   try {
     const host = input.includes("://") ? new URL(input).hostname : input.split("/")[0];
@@ -50,14 +62,21 @@ export function detectVisibility(input: {
   for (const a of input.annotations) {
     if (!a.url || seen.has(a.url)) continue;
     seen.add(a.url);
-    sources.push({ domain: rootDomain(a.url), url: a.url, title: a.title?.trim() || null });
+    const title = a.title?.trim() || null;
+    sources.push({ domain: isMapsLink(a.url) && title ? title : rootDomain(a.url), url: a.url, title });
   }
 
   // Posición = índice entre DOMINIOS distintos (varias URLs del mismo dominio
   // cuentan una vez), 1-based.
   const domainsInOrder: string[] = [];
   for (const s of sources) if (!domainsInOrder.includes(s.domain)) domainsInOrder.push(s.domain);
-  const idx = domainsInOrder.findIndex((d) => sameSite(d, domain));
+  // Fichas de Maps: no son dominios, se comparan por nombre de negocio.
+  const brandKeys = [domain.split(".")[0], ...input.brandNames].map((n) => n.trim()).filter((n) => n.length >= 4);
+  const isOwnEntry = (d: string) =>
+    d.includes(".") && !d.includes(" ")
+      ? sameSite(d, domain)
+      : brandKeys.some((b) => normalizeText(d).includes(normalizeText(b)));
+  const idx = domainsInOrder.findIndex(isOwnEntry);
 
   const text = normalizeText(input.answer);
   const names = [domain, ...input.brandNames.map((n) => n.trim()).filter((n) => n.length >= 4)];

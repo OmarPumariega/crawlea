@@ -115,6 +115,9 @@ export type ReportData = {
   } | null;
   // Visibilidad en IA: última comprobación de cada pregunta seguida por asistente.
   ia: {
+    // AI Overview de Google por keyword (última comprobación de cada keyword).
+    overview: { checked: number; withOverview: number; cited: number; items: { keyword: string; hasOverview: boolean; cited: boolean; citedRank: number | null }[] } | null;
+    // Preguntas a ChatGPT/Perplexity: muestra puntual, no medición.
     total: number; cited: number; seen: number;
     prompts: { prompt: string; chatgpt: "cited" | "mentioned" | "none" | null; perplexity: "cited" | "mentioned" | "none" | null }[];
     topDomains: { domain: string; count: number }[];
@@ -862,36 +865,61 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
     v === "cited" ? "Citado" : v === "mentioned" ? "Mencionado" : v === "none" ? "No aparece" : "—";
   const renderIa = () => (
     <section className="space-y-4">
-      <SectionTitle icon={<Quote className="h-4 w-4" />}>Visibilidad en IA <span className="text-ink-faint font-normal text-sm">(ChatGPT y Perplexity, última comprobación)</span></SectionTitle>
+      <SectionTitle icon={<Quote className="h-4 w-4" />}>Visibilidad en IA <span className="text-ink-faint font-normal text-sm">(Google AI Overview, ChatGPT y Perplexity)</span></SectionTitle>
       {!data.ia ? (
-        <p className="text-sm text-ink-soft">Sin preguntas comprobadas todavía.</p>
+        <p className="text-sm text-ink-soft">Sin comprobaciones de visibilidad en IA todavía.</p>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <Stat label="Te citan en" value={`${data.ia.cited}/${data.ia.total}`} />
-            <Stat label="Te mencionan o citan" value={`${data.ia.seen}/${data.ia.total}`} />
-            <Stat label="Preguntas seguidas" value={String(data.ia.prompts.length)} />
-          </div>
-          <table className="w-full text-sm">
-            <thead><tr className="text-left text-ink-faint border-b border-line">
-              <th className="py-2 pr-4 font-medium">Pregunta</th>
-              <th className="py-2 pr-4 font-medium">ChatGPT</th>
-              <th className="py-2 font-medium">Perplexity</th>
-            </tr></thead>
-            <tbody>
-              {data.ia.prompts.map((p) => (
-                <tr key={p.prompt} className="border-b border-line">
-                  <td className="py-2 pr-4 text-ink">{p.prompt}</td>
-                  <td className="py-2 pr-4 text-ink-soft">{iaLabel(p.chatgpt)}</td>
-                  <td className="py-2 text-ink-soft">{iaLabel(p.perplexity)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {data.ia.topDomains.length > 0 && (
-            <p className="text-xs text-ink-faint">
-              Webs más citadas: {data.ia.topDomains.map((d) => `${d.domain} (${d.count})`).join(" · ")}.
-            </p>
+          {data.ia.overview && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-ink-soft">AI Overview de Google por keyword</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <Stat label="Keywords con AI Overview" value={`${data.ia.overview.withOverview}/${data.ia.overview.checked}`} />
+                <Stat label="Te citan en" value={`${data.ia.overview.cited}/${data.ia.overview.withOverview}`} />
+              </div>
+              <table className="w-full text-sm">
+                <thead><tr className="text-left text-ink-faint border-b border-line">
+                  <th className="py-2 pr-4 font-medium">Keyword</th>
+                  <th className="py-2 pr-4 font-medium">AI Overview</th>
+                  <th className="py-2 font-medium">Te citan</th>
+                </tr></thead>
+                <tbody>
+                  {data.ia.overview.items.map((k) => (
+                    <tr key={k.keyword} className="border-b border-line">
+                      <td className="py-2 pr-4 text-ink">{k.keyword}</td>
+                      <td className="py-2 pr-4 text-ink-soft">{k.hasOverview ? "Sí" : "No lo muestra"}</td>
+                      <td className="py-2 text-ink-soft">{!k.hasOverview ? "—" : k.cited ? `Citado${k.citedRank ? ` · #${k.citedRank}` : ""}` : "No te cita"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {data.ia.prompts.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-ink-soft">Preguntas a ChatGPT y Perplexity <span className="font-normal text-ink-faint">· muestra puntual</span></p>
+              <table className="w-full text-sm">
+                <thead><tr className="text-left text-ink-faint border-b border-line">
+                  <th className="py-2 pr-4 font-medium">Pregunta</th>
+                  <th className="py-2 pr-4 font-medium">ChatGPT</th>
+                  <th className="py-2 font-medium">Perplexity</th>
+                </tr></thead>
+                <tbody>
+                  {data.ia.prompts.map((p) => (
+                    <tr key={p.prompt} className="border-b border-line">
+                      <td className="py-2 pr-4 text-ink">{p.prompt}</td>
+                      <td className="py-2 pr-4 text-ink-soft">{iaLabel(p.chatgpt)}</td>
+                      <td className="py-2 text-ink-soft">{iaLabel(p.perplexity)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {data.ia.topDomains.length > 0 && (
+                <p className="text-xs text-ink-faint">
+                  Webs más citadas: {data.ia.topDomains.map((d) => `${d.domain} (${d.count})`).join(" · ")}.
+                </p>
+              )}
+            </div>
           )}
         </>
       )}

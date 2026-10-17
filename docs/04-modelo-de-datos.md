@@ -253,7 +253,13 @@ queries reales en el system prompt del chat — y queda disponible para que otro
 crujen con datos de tráfico reales sin volver a llamar a la API. Esos datos salen de la
 misma `searchanalytics.query` que el panel, así que no añade conexión ni coste.
 
-## `AiPrompt` / `AiCheck` (Visibilidad IA)
+## `AiOverviewCheck` (Visibilidad IA — AI Overview por keyword)
+
+Una fila por comprobación de una `RankKeyword`: `hasOverview` (Google mostró respuesta con
+IA), `cited`/`citedRank` (el dominio del proyecto entre las fuentes), `references` (JSON
+`[{domain,url,title,source}]`), `excerpt` (≤600 car.) y `costUsd`. Cascade desde `RankKeyword`.
+
+## `AiPrompt` / `AiCheck` (Visibilidad IA — preguntas a ChatGPT/Perplexity, muestra puntual)
 
 `AiPrompt`: pregunta seguida de un proyecto (`prompt` ≤200, único por proyecto, máx. 30).
 `AiCheck`: una comprobación real (pregunta × asistente) con `cited`, `mentioned`,

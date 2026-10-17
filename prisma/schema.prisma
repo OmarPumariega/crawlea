@@ -233,6 +233,24 @@ model AiPrompt {
   @@index([projectId])
 }
 
+// AI Overview de Google por keyword: una fila por comprobación de una keyword
+// del Rank Tracking. hasOverview=false es un dato real (Google no mostró
+// respuesta con IA para esa búsqueda, típico en keywords locales o comerciales).
+model AiOverviewCheck {
+  id            String      @id @default(cuid())
+  rankKeywordId String
+  rankKeyword   RankKeyword @relation(fields: [rankKeywordId], references: [id], onDelete: Cascade)
+  hasOverview   Boolean
+  cited         Boolean // el dominio del proyecto figura entre las fuentes del AI Overview
+  citedRank     Int? // posición del dominio entre las fuentes citadas (1 = la primera)
+  references    Json // [{ domain, url, title, source }] — fuentes que cita Google
+  excerpt       String?     @db.Text // inicio del texto del AI Overview (≤600 caracteres)
+  costUsd       Decimal?    @db.Decimal(10, 6)
+  checkedAt     DateTime    @default(now())
+
+  @@index([rankKeywordId, checkedAt])
+}
+
 model AiCheck {
   id         String   @id @default(cuid())
   promptId   String
@@ -501,6 +519,7 @@ model RankKeyword {
   updatedAt           DateTime                 @updatedAt
   positions           RankPosition[]
   competitorPositions RankCompetitorPosition[]
+  aiOverviewChecks    AiOverviewCheck[]
 
   @@unique([projectId, keyword, locationCode, languageCode, device])
   @@index([projectId])
