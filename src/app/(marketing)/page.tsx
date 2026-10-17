@@ -4,13 +4,11 @@ import { ArrowRight, Check } from "lucide-react";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import { FAQ, FAQ_CATS } from "@/lib/marketing-content";
 import { FEATURES } from "@/lib/marketing-features";
-import SectionHead from "@/components/marketing/SectionHead";
 import CtaBand from "@/components/marketing/CtaBand";
 import Reveal from "@/components/marketing/Reveal";
 import FeatureCarousel from "@/components/marketing/FeatureCarousel";
 import FeatureCard from "@/components/marketing/FeatureCard";
 import ProductTour from "@/components/marketing/ProductTour";
-import Audiences from "@/components/marketing/Audiences";
 import FaqAccordion from "@/components/marketing/FaqAccordion";
 import PricingCards from "@/components/marketing/PricingCards";
 import LogoMarquee from "@/components/marketing/LogoMarquee";
@@ -138,14 +136,6 @@ export default function HomePage() {
           <p className="mt-10 text-center">
             <Link href="/precios" className="inline-flex items-center gap-2 text-[15px] font-bold text-brand-200 hover:text-white">Compara los planes al detalle <ArrowRight className="h-4 w-4" /></Link>
           </p>
-        </div>
-      </section>
-
-      {/* ============ PARA QUIÉN ============ */}
-      <section data-section="para-quien" className="bg-background">
-        <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
-          <Reveal><SectionHead n="01" label="Para quién" title="Hecho para quien hace SEO a diario" text="Tres formas de usarlo. Elige la tuya y mira cómo sería un día." /></Reveal>
-          <Reveal><Audiences /></Reveal>
         </div>
       </section>
 

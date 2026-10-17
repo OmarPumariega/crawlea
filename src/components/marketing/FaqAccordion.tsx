@@ -16,7 +16,7 @@ export default function FaqAccordion({ items, cats }: { items: Item[]; cats: str
   return (
     <div className="grid gap-12 lg:grid-cols-[1fr_1.7fr]">
       <div className="lg:sticky lg:top-28 lg:self-start">
-        <p className="text-sm font-bold text-ink"><span className="text-brand">02</span><span className="mx-2 text-ink-faint">/</span>Preguntas</p>
+        <p className="text-sm font-bold text-ink"><span className="text-brand">01</span><span className="mx-2 text-ink-faint">/</span>Preguntas</p>
         <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl">Preguntas frecuentes</h2>
         <div role="tablist" aria-label="Temas" className="mt-8 flex flex-wrap gap-2 lg:flex-col lg:items-start">
           {cats.map((c) => (
