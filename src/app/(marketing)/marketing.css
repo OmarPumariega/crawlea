@@ -41,25 +41,8 @@
   mask-image: linear-gradient(to bottom, #000, transparent);
 }
 
-/* Trama diagonal de las tarjetas del carrusel de funciones */
-.mk-hatch::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 70%;
-  height: 46%;
-  background: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--color-brand-500, #4f5cf5) 38%, transparent) 6px 7px);
-  mask-image: linear-gradient(135deg, transparent 35%, #000 90%);
-  pointer-events: none;
-}
 .mk-no-scrollbar { scrollbar-width: none; }
 .mk-no-scrollbar::-webkit-scrollbar { display: none; }
-
-/* Fondo de las tarjetas del carrusel: un paso más intenso que accent-tint
-   para que se distinga del fondo de la página sin llamar la atención. */
-.mk-card-tint { background: linear-gradient(160deg, #c3caff 0%, #d9deff 100%); }
-[data-theme="dark"] .mk-card-tint { background: linear-gradient(160deg, #343c93 0%, #272d70 100%); }
 
 /* Cinta de logos: desplazamiento lento y continuo; se pausa al pasar el ratón
    y se detiene con prefers-reduced-motion. Bordes con desvanecido. */

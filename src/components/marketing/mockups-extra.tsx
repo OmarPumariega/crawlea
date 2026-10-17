@@ -36,14 +36,14 @@ export function UrlChecksMini({ className }: { className?: string }) {
     ["Imágenes con alt", false],
   ] as const;
   return (
-    <div className={cn("space-y-2", className)} aria-hidden="true">
-      <div className="flex items-center justify-between rounded-2xl bg-surface-muted px-3.5 py-2.5">
+    <div className={cn("space-y-1.5", className)} aria-hidden="true">
+      <div className="flex items-center justify-between rounded-xl bg-surface-muted px-3 py-2">
         <span className="text-[11px] font-semibold text-ink-soft">Puntuación de la URL</span>
-        <span className="text-lg font-extrabold tabular-nums text-ink">74<span className="text-xs text-ink-faint">/100</span></span>
+        <span className="text-base font-extrabold tabular-nums text-ink">74<span className="text-[11px] text-ink-faint">/100</span></span>
       </div>
       {rows.map(([t, ok]) => (
-        <div key={t} className={row}>
-          <span className="font-semibold text-ink">{t}</span>
+        <div key={t} className="flex items-center justify-between gap-2 rounded-xl border border-line bg-surface px-3 py-1.5 text-[11px]">
+          <span className="truncate font-semibold text-ink">{t}</span>
           {ok ? <Pill>Bien</Pill> : <Pill tone="down">Arreglar</Pill>}
         </div>
       ))}
