@@ -135,8 +135,8 @@ export default function GoogleView({
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Módulo · Google"
-        title="Integraciones Google"
+        eyebrow="Ficha · Google"
+        title="Datos de Google de este proyecto"
         description="Elige la propiedad de Search Console y de GA4 de este proyecto."
       />
 

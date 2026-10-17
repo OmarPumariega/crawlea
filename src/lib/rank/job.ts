@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { checkRankKeyword } from "@/lib/rank/check";
 import { notify } from "@/lib/notifications/notify";
+import { alertLeftTop10 } from "@/lib/notifications/alerts";
 import { FREQUENCY_MS } from "@/lib/rank/constants";
 
 // Job de fondo del Módulo 5: procesa las keywords de seguimiento cuya
@@ -102,6 +103,7 @@ export async function runRankJob(): Promise<{ processed: number }> {
             body: `La keyword «${rk.keyword}» ha caído de #${prevPos} a #${result.position} (Δ ${result.position - prevPos}) en el proyecto ${rk.projectId}. Detalle en el panel: /app/proyectos/${rk.projectId}/rank`,
           });
         }
+        await alertLeftTop10(rk.projectId, rk.id, rk.keyword, prevPos, result.position);
         processed++;
       } catch (e) {
         console.error(`[rank] error chequeando "${rk.keyword}" (proyecto ${projectId}):`, e);

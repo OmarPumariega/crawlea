@@ -17,6 +17,7 @@ import {
   LayoutDashboard,
   LineChart,
   ListChecks,
+  Lightbulb,
   LogOut,
   MapPin,
   Building2,
@@ -30,7 +31,6 @@ import {
   Wallet,
   Wrench,
   X,
-  Globe,
   Lock,
   type LucideIcon,
 } from "lucide-react";
@@ -87,7 +87,6 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
       icon: LineChart,
       modules: [
         { href: `${base}/rank`, label: "Rank Tracking", icon: TrendingUp },
-        { href: `${base}/google`, label: "Google", icon: Globe },
         { href: `${base}/competidores`, label: "Competidores", icon: Users },
       ],
     },
@@ -101,6 +100,7 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
       // Ficha = Datos del proyecto + Notas (dos pestañas de un mismo módulo).
       { href: base, label: "Ficha", icon: Building2 },
       { href: `${base}/tareas`, label: "Tareas", icon: ListChecks },
+      { href: `${base}/oportunidades`, label: "Oportunidades", icon: Lightbulb },
       // Keywords era la única herramienta del grupo "Investigación": entrada suelta.
       { href: `${base}/keywords`, label: "Keywords", icon: Key },
     ],
@@ -117,8 +117,8 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
 // ¿Es esta la ruta activa? Para Perfil (== base) exige coincidencia exacta;
 // para el resto acepta rutas anidadas (p. ej. .../keywords/estudios/123).
 function isModuleActive(href: string, base: string, pathname: string): boolean {
-  // La Ficha (== base) incluye su pestaña Notas.
-  if (href === base) return pathname === href || pathname === `${base}/notas`;
+  // La Ficha (== base) incluye sus pestañas Notas y Google.
+  if (href === base) return pathname === href || pathname === `${base}/notas` || pathname === `${base}/google`;
   return pathname === href || pathname.startsWith(href + "/");
 }
 

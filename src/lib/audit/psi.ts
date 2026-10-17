@@ -90,7 +90,7 @@ function parseFieldData(raw: unknown, source: "page" | "origin"): PsiFieldData |
 // página del crawl sería impracticable en un job de fondo. Devuelve null
 // si falta la API key o falla la llamada, sin cortar el resto de la
 // auditoría (igual que el patrón de degradación de GoogleView.tsx).
-export async function getPsiMetrics(url: string): Promise<PsiResult | null> {
+export async function getPsiMetrics(url: string, strategy: "mobile" | "desktop" = "mobile"): Promise<PsiResult | null> {
   const apiKey = await getSetting("PAGESPEED_API_KEY");
   if (!apiKey) return null;
 
@@ -104,7 +104,7 @@ export async function getPsiMetrics(url: string): Promise<PsiResult | null> {
   for (const category of ["performance", "accessibility", "best-practices", "seo"]) {
     endpoint.searchParams.append("category", category);
   }
-  endpoint.searchParams.set("strategy", "mobile");
+  endpoint.searchParams.set("strategy", strategy);
 
   try {
     const res = await fetch(endpoint.toString(), { signal: AbortSignal.timeout(30000) });

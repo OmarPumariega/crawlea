@@ -92,6 +92,7 @@ export type ReportData = {
     completedAt: Date | null;
   } | null;
   costs: { monthCost: number };
+  velocidad: { url: string; performance: number | null; lcpMs: number | null; cls: number | null; inpMs: number | null; fieldCategory: string | null; fetchedAt: Date }[];
   links: { pages: { url: string; pagerank: number; incoming: number; outgoing: number }[]; orphans: string[]; topHubs: string[]; auditDate: Date | null } | null;
   competitors: {
     own: { organicTraffic: number | null; organicKeywords: number | null; positionBuckets: PositionBuckets | null; avgPosition: number | null; topKeywords: TopKeyword[] | null; trafficValue: number | null; movement: Movement | null; fetchedAt: Date | null } | null;
@@ -624,6 +625,35 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
     );
   };
 
+  const renderVelocidad = () => (
+    <section className="space-y-4">
+      <SectionTitle icon={<Gauge className="h-4 w-4" />}>Velocidad de la web <span className="text-ink-faint font-normal text-sm">(PageSpeed de Google, móvil)</span></SectionTitle>
+      {data.velocidad.length === 0 ? (
+        <p className="text-sm text-ink-soft">Sin mediciones todavía. Mide tus páginas clave desde Auditoría → Velocidad.</p>
+      ) : (
+        <table className="w-full text-sm">
+          <thead><tr className="text-left text-ink-faint border-b border-line">
+            <th className="py-2 pr-4 font-medium">Página</th><th className="py-2 pr-4 font-medium text-right">Rendimiento</th>
+            <th className="py-2 pr-4 font-medium text-right">LCP</th><th className="py-2 pr-4 font-medium text-right">CLS</th>
+            <th className="py-2 pr-4 font-medium">Datos reales</th><th className="py-2 font-medium">Medido</th>
+          </tr></thead>
+          <tbody>
+            {data.velocidad.map((p) => (
+              <tr key={p.url} className="border-b border-line last:border-0">
+                <td className="py-2 pr-4 text-ink max-w-[260px] truncate">{p.url.replace(/^https?:\/\/(www\.)?/, "")}</td>
+                <td className={`py-2 pr-4 text-right tabular-nums font-semibold ${scoreTone(p.performance)}`}>{p.performance ?? "—"}</td>
+                <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{p.lcpMs != null ? `${(p.lcpMs / 1000).toFixed(1)} s` : "—"}</td>
+                <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{p.cls != null ? p.cls.toFixed(2) : "—"}</td>
+                <td className="py-2 pr-4 text-ink-soft">{p.fieldCategory === "FAST" ? "Bien" : p.fieldCategory === "AVERAGE" ? "Mejorable" : p.fieldCategory === "SLOW" ? "Lento" : "Sin datos"}</td>
+                <td className="py-2 text-ink-faint">{fmtDate(p.fetchedAt)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  );
+
   const renderLinks = () => (
     <section className="space-y-4">
       <SectionTitle icon={<Network className="h-4 w-4" />}>Enlaces internos <span className="text-ink-faint font-normal text-sm">(PageRank, última auditoría)</span></SectionTitle>
@@ -1041,6 +1071,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
     competitors: renderCompetitors,
     backlinks: renderBacklinks,
     tfidf: renderTfidf,
+    velocidad: renderVelocidad,
     ia: renderIa,
     costs: renderCosts,
   };

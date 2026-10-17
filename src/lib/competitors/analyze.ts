@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
 import { assertWithinSpendLimit } from "@/lib/dataforseo/spend";
+import { alertCompetitorGrowth } from "@/lib/notifications/alerts";
 import { competitorAnalysisCostUsd, contentGapCostUsd, geogridBusinessKeywordsCostUsd } from "@/lib/dataforseo/pricing";
 import { fetchDomainOverview, fetchRankedKeywords, fetchContentGap, type RankedKeyword } from "@/lib/competitors/dataforseo";
 
@@ -51,6 +52,11 @@ export async function analyzeCompetitorVisibility(
     fetchRankedKeywords({ domain, locationCode: opts.locationCode, languageCode: opts.languageCode, limit: opts.limit }),
   ]);
 
+  const previous = await prisma.visibilitySnapshot.findFirst({
+    where: { projectId, domain },
+    orderBy: { fetchedAt: "desc" },
+    select: { organicTraffic: true },
+  });
   const snapshot = await prisma.visibilitySnapshot.create({
     data: {
       projectId,
@@ -65,6 +71,8 @@ export async function analyzeCompetitorVisibility(
       topKeywords: ranked.items as unknown as Prisma.InputJsonValue,
     },
   });
+
+  await alertCompetitorGrowth(projectId, domain, previous?.organicTraffic ?? null, overview.organicTraffic);
 
   for (const [endpoint, cost] of [
     ["competidores.visibilidad", overview.costUsd],

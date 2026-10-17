@@ -6,12 +6,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { exchangeCodeForTokens, getConnectedEmail, GoogleOAuthConfigError } from "@/lib/google/oauth";
 
 const STATE_COOKIE = "google_oauth_state";
+const RETURN_COOKIE = "google_oauth_return";
+const RETURN_RE = /^\/app\/proyectos\/[A-Za-z0-9_-]+(\/[a-z0-9-]+)?$/;
+
+// A dónde volver tras el OAuth: la ficha del proyecto desde la que se conectó, o el perfil.
+function returnPath(req: NextRequest): string {
+  const v = req.cookies.get(RETURN_COOKIE)?.value;
+  return v && RETURN_RE.test(v) ? v : "/app/perfil";
+}
 
 function redirectWithError(req: NextRequest, error: string) {
-  const url = new URL("/app/perfil", SITE_URL);
+  const url = new URL(returnPath(req), SITE_URL);
   url.searchParams.set("error", error);
   const response = NextResponse.redirect(url);
   response.cookies.delete(STATE_COOKIE);
+  response.cookies.delete(RETURN_COOKIE);
   return response;
 }
 
@@ -68,9 +77,10 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  const url = new URL("/app/perfil", SITE_URL);
+  const url = new URL(returnPath(req), SITE_URL);
   url.searchParams.set("connected", "1");
   const response = NextResponse.redirect(url);
   response.cookies.delete(STATE_COOKIE);
+  response.cookies.delete(RETURN_COOKIE);
   return response;
 }

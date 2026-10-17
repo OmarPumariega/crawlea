@@ -68,6 +68,15 @@ export function keywordOverviewCostUsd(count: number): number {
   return Math.round((LABS_TASK_COST_USD + count * LABS_ITEM_COST_USD) * 1000) / 1000;
 }
 
+// Medidos en producción: competitors_domain ≈ 0,013 $ (8 resultados), historical_rank_overview ≈ 0,127 $,
+// backlinks/anchors y bulk_new_lost ≈ 0,024 $ cada uno.
+export const DISCOVER_COMPETITORS_LIMIT = 20;
+export function discoverCompetitorsCostUsd(): number {
+  return Math.round((LABS_TASK_COST_USD + DISCOVER_COMPETITORS_LIMIT * LABS_ITEM_COST_USD) * 1000) / 1000;
+}
+export const TRAFFIC_HISTORY_COST_USD = 0.13;
+export const BACKLINK_ANCHORS_COST_USD = 0.05;
+
 export const COMPETITORS_ANALYZE_DEFAULT_LIMIT = 1000;
 export const COMPETITORS_GAP_DEFAULT_LIMIT = 1000;
 

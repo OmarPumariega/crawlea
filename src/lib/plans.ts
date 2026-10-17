@@ -15,6 +15,7 @@ export const MODULE_IDS = [
   "titulos-meta",
   "rank",
   "google",
+  "oportunidades",
   "contenido",
   "auditoria",
   "geogrid",

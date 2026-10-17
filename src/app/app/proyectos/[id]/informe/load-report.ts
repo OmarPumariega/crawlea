@@ -488,6 +488,30 @@ export async function loadInforme(
         }
       : null;
 
+  // --- Velocidad: última medición (móvil) de cada página medida desde Auditoría →
+  // Velocidad. Solo lectura de lo guardado; la API de PageSpeed es gratuita.
+  const speedRows = await prisma.pageSpeedCheck.findMany({
+    where: { projectId: id, strategy: "mobile" },
+    orderBy: { fetchedAt: "desc" },
+    take: 60,
+  });
+  const speedSeen = new Set<string>();
+  const speedData: ReportData["velocidad"] = [];
+  for (const r of speedRows) {
+    if (speedSeen.has(r.url)) continue;
+    speedSeen.add(r.url);
+    speedData.push({
+      url: r.url,
+      performance: r.performance,
+      lcpMs: r.lcpMs,
+      cls: r.cls,
+      inpMs: r.inpMs,
+      fieldCategory: (r.fieldData as { overallCategory?: string | null } | null)?.overallCategory ?? null,
+      fetchedAt: r.fetchedAt,
+    });
+    if (speedData.length >= 10) break;
+  }
+
   // --- Keywords: top N del estudio "General" (Punto 4) por prioridad — antes
   // esta sección solo mostraba totales, ni una keyword listada.
   const keywordsTop = project.defaultKeywordStudyId
@@ -577,6 +601,7 @@ export async function loadInforme(
     backlinks: backlinksData,
     tfidf: tfidfData,
     ia: iaData,
+    velocidad: speedData,
   };
 
   const branding =

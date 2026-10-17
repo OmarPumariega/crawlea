@@ -1,5 +1,6 @@
 "use client";
 
+import ShareOfVoiceCard from "@/components/app/ShareOfVoiceCard";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import * as Select from "@radix-ui/react-select";
@@ -1381,6 +1382,7 @@ export default function RankView({ projectId }: { projectId: string }) {
             </div>
           )}
           <RankVisibilityChart projectId={projectId} group={visibilityGroup === "__all__" ? undefined : visibilityGroup} />
+          <ShareOfVoiceCard projectId={projectId} group={visibilityGroup === "__all__" ? undefined : visibilityGroup} />
         </div>
       )}
       {/* Añadir keywords: escribirlas, traerlas de un estudio o programar el

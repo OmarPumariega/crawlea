@@ -251,3 +251,34 @@ export async function listDailySeries(
     impressions: row.impressions ?? 0,
   }));
 }
+
+// Filas query×página (hasta 5000) para Oportunidades: cruza qué consulta trae
+// tráfico a qué URL, con clics/impresiones/posición reales.
+export type GscQueryPageRow = { query: string; page: string; clicks: number; impressions: number; position: number };
+
+export async function listQueryPageRows(
+  auth: GoogleOAuthClient,
+  siteUrl: string,
+  range: { startDate: string; endDate: string },
+  rowLimit = 5000
+): Promise<GscQueryPageRow[]> {
+  const searchconsole = google.searchconsole({ version: "v1", auth });
+  const { data } = await searchconsole.searchanalytics.query({
+    siteUrl,
+    requestBody: {
+      startDate: range.startDate,
+      endDate: range.endDate,
+      dimensions: ["query", "page"],
+      rowLimit,
+    },
+  });
+  return (data.rows ?? [])
+    .map((row) => ({
+      query: row.keys?.[0] ?? "",
+      page: row.keys?.[1] ?? "",
+      clicks: row.clicks ?? 0,
+      impressions: row.impressions ?? 0,
+      position: row.position ?? 0,
+    }))
+    .filter((r) => r.query && r.page);
+}

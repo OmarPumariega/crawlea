@@ -307,3 +307,14 @@ Columnas añadidas para no descartar nada de lo ya pagado (todas opcionales; fil
 | `OnPageAnalysis` | `extras` | tiempos, CLS, peso, recursos, coherencia, duplicados, Open Graph, cabeceras |
 | `Keyword` / `KeywordDataCache` | `extras` | puja, índice de competición, tendencia, enlaces medios del top |
 | `AiCheck` | `fanOutQueries`, `inputTokens`, `outputTokens` | búsquedas internas del asistente y tokens |
+| `BacklinkSnapshot` | `anchors`, `newLost` | distribución de anchors y enlaces nuevos/perdidos (botón aparte, ≈0,05 $) |
+
+## Modelos nuevos (2026-10)
+
+- `PageSpeedCheck`: medición de PageSpeed Insights por URL y estrategia (móvil/escritorio) con
+  puntuaciones, LCP/CLS/INP y oportunidades; alimenta Auditoría → Velocidad, el Informe y el Copilot.
+- `TrafficHistory`: curva mensual de tráfico/keywords de un dominio (Labs `historical_rank_overview`,
+  ≈0,13 $ por dominio), válida 30 días; la usa el botón *Evolución* de Competidores.
+- `TfidfResult.pageWordCounts`: palabras de cada página del top-10 (brief y editor de contenido).
+- Migraciones recientes: `…backlinks_perfil`, `…onpage_extras`, `…keywords_extras`, `…ia_fan_out`,
+  `…pagespeed_checks`, `…historico_anchors` (aplicadas en producción al arrancar el contenedor).

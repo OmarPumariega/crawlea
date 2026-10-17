@@ -50,7 +50,7 @@ export async function buildProjectContext(projectId: string): Promise<string> {
 
   // Datos de los módulos de Competidores, Backlinks, SEO local y Visibilidad IA:
   // el último snapshot por dominio (distinct) — ya pagado, el Copilot solo lo lee.
-  const [visSnapshots, blSnapshots, geoRun, aiOverviews] = await Promise.all([
+  const [visSnapshots, blSnapshots, geoRun, aiOverviews, speed, lastAudits] = await Promise.all([
     prisma.visibilitySnapshot.findMany({
       where: { projectId },
       orderBy: { fetchedAt: "desc" },
@@ -74,6 +74,19 @@ export async function buildProjectContext(projectId: string): Promise<string> {
       distinct: ["rankKeywordId"],
       select: { hasOverview: true, cited: true },
     }),
+    prisma.pageSpeedCheck.findMany({
+      where: { projectId, strategy: "mobile" },
+      orderBy: { fetchedAt: "desc" },
+      distinct: ["url"],
+      take: 10,
+      select: { url: true, performance: true, lcpMs: true },
+    }),
+    prisma.auditRun.findMany({
+      where: { projectId, status: "completed" },
+      orderBy: { completedAt: "desc" },
+      take: 2,
+      select: { overallScore: true },
+    }),
   ]);
 
   const hasData =
@@ -86,7 +99,8 @@ export async function buildProjectContext(projectId: string): Promise<string> {
     visSnapshots.length > 0 ||
     blSnapshots.length > 0 ||
     geoRun !== null ||
-    aiOverviews.length > 0;
+    aiOverviews.length > 0 ||
+    speed.length > 0;
   if (!hasData) return "El proyecto aún no tiene datos suficientes.";
 
   const lines: string[] = [];
@@ -225,6 +239,18 @@ export async function buildProjectContext(projectId: string): Promise<string> {
     lines.push(
       `AI Overview de Google (${aiOverviews.length} keywords medidas): lo muestra en ${withOv}, te cita en ${cited}.`
     );
+  }
+
+  if (speed.length > 0) {
+    const worst = [...speed].sort((x, y) => (x.performance ?? 101) - (y.performance ?? 101))[0];
+    lines.push(
+      `Velocidad (PageSpeed móvil, ${speed.length} páginas medidas): la más lenta es ${worst.url} con ${worst.performance ?? "—"}/100` +
+        (worst.lcpMs != null ? ` (LCP ${(worst.lcpMs / 1000).toFixed(1)} s).` : ".")
+    );
+  }
+  if (lastAudits.length === 2 && lastAudits[0].overallScore != null && lastAudits[1].overallScore != null) {
+    const d = lastAudits[0].overallScore - lastAudits[1].overallScore;
+    lines.push(`Frente a la auditoría anterior, la puntuación ${d === 0 ? "no ha cambiado" : d > 0 ? `ha subido ${d} puntos` : `ha bajado ${-d} puntos`}.`);
   }
 
   return lines.join("\n");

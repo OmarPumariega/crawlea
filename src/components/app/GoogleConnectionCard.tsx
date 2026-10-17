@@ -16,10 +16,13 @@ export default function GoogleConnectionCard({
   connection,
   justConnected,
   errorMessage,
+  returnTo,
 }: {
   connection: Connection;
   justConnected: boolean;
   errorMessage: string | null;
+  // Ruta interna a la que volver tras conectar (p. ej. la pestaña Google de la ficha).
+  returnTo?: string;
 }) {
   const router = useRouter();
   const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
@@ -99,7 +102,7 @@ export default function GoogleConnectionCard({
             Todavía no hay ninguna cuenta de Google conectada.
           </p>
           <a
-            href="/api/google/oauth/authorize"
+            href={returnTo ? `/api/google/oauth/authorize?volver=${encodeURIComponent(returnTo)}` : "/api/google/oauth/authorize"}
             className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong"
           >
             Conectar con Google

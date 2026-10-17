@@ -73,3 +73,39 @@ export function parseBacklinkProfile(item: Record<string, unknown>): BacklinkPro
     semanticLocations: toDist(item.referring_links_semantic_locations),
   };
 }
+
+// --- Anchors (backlinks/anchors) y nuevos/perdidos (bulk_new_lost_backlinks) ---
+export type AnchorRow = {
+  anchor: string; // "" = enlace sin texto (imagen, redirección)
+  backlinks: number;
+  referringDomains: number;
+  referringPages: number;
+  firstSeen: string | null;
+  spamScore: number | null;
+  nofollowPct: number | null; // % de páginas que enlazan con nofollow
+};
+
+export function parseAnchors(result: Record<string, unknown> | null | undefined): AnchorRow[] {
+  const items = Array.isArray(result?.items) ? (result!.items as Record<string, unknown>[]) : [];
+  return items.map((it) => {
+    const pages = num(it.referring_pages);
+    const nf = num(it.referring_pages_nofollow);
+    return {
+      anchor: typeof it.anchor === "string" ? it.anchor : "",
+      backlinks: num(it.backlinks) ?? 0,
+      referringDomains: num(it.referring_domains) ?? 0,
+      referringPages: pages ?? 0,
+      firstSeen: str(it.first_seen),
+      spamScore: num(it.backlinks_spam_score),
+      nofollowPct: pages && nf != null ? Math.round((nf / pages) * 100) : null,
+    };
+  });
+}
+
+export type NewLost = { newBacklinks: number | null; lostBacklinks: number | null };
+
+export function parseNewLost(result: Record<string, unknown> | null | undefined, domain: string): NewLost {
+  const items = Array.isArray(result?.items) ? (result!.items as Record<string, unknown>[]) : [];
+  const it = items.find((x) => x.target === domain) ?? items[0];
+  return { newBacklinks: num(it?.new_backlinks), lostBacklinks: num(it?.lost_backlinks) };
+}

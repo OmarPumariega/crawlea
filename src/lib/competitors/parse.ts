@@ -115,3 +115,53 @@ export function parseRankedItem(raw: Obj): RankedKeyword | null {
 export function parseIntersectionItem(raw: Obj): RankedKeyword | null {
   return parseKeywordItem(raw, obj(raw.first_domain_serp_element), obj(obj(raw.keyword_data)?.serp_info));
 }
+
+// --- Competidores descubiertos (Labs competitors_domain) ----------------------
+export type DiscoveredCompetitor = {
+  domain: string;
+  intersections: number; // keywords en las que compite contigo
+  avgPosition: number | null; // posición media del competidor en esas keywords
+  organicTraffic: number | null; // etv estimado
+  organicKeywords: number | null;
+};
+
+export function parseCompetitorsDomain(result: Record<string, unknown> | null | undefined, ownDomain: string): DiscoveredCompetitor[] {
+  const items = Array.isArray(result?.items) ? (result!.items as Record<string, unknown>[]) : [];
+  const out: DiscoveredCompetitor[] = [];
+  for (const it of items) {
+    const domain = typeof it.domain === "string" ? it.domain.toLowerCase().replace(/^www\./, "") : "";
+    if (!domain || domain === ownDomain) continue; // la API devuelve el propio dominio como primer ítem
+    const organic = ((it.full_domain_metrics ?? {}) as Record<string, unknown>).organic as Record<string, unknown> | undefined;
+    out.push({
+      domain,
+      intersections: typeof it.intersections === "number" ? it.intersections : 0,
+      avgPosition: typeof it.avg_position === "number" ? Math.round(it.avg_position * 10) / 10 : null,
+      organicTraffic: typeof organic?.etv === "number" ? Math.round(organic.etv) : null,
+      organicKeywords: typeof organic?.count === "number" ? organic.count : null,
+    });
+  }
+  return out.sort((a, b) => b.intersections - a.intersections);
+}
+
+// --- Histórico mensual (Labs historical_rank_overview) ------------------------
+export type HistoryPoint = { month: string; traffic: number | null; keywords: number | null; top3: number | null; top10: number | null; trafficValue: number | null };
+
+export function parseHistoricalRank(result: Record<string, unknown> | null | undefined): HistoryPoint[] {
+  const items = Array.isArray(result?.items) ? (result!.items as Record<string, unknown>[]) : [];
+  const pts: HistoryPoint[] = [];
+  for (const it of items) {
+    if (typeof it.year !== "number" || typeof it.month !== "number") continue;
+    const o = ((it.metrics ?? {}) as Record<string, unknown>).organic as Record<string, unknown> | undefined;
+    const n = (v: unknown) => (typeof v === "number" ? v : null);
+    const p1 = n(o?.pos_1), p23 = n(o?.pos_2_3), p410 = n(o?.pos_4_10);
+    pts.push({
+      month: `${it.year}-${String(it.month).padStart(2, "0")}`,
+      traffic: n(o?.etv) != null ? Math.round(o!.etv as number) : null,
+      keywords: n(o?.count),
+      top3: p1 != null && p23 != null ? p1 + p23 : null,
+      top10: p1 != null && p23 != null && p410 != null ? p1 + p23 + p410 : null,
+      trafficValue: n(o?.estimated_paid_traffic_cost) != null ? Math.round(o!.estimated_paid_traffic_cost as number) : null,
+    });
+  }
+  return pts.sort((a, b) => a.month.localeCompare(b.month));
+}

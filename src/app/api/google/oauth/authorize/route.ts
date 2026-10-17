@@ -5,6 +5,10 @@ import { randomBytes } from "crypto";
 import { buildAuthUrl, GoogleOAuthConfigError } from "@/lib/google/oauth";
 
 const STATE_COOKIE = "google_oauth_state";
+const RETURN_COOKIE = "google_oauth_return";
+
+// Solo se vuelve a rutas internas de proyecto (evita redirecciones abiertas).
+const RETURN_RE = /^\/app\/proyectos\/[A-Za-z0-9_-]+(\/[a-z0-9-]+)?$/;
 
 export async function GET(req: NextRequest) {
   const session = await requireSession();
@@ -26,6 +30,10 @@ export async function GET(req: NextRequest) {
   }
 
   const response = NextResponse.redirect(authUrl);
+  const volver = req.nextUrl.searchParams.get("volver");
+  if (volver && RETURN_RE.test(volver)) {
+    response.cookies.set(RETURN_COOKIE, volver, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 600, path: "/" });
+  }
   response.cookies.set(STATE_COOKIE, state, {
     httpOnly: true,
     sameSite: "lax",
