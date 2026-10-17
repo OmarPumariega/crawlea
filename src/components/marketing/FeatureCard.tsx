@@ -15,6 +15,7 @@ export default function FeatureCard({
   title,
   text,
   points,
+  paid,
   children,
 }: {
   id: string;
@@ -22,6 +23,7 @@ export default function FeatureCard({
   title: string;
   text: string;
   points: string[];
+  paid?: boolean;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -29,7 +31,7 @@ export default function FeatureCard({
   return (
     <article className="mk-hatch relative flex h-[560px] w-[84vw] shrink-0 snap-start flex-col overflow-hidden rounded-[22px] mk-card-tint p-7 sm:w-[400px] lg:w-[416px]">
       <div className="flex items-start justify-between gap-4">
-        <p className="pt-1 text-xs font-bold uppercase tracking-[0.12em] text-ink">{kicker}</p>
+        <p className="pt-1 text-xs font-bold uppercase tracking-[0.12em] text-ink">{kicker}{paid && <span className="ml-2 rounded-full bg-ink/10 px-2 py-0.5 align-middle text-[10px] normal-case tracking-normal">De pago</span>}</p>
         <button
           type="button"
           onClick={() => {
