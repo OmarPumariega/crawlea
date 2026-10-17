@@ -31,18 +31,18 @@ export function RankStrip({ className }: { className?: string }) {
   );
 }
 
-// 20 tipos de schema: un fragmento JSON-LD.
-export function SchemaCode({ className }: { className?: string }) {
+// Analizador de URL: unas cuantas comprobaciones con su resultado.
+export function AnalyzerChecks({ className }: { className?: string }) {
+  const rows: [string, boolean][] = [["Un único H1", true], ["Keyword en el título", false], ["Imágenes con alt", true]];
   return (
-    <pre className={cn("overflow-hidden rounded-xl bg-[#0E1033] p-4 text-[11px] leading-[1.7] text-white/80", className)} aria-hidden="true">
-      <code>
-        <span className="text-white/40">{"{"}</span>{"\n"}
-        {"  "}<span className="text-brand-200">&quot;@type&quot;</span>: <span className="text-[#9be7c4]">&quot;LocalBusiness&quot;</span>,{"\n"}
-        {"  "}<span className="text-brand-200">&quot;name&quot;</span>: <span className="text-[#9be7c4]">&quot;Tu negocio&quot;</span>,{"\n"}
-        {"  "}<span className="text-brand-200">&quot;telephone&quot;</span>: <span className="text-[#9be7c4]">&quot;+34 …&quot;</span>{"\n"}
-        <span className="text-white/40">{"}"}</span>
-      </code>
-    </pre>
+    <ul className={cn("space-y-2 text-sm", className)} aria-hidden="true">
+      {rows.map(([label, ok]) => (
+        <li key={label} className="flex items-center gap-2.5 rounded-xl bg-surface px-3 py-2">
+          <span className={cn("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold text-white", ok ? "bg-brand" : "bg-alert")}>{ok ? "✓" : "!"}</span>
+          <span className="text-ink-soft">{label}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 

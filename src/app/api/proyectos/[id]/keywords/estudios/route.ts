@@ -23,7 +23,7 @@ export async function GET(
 
   // Historial ligero: sin incluir las keywords (solo un _count para el badge)
   // ni el blob `structure` (solo un flag hasStructure). Igual de ligero que
-  // los listados de titulos-meta/schema/contenido.
+  // los listados de titulos-meta/contenido.
   const studies = await prisma.keywordStudy.findMany({
     where: { projectId: id },
     orderBy: { createdAt: "desc" },
@@ -146,6 +146,7 @@ export async function POST(
             cpc: d?.cpc ?? null,
             intent: d?.intent ?? null,
             monthlySearches: d?.monthlySearches ?? undefined,
+            difficulty: d?.difficulty ?? null,
             priority: priorities.get(kw) ?? 0,
           };
         }),

@@ -50,7 +50,7 @@ export async function fetchSuggestions(params: {
   const rawItems = Array.isArray(resultArr[0]?.items) ? (resultArr[0]!.items as Array<Record<string, unknown>>) : [];
 
   const items: Suggestion[] = [];
-  const cacheData = new Map<string, { searchVolume: number | null; competition: string | null; cpc: number | null; intent: string | null; monthlySearches: number[] | null }>();
+  const cacheData = new Map<string, { searchVolume: number | null; competition: string | null; cpc: number | null; intent: string | null; monthlySearches: number[] | null; difficulty: number | null }>();
 
   for (const item of rawItems) {
     const rawKw = typeof item.keyword === "string" ? item.keyword : null;
@@ -83,6 +83,7 @@ export async function fetchSuggestions(params: {
       cpc: suggestion.cpc,
       intent,
       monthlySearches,
+      difficulty: suggestion.difficulty,
     });
   }
 

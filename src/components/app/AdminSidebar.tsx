@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { PAID_MODULES, planAllowsModule, type ModuleId } from "@/lib/plans";
 import {
-  Braces,
   ChevronDown,
   CircleUserRound,
   FileBarChart2,
@@ -57,21 +56,13 @@ type NavGroup = { id: string; label: string; icon: LucideIcon; modules: NavModul
 type ProjectNav = { top: NavModule[]; groups: NavGroup[]; bottom: NavModule[] };
 
 // Navegación de un proyecto agrupada por tipo de herramienta. Los módulos
-// transversales (Ficha, Tareas, Visibilidad IA, Informe) van sueltos; el resto se agrupa en
-// carpetas plegables: Investigación · On-Page · Técnico · Seguimiento. SEO local
+// transversales (Ficha, Tareas, Keywords, Visibilidad IA, Informe) van sueltos; el resto se agrupa en
+// carpetas plegables: On-Page · Técnico · Seguimiento. SEO local
 // (Geogrid) solo aparece en proyectos locales y es una entrada suelta. Copilot ya NO es una entrada de nav — es un widget
 // flotante (CopilotWidget.tsx, montado en AdminShell), disponible
 // en cualquier página de un proyecto sin navegar a ningún sitio.
 function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
   const groups: NavGroup[] = [
-    {
-      id: "investigacion",
-      label: "Investigación",
-      icon: Search,
-      modules: [
-        { href: `${base}/keywords`, label: "Keywords", icon: Key },
-      ],
-    },
     {
       id: "onpage",
       label: "On-Page",
@@ -79,7 +70,6 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
       modules: [
         { href: `${base}/analizador`, label: "Analizador URL", icon: ScanSearch },
         { href: `${base}/titulos-meta`, label: "Título y Meta", icon: Type },
-        { href: `${base}/schema`, label: "Schema", icon: Braces },
         { href: `${base}/contenido`, label: "Contenido", icon: PenLine },
       ],
     },
@@ -111,6 +101,8 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
       // Ficha = Datos del proyecto + Notas (dos pestañas de un mismo módulo).
       { href: base, label: "Ficha", icon: Building2 },
       { href: `${base}/tareas`, label: "Tareas", icon: ListChecks },
+      // Keywords era la única herramienta del grupo "Investigación": entrada suelta.
+      { href: `${base}/keywords`, label: "Keywords", icon: Key },
     ],
     groups,
     bottom: [
@@ -142,6 +134,7 @@ const LEGACY_MODULE_SEGMENTS: Record<string, string> = {
   enlaces: "auditoria/enlaces",
   canibalizaciones: "auditoria/canibalizaciones",
   backlinks: "competidores/backlinks",
+  schema: "analizador",
 };
 
 export default function AdminSidebar({

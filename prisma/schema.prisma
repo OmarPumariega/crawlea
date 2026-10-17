@@ -507,6 +507,8 @@ model KeywordDataCache {
   // Estacionalidad (12 meses, orden cronológico) — llega gratis con el
   // search_volume; antes se tiraba. Se cachea aquí como el resto de métricas.
   monthlySearches Json?
+  // Dificultad SEO (0-100) de Labs; null en filas anteriores a Keyword Overview.
+  difficulty   Int?
   fetchedAt    DateTime @default(now())
 
   @@unique([keyword, languageCode, locationCode])

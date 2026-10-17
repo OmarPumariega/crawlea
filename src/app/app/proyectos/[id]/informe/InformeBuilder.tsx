@@ -5,7 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   ChevronLeft, ChevronRight, FileText, Gauge, Target, Search,
-  MapPin, Wallet, Quote, ClipboardCheck, Network, Type, Code2, PenLine, Globe, GitBranch, Hash, Anchor,
+  MapPin, Wallet, Quote, ClipboardCheck, Network, Type, PenLine, Globe, GitBranch, Hash, Anchor,
 } from "lucide-react";
 import GeogridMap from "@/components/app/GeogridMap";
 import PositionDistribution, { type PositionBuckets } from "@/components/app/PositionDistribution";
@@ -74,7 +74,6 @@ export type ReportData = {
   };
   arquitectura: { tree: StructureTreeNode; pageCount: number; updatedAt: Date } | null;
   "titulos-meta": { url: string; variants: { title: string; description: string }[]; createdAt: Date }[];
-  schema: { url: string; selectedType: string; valid: boolean; createdAt: Date }[];
   contenido: { topic: string; model: string | null; createdAt: Date }[];
   google: {
     month: string; rangeDays: number;
@@ -490,25 +489,6 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
               <p className="text-xs text-ink-faint">{g.url}</p>
               <p className="text-ink">{g.variants[0]?.title ?? "—"}</p>
               <p className="text-xs text-ink-soft">{g.variants[0]?.description}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-
-  const renderSchema = () => (
-    <section className="space-y-4">
-      <SectionTitle icon={<Code2 className="h-4 w-4" />}>Schema <span className="text-ink-faint font-normal text-sm">(últimas generaciones)</span></SectionTitle>
-      {data.schema.length === 0 ? (
-        <p className="text-sm text-ink-soft">Sin generaciones de schema todavía.</p>
-      ) : (
-        <ul className="space-y-1 text-sm">
-          {data.schema.map((g, i) => (
-            <li key={i} className="flex items-center justify-between gap-2 border-b border-line pb-1 last:border-0">
-              <span className="text-ink truncate">{g.selectedType}</span>
-              <span className="text-xs text-ink-faint truncate">{g.url}</span>
-              <span className={g.valid ? "text-[10px] text-accent-ink" : "text-[10px] text-accent-ink"}>{g.valid ? "válido" : "avisos"}</span>
             </li>
           ))}
         </ul>
@@ -1037,7 +1017,6 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
     keywords: renderKeywords,
     arquitectura: renderArquitectura,
     "titulos-meta": renderTitulosMeta,
-    schema: renderSchema,
     contenido: renderContenido,
     google: renderGoogle,
     canibalizaciones: renderCanibalizaciones,

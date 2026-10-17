@@ -10,7 +10,7 @@ import Reveal from "@/components/marketing/Reveal";
 import FeatureCarousel from "@/components/marketing/FeatureCarousel";
 import FeatureCard from "@/components/marketing/FeatureCard";
 import PricingCards from "@/components/marketing/PricingCards";
-import { CrawlGrid, FactTile, RankStrip, SchemaCode, StepAdd, StepCrawl, StepFix } from "@/components/marketing/StepVisuals";
+import { CrawlGrid, FactTile, RankStrip, AnalyzerChecks, StepAdd, StepCrawl, StepFix } from "@/components/marketing/StepVisuals";
 import LogoMarquee from "@/components/marketing/LogoMarquee";
 import HeroAnalyzer from "@/components/marketing/HeroAnalyzer";
 import { AlertCard, DashboardMockup, GeoHeat, Pill } from "@/components/marketing/mockups";
@@ -145,7 +145,7 @@ export default function HomePage() {
             <Reveal><FactTile big="5.000" label="páginas por rastreo: el sitio entero, no una muestra"><CrawlGrid /></FactTile></Reveal>
             <Reveal delay={70}><FactTile big="Top 100" label="profundidad del seguimiento de posiciones"><RankStrip /></FactTile></Reveal>
             <Reveal delay={140}><FactTile big="7×7" label="puntos de mapa de calor en Google Maps"><GeoHeat className="mx-auto max-w-[130px] gap-1" /></FactTile></Reveal>
-            <Reveal delay={210}><FactTile big="20" label="tipos de datos estructurados (schema)"><SchemaCode /></FactTile></Reveal>
+            <Reveal delay={210}><FactTile big="0–100" label="puntuación on-page de cualquier URL, con cómo arreglarla"><AnalyzerChecks /></FactTile></Reveal>
           </div>
 
           {/* Pasos */}

@@ -81,6 +81,7 @@ export async function POST(
           cpc: d?.cpc ?? null,
           intent: d?.intent ?? null,
           monthlySearches: d?.monthlySearches ?? undefined,
+          difficulty: d?.difficulty ?? null,
           source,
           priority: 0,
         };

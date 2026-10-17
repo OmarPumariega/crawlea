@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Bars, CompetitorBars, ContentMini, Donut, GeoHeat, KeywordRows, Pill, RankLine, BacklinksMini } from "@/components/marketing/mockups";
-import { SchemaCode } from "@/components/marketing/StepVisuals";
 import {
   AiOverviewMini, CannibalMini, ChatMini, InternalLinksMini, NotesMini, ProjectMini, ReportMini,
   SearchConsoleMini, SerpPreviewMini, TasksMini, TermsMini, TreeMini, UrlChecksMini,
@@ -43,12 +42,6 @@ export const FEATURES: Feature[] = [
     text: "Leemos tu página real y te proponemos tres variantes de título y meta descripción, ajustadas a los límites de caracteres de Google.",
     points: ["Tres variantes por página, con el recuento de caracteres", "Parte del contenido real de la URL, no de una plantilla", "Palabra clave objetivo opcional", "Historial de lo generado"],
     visual: <SerpPreviewMini />,
-  },
-  {
-    id: "schema", kicker: "Schema", title: "Datos estructurados, listos para pegar",
-    text: "Elige el tipo de schema entre unos 20 y generamos el JSON-LD de tu página, validado.",
-    points: ["Negocio local, organización, web y migas de pan se generan con los datos de tu proyecto", "El resto de tipos, a partir del contenido de la página", "Buscador de tipos agrupado por categoría", "Historial de lo generado"],
-    visual: <SchemaCode className="!text-[10px]" />,
   },
   {
     id: "contenido", kicker: "Contenido con IA", title: "Textos a partir de tu proyecto",

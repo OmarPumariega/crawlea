@@ -10,7 +10,9 @@ import { fetchSuggestions } from "@/lib/keywords/suggestions";
 // nada en el estudio: devuelve la lista para que el usuario decida cuáles
 // añadir. Las métricas se cachean al traerlas (ver suggestions.ts) → añadir
 // después es cache hit. El coste real se registra en ApiUsageLog.
-const MAX_LIMIT = 100;
+// El precio es 0,012$ + 0,00012$ por resultado devuelto: 500 resultados cuestan ~0,07$
+// (unos 36 créditos), así que no hay motivo para limitar a 100.
+const MAX_LIMIT = 500;
 
 export async function GET(
   req: NextRequest,
@@ -33,7 +35,7 @@ export async function GET(
     return NextResponse.json({ error: "Indica una keyword semilla" }, { status: 400 });
   }
   const rawLimit = Number(req.nextUrl.searchParams.get("limit"));
-  const limit = Number.isInteger(rawLimit) && rawLimit > 0 && rawLimit <= MAX_LIMIT ? rawLimit : 30;
+  const limit = Number.isInteger(rawLimit) && rawLimit > 0 && rawLimit <= MAX_LIMIT ? rawLimit : 100;
 
   try {
     await assertWithinSpendLimit(id, suggestionsCostUsd(limit));

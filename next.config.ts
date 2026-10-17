@@ -75,6 +75,12 @@ const nextConfig: NextConfig = {
         destination: "/app/proyectos/:id/auditoria/enlaces",
         permanent: false,
       },
+      // Schema se retiró como módulo: el Analizador de URL ya detecta y valida los datos estructurados.
+      {
+        source: "/app/proyectos/:id/schema",
+        destination: "/app/proyectos/:id/analizador",
+        permanent: false,
+      },
       {
         source: "/app/proyectos/:id/backlinks",
         destination: "/app/proyectos/:id/competidores/backlinks",

@@ -48,7 +48,7 @@ funcionaron — los intentos fallidos no dejan fila, para que el historial del
 proyecto solo muestre resultados usables. `variants` guarda las 3 variantes
 (`{ title, description }`); `model` registra qué modelo de OpenRouter se usó.
 
-## `SchemaGeneration` (Módulo 4)
+## `SchemaGeneration` (Módulo 4 — RETIRADO, tabla conservada sin uso)
 
 Un registro por generación de schema.org (JSON-LD) validada. `suggestedType` es
 la heurística automática; `selectedType` es el tipo realmente usado (puede ser
@@ -252,6 +252,12 @@ Lo lee el **Copilot** (`src/lib/copilot/context.ts`) — inyecta el resumen y la
 queries reales en el system prompt del chat — y queda disponible para que otros módulos
 crujen con datos de tráfico reales sin volver a llamar a la API. Esos datos salen de la
 misma `searchanalytics.query` que el panel, así que no añade conexión ni coste.
+
+## `KeywordDataCache` — dificultad
+
+Además de volumen, competición, CPC, intención y estacionalidad, guarda `difficulty`
+(0-100, de Labs; null en filas antiguas). Es compartida entre cuentas: solo la escribe el
+servidor con respuestas reales de DataForSEO (sugerencias y Keyword Overview).
 
 ## `UrlAnalysis` (Analizador de URL)
 
