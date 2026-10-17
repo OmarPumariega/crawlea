@@ -223,7 +223,7 @@ pago, `dataVersion`), `SerpCache.panorama`/`RankPosition.serp`, `BacklinkSnapsho
 `OnPageAnalysis.extras`, `Keyword.extras`/`KeywordDataCache.extras`, `AiCheck.fanOutQueries`;
 el Geogrid guarda la ficha completa de cada negocio del pack. Detalle en CLAUDE.md.
 
-## Mejoras añadidas tras comparar con Semrush/Ahrefs/DinoRank (local, sin desplegar)
+## Mejoras añadidas tras comparar con Semrush/Ahrefs/DinoRank (desplegadas en producción el 2026-10-17)
 
 - **Oportunidades** (módulo propio, gratis, solo Search Console; `src/lib/opportunities/compute.ts`):
   pestaña *Mejoras rápidas* (página 2, cerca del top 3, CTR bajo; clics extra estimados con el CTR
@@ -246,5 +246,18 @@ el Geogrid guarda la ficha completa de cada negocio del pack. Detalle en CLAUDE.
 - **Google ya no es un módulo del menú**: es la pestaña *Google* de la **Ficha** (conectar la cuenta,
   elegir propiedades y ver los paneles de este proyecto; la URL sigue siendo `/proyectos/[id]/google`,
   ahora dentro del grupo `(ficha)`). El OAuth vuelve a la ficha vía cookie `google_oauth_return`.
-- **Pendiente**: reseñas de Google y Google Trends (sin probar su endpoint), portal de cliente con login.
+- **Auditoría → pestañas**: Auditoría, Velocidad, Cambios, Enlaces y Canibalizaciones. Velocidad
+  necesita `PAGESPEED_API_KEY` (Configuración); sin ella la pestaña lo dice.
+- **Oportunidades** va en el menú (módulo `oportunidades`, gratis) y exige Search Console conectado.
+- **Datos antiguos**: los análisis hechos antes (competidores, On-Page, backlinks, keywords) tienen
+  el formato viejo y se vuelven a pagar al re-analizar; las pantallas nuevas salen vacías hasta entonces.
+- **Coste real medido en producción** (sondeo del 2026-10-17: 0,188 $ frente a un tope de 0,10 $; el
+  guard solo comprueba antes de cada llamada y `historical_rank_overview` costó 0,127 $): Labs
+  `competitors_domain` ≈0,013 $, `historical_rank_overview` ≈0,127 $/dominio, Backlinks `anchors` y
+  `bulk_new_lost_backlinks` ≈0,024 $ cada uno. `backlinks/timeseries_summary` rechaza `date_from`.
+- **Sin verificar con datos reales**: Mejoras rápidas y Páginas que bajan (probadas solo con datos de
+  prueba), Cambios entre auditorías, y `fan_out_queries` de Visibilidad IA (parseado según la
+  documentación de DataForSEO, sin muestra real).
+- **Pendiente**: reseñas de Google (Business Data) y Google Trends (sin probar su endpoint), portal de
+  cliente con login, anchors también en las tarjetas de competidor (hoy solo el dominio propio).
 

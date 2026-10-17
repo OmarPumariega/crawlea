@@ -84,6 +84,17 @@ herramienta que se usa a diario — ahora por múltiples cuentas.
   módulo que usa un producto de DataForSEO aparte (API de Backlinks) — gasto real
   nuevo, no reutiliza llamadas ya pagadas por el resto de la app.
 
+- ✅ Mejoras tras comparar con Semrush/Ahrefs/DinoRank (desplegadas 2026-10-17):
+  **Oportunidades** (Search Console: mejoras rápidas y páginas que bajan, con el CTR real del
+  sitio), **Clusters** de keywords por SERP compartido, **Brief** y **Editor** de contenido,
+  auditoría con pestañas **Velocidad** (PageSpeed por página) y **Cambios** (arregladas/nuevas),
+  **cuota de visibilidad** en Rank Tracking, **alertas** por email (auditoría que empeora, salida
+  del top 10, AI Overview, competidor que crece, backlinks perdidos), **Descubrir competidores**,
+  **Evolución de tráfico**, **anchors y enlaces nuevos/perdidos** en Backlinks.
+- ✅ Google dentro de la **Ficha** del proyecto (conectar, elegir propiedades y ver paneles), ya no
+  es un módulo del menú.
+- ✅ Regla permanente: toda la respuesta de DataForSEO se guarda y se muestra (ver CLAUDE.md).
+
 ## Roadmap pendiente (futuro, no olvidar)
 
 **Transición a SaaS:** el roadmap activo con sus 5 fases (multi-usuario ya hecha;
@@ -91,6 +102,10 @@ panel de admin de cuentas, Stripe, web pública y lanzamiento pendientes) vive e
 [`06-roadmap-saas.md`](./06-roadmap-saas.md).
 
 Funcionalidades de la competencia aún NO construidas:
+
+- Reseñas de Google (Business Data) y Google Trends: endpoints sin probar.
+- Portal de cliente con login propio (hoy el cliente ve el Informe compartible por enlace).
+- Anchors de backlinks en las tarjetas de competidor (hoy solo el dominio propio).
 
 - **Tier 3 — bloqueadas por coste/terceros**:
   - SEO para LLMs (menciones en ChatGPT/Gemini/Claude) — DataForSEO LLM Mentions,

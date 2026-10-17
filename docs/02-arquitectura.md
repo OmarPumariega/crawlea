@@ -61,12 +61,14 @@ src/
 │   │   └── proyectos/              # Módulo 2 + resto de módulos anidados por [id]
 │   │       └── [id]/
 │   │           ├── layout.tsx      # CHOKE POINT: projectForSession → 404 si no es tuyo
-│   │           ├── perfil, tareas, notas, titulos-meta, rank,
-│   │           │   google, competidores, backlinks, geogrid, informe
-│   │           ├── keywords/       # + keywords/arquitectura (pestaña por ruta)
-│   │           ├── contenido/      # + contenido/tfidf (pestaña por ruta)
+│   │           ├── (ficha)/        # grupo de rutas: perfil, notas y google (pestañas de la Ficha)
+│   │           ├── tareas, titulos-meta, rank, oportunidades,
+│   │           │   competidores, backlinks, geogrid, informe
+│   │           ├── keywords/       # + keywords/arquitectura y keywords/clusters (pestañas)
+│   │           ├── contenido/      # + contenido/tfidf y contenido/editor (pestañas)
 │   │           └── auditoria/      # + auditoria/enlaces y
-│   │                           #   auditoria/canibalizaciones (pestañas)
+│   │                           #   auditoria/canibalizaciones, auditoria/velocidad y
+│   │                           #   auditoria/cambios (pestañas)
 │   │           (el nav de módulos vive en el sidebar global; las
 │   │            sub-herramientas fusionadas son pestañas por ruta —
 │   │            ver "Navegación" abajo)
@@ -104,7 +106,10 @@ src/
     ├── links/                 # PageRank interno sobre AuditRun.linkGraph, huérfanas, hubs
     ├── copilot/                # contexto de proyecto + chat vía OpenRouter (solo lectura)
     ├── competitors/            # DataForSEO Labs: visibilidad de dominio + content gap
-    └── notifications/          # avisos por email al dueño (nodemailer), dedupe por (userId, type, key)
+    ├── opportunities/          # Oportunidades: mejoras rápidas y páginas que bajan (Search Console)
+    └── notifications/          # avisos por email (nodemailer), dedupe por (userId, type, key);
+                                # alerts.ts = auditoría, top 10, AI Overview, competidores, backlinks
+    # (rank/share-of-voice.ts: cuota de visibilidad frente a competidores)
 ```
 
 ## Navegación
@@ -120,12 +125,12 @@ El panel abandonó las pestañas horizontales por proyecto (el antiguo
   un segundo bloque bajo un divisor: `ProjectSwitcher.tsx` (combobox con buscador +
   sección "Recientes", últimos 5 vía `localStorage["crawlea:recentProjects"]`) seguido
   de la lista vertical fija de módulos que devuelve `projectNav()` — Perfil, Tareas,
-  Notas; Keywords suelto, grupos On-Page (Analizador de URL, Título y Meta, Contenido),
-  Técnico (Auditoría), Seguimiento (Rank Tracking, Google, Competidores, Backlinks,
+  Notas y Google (pestañas de la Ficha); Keywords suelto, grupos On-Page (Analizador de URL, Título y Meta, Contenido),
+  Técnico (Auditoría), Seguimiento (Oportunidades, Rank Tracking, Competidores, Backlinks,
   Geogrid solo si `isLocalBusiness`); e Informe. Las sub-herramientas se fusionaron
   como **pestañas por ruta** (`ModuleTabs.tsx` montado en el `layout.tsx` de cada
-  módulo contenedor): Arquitectura dentro de Keywords, TF-IDF dentro de Contenido,
-  Enlaces y Canibalizaciones dentro de Auditoría — URL real en cada pestaña para que
+  módulo contenedor): Arquitectura y Clusters dentro de Keywords, TF-IDF y Editor dentro de Contenido,
+  Enlaces, Canibalizaciones, Velocidad y Cambios dentro de Auditoría — URL real en cada pestaña para que
   los deep-links (`?estudio=`, `?keyword=`) y los bookmarks sigan funcionando. Las
   rutas antiguas (`/arquitectura`, `/tfidf`, `/enlaces`, `/canibalizaciones`)
   redirigen desde `next.config.ts` (`redirects()`), y `switchProject` del sidebar

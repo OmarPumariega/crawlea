@@ -217,9 +217,9 @@ Proyectos. Tres bloques:
 
 ### Ficha de proyecto (`/admin/proyectos/[id]/...`)
 Módulos anidados por ruta, con el nav en el sidebar global (no pestañas locales), en
-este orden: Ficha (pestañas Datos, Notas y Google), Tareas, Keywords (con la pestaña Arquitectura), Analizador de URL, Título y Meta,
-Contenido (con la pestaña TF-IDF), Auditoría (con las pestañas Enlaces y
-Canibalizaciones), Rank Tracking, Google, Competidores (con la pestaña Backlinks), Geogrid (solo si el
+este orden: Ficha (pestañas Datos, Notas y Google), Tareas, Keywords (con las pestañas Arquitectura y Clusters), Analizador de URL, Título y Meta,
+Contenido (con las pestañas TF-IDF y Editor), Auditoría (con las pestañas Enlaces y
+Canibalizaciones, Velocidad y Cambios), Oportunidades (con Mejoras rápidas y Páginas que bajan), Rank Tracking, Competidores (con la pestaña Backlinks), Geogrid (solo si el
 proyecto es negocio local con coordenadas), Informe. Las sub-herramientas fusionadas son
 pestañas por ruta (`ModuleTabs.tsx` en el `layout.tsx` de cada módulo contenedor); las
 rutas antiguas (`/arquitectura`, `/tfidf`, `/enlaces`, `/canibalizaciones`) redirigen
@@ -352,7 +352,7 @@ sitio; ver el apartado "Copilot" más abajo.
   posición cae ≥10. **Guard "un chequeo por día natural"** (Europe/Madrid): el primer
   chequeo del día fija la posición; los siguientes la devuelven gratis sin llamar a la
   API ni tocar el histórico (estabilidad frente a la fluctuación del SERP).
-- **Google** (Módulo 6): si no hay conexión de Google, enlaza a Configuración. Si la
+- **Google** (Módulo 6; vive en la pestaña *Google* de la **Ficha**, no en el menú): sin conexión de Google, la Ficha muestra el botón de conectar (también un banner en Datos); si la
   hay, selectores de propiedad de Search Console y GA4 (Business Profile deshabilitado,
   pendiente de aprobación de Google) + dashboard de últimos 28 días (clics/impresiones
   de GSC, sesiones/conversiones de GA4). Cada fuente se degrada de forma independiente
@@ -575,7 +575,7 @@ reales con `node --experimental-strip-types`:
 - **Copilot** (`src/lib/copilot/context.ts`) e **Informe** (competidores, backlinks) leen todo
   esto sin llamadas nuevas.
 
-## Mejoras añadidas tras comparar con Semrush/Ahrefs/DinoRank (local, sin desplegar)
+## Mejoras añadidas tras comparar con Semrush/Ahrefs/DinoRank (desplegadas en producción el 2026-10-17)
 
 - **Oportunidades** (módulo propio, gratis, solo Search Console; `src/lib/opportunities/compute.ts`):
   pestaña *Mejoras rápidas* (página 2, cerca del top 3, CTR bajo; clics extra estimados con el CTR
@@ -598,7 +598,20 @@ reales con `node --experimental-strip-types`:
 - **Google ya no es un módulo del menú**: es la pestaña *Google* de la **Ficha** (conectar la cuenta,
   elegir propiedades y ver los paneles de este proyecto; la URL sigue siendo `/proyectos/[id]/google`,
   ahora dentro del grupo `(ficha)`). El OAuth vuelve a la ficha vía cookie `google_oauth_return`.
-- **Pendiente**: reseñas de Google y Google Trends (sin probar su endpoint), portal de cliente con login.
+- **Auditoría → pestañas**: Auditoría, Velocidad, Cambios, Enlaces y Canibalizaciones. Velocidad
+  necesita `PAGESPEED_API_KEY` (Configuración); sin ella la pestaña lo dice.
+- **Oportunidades** va en el menú (módulo `oportunidades`, gratis) y exige Search Console conectado.
+- **Datos antiguos**: los análisis hechos antes (competidores, On-Page, backlinks, keywords) tienen
+  el formato viejo y se vuelven a pagar al re-analizar; las pantallas nuevas salen vacías hasta entonces.
+- **Coste real medido en producción** (sondeo del 2026-10-17: 0,188 $ frente a un tope de 0,10 $; el
+  guard solo comprueba antes de cada llamada y `historical_rank_overview` costó 0,127 $): Labs
+  `competitors_domain` ≈0,013 $, `historical_rank_overview` ≈0,127 $/dominio, Backlinks `anchors` y
+  `bulk_new_lost_backlinks` ≈0,024 $ cada uno. `backlinks/timeseries_summary` rechaza `date_from`.
+- **Sin verificar con datos reales**: Mejoras rápidas y Páginas que bajan (probadas solo con datos de
+  prueba), Cambios entre auditorías, y `fan_out_queries` de Visibilidad IA (parseado según la
+  documentación de DataForSEO, sin muestra real).
+- **Pendiente**: reseñas de Google (Business Data) y Google Trends (sin probar su endpoint), portal de
+  cliente con login, anchors también en las tarjetas de competidor (hoy solo el dominio propio).
 
 ## Convenciones de UI (guía de estilo)
 
