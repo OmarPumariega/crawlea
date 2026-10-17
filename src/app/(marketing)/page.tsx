@@ -9,7 +9,6 @@ import CtaBand from "@/components/marketing/CtaBand";
 import Reveal from "@/components/marketing/Reveal";
 import FeatureCarousel from "@/components/marketing/FeatureCarousel";
 import FeatureCard from "@/components/marketing/FeatureCard";
-import Journey from "@/components/marketing/Journey";
 import ProductTour from "@/components/marketing/ProductTour";
 import DataDeck from "@/components/marketing/DataDeck";
 import Consolidation from "@/components/marketing/Consolidation";
@@ -121,14 +120,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ============ RECORRIDO (ventana fija con scroll) ============ */}
-      <section data-section="recorrido" className="border-b border-line bg-background">
-        <div className="mx-auto max-w-[1360px] px-5 pt-24 sm:px-8 lg:px-10">
-          <Reveal><SectionHead n="01" label="Un proyecto, paso a paso" title="De tu dominio al informe, en cinco pasos" text="Así se trabaja un proyecto en Crawlea. Cada paso usa lo que dejó el anterior, sin copiar y pegar." /></Reveal>
-          <Journey />
-        </div>
-      </section>
-
       {/* ============ DATOS CON PISTA (oscura) ============ */}
       <section data-section="datos-con-pista" className="relative overflow-hidden bg-[#0E1033] py-24 text-white">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={{ background: "radial-gradient(ellipse 60% 60% at 15% 50%, rgba(79,92,245,0.4), transparent 70%)" }} />
@@ -170,7 +161,7 @@ export default function HomePage() {
       <section data-section="que-reune" className="border-b border-line bg-background">
         <div className="mx-auto grid max-w-[1360px] items-center gap-14 px-5 py-24 sm:px-8 lg:grid-cols-[1fr_1.1fr] lg:px-10">
           <Reveal>
-            <p className="text-sm font-bold text-ink"><span className="text-brand">02</span><span className="mx-2 text-ink-faint">/</span>Qué reúne</p>
+            <p className="text-sm font-bold text-ink"><span className="text-brand">01</span><span className="mx-2 text-ink-faint">/</span>Qué reúne</p>
             <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl">Seis piezas sueltas, un solo proyecto</h2>
             <p className="mt-5 max-w-md text-lg leading-relaxed text-ink-soft">
               Seguir posiciones en una hoja de cálculo, rastrear en otro programa, mirar los enlaces en otro más y montar el informe a mano. Aquí cada pieza vive dentro del proyecto de tu cliente.
@@ -186,7 +177,7 @@ export default function HomePage() {
       {/* ============ PARA QUIÉN ============ */}
       <section data-section="para-quien" className="bg-background">
         <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
-          <Reveal><SectionHead n="03" label="Para quién" title="Hecho para quien hace SEO a diario" text="Tres formas de usarlo. Elige la tuya y mira cómo sería un día." /></Reveal>
+          <Reveal><SectionHead n="02" label="Para quién" title="Hecho para quien hace SEO a diario" text="Tres formas de usarlo. Elige la tuya y mira cómo sería un día." /></Reveal>
           <Reveal><Audiences /></Reveal>
         </div>
       </section>
@@ -194,7 +185,7 @@ export default function HomePage() {
       {/* ============ PRECIOS ============ */}
       <section data-section="precios-home" className="border-y border-line bg-surface">
         <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
-          <Reveal><SectionHead n="04" label="Precios" title="SEO claro, a un precio justo" text="Empieza gratis y sube de plan cuando lo necesites. Calcula antes cuántos créditos usarías." /></Reveal>
+          <Reveal><SectionHead n="03" label="Precios" title="SEO claro, a un precio justo" text="Empieza gratis y sube de plan cuando lo necesites. Calcula antes cuántos créditos usarías." /></Reveal>
           <Reveal className="mt-14"><CreditCalculator /></Reveal>
           <Reveal className="mt-8"><PricingCards /></Reveal>
           <div className="mt-8">
