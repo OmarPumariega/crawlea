@@ -1,15 +1,16 @@
-import { fetchSearchVolume, fetchSearchIntent, type IntentValue } from "@/lib/keywords/dataforseo";
+import { fetchKeywordOverview, type IntentValue } from "@/lib/keywords/dataforseo";
 import { getFreshCache, upsertCache } from "@/lib/keywords/cache";
 import { assertWithinSpendLimit } from "@/lib/dataforseo/spend";
-import { KEYWORDS_STUDY_FLAT_COST_USD } from "@/lib/dataforseo/pricing";
+import { keywordOverviewCostUsd } from "@/lib/dataforseo/pricing";
 
 // Orquesta la resolución de datos de keyword combinando caché (primera
 // fuente, 30 días) y DataForSEO (solo para lo no cacheado).
 //
-// Regla de coste: agrupa TODAS las keywords pendientes en una sola llamada
-// de volumen + una de intención (nunca una llamada por keyword). Si todo
-// estaba en caché, no hay ninguna llamada y se devuelven 0 usageLogs — la
-// prueba de que el caché funciona de verdad.
+// Regla de coste: TODAS las keywords pendientes van en una única llamada de
+// Keyword Overview (volumen + intención + dificultad + estacionalidad), nunca
+// una por keyword: 0,012$ + 0,00012$ por keyword devuelta. Si todo estaba en
+// caché, no hay ninguna llamada y se devuelven 0 usageLogs — la prueba de que
+// el caché funciona de verdad.
 
 export type KeywordDatum = {
   searchVolume: number | null;
@@ -17,6 +18,7 @@ export type KeywordDatum = {
   cpc: number | null;
   intent: IntentValue | null;
   monthlySearches: number[] | null;
+  difficulty: number | null;
 };
 
 export type UsageLogInput = {
@@ -51,6 +53,7 @@ export async function fetchKeywordData(params: {
         cpc: cached.cpc,
         intent: cached.intent as IntentValue | null,
         monthlySearches: cached.monthlySearches,
+        difficulty: cached.difficulty,
       });
     }
   }
@@ -59,40 +62,33 @@ export async function fetchKeywordData(params: {
     return { data, usageLogs };
   }
 
-  // Tope de gasto: bloquea ANTES de pagar por keywords nuevas. Las cacheadas
-  // ya se sirvieron arriba sin coste, así que un estudio 100% cacheado nunca
-  // tropieza con el tope (comportamiento correcto: el dato ya se pagó antes).
-  await assertWithinSpendLimit(projectId, KEYWORDS_STUDY_FLAT_COST_USD);
+  // Tope de gasto: bloquea ANTES de pagar por keywords nuevas, con el coste
+  // real esperado de ESTA llamada (no una tarifa plana). Las cacheadas ya se
+  // sirvieron arriba sin coste, así que un estudio 100% cacheado nunca tropieza
+  // con el tope (el dato ya se pagó antes).
+  await assertWithinSpendLimit(projectId, keywordOverviewCostUsd(pending.length));
 
-  // 2. Las pendientes: dos llamadas reales (volumen + intención). Se lanzan
-  //    en paralelo — son independientes entre sí.
-  const [volume, intent] = await Promise.all([
-    fetchSearchVolume(pending, locationCode, languageCode),
-    fetchSearchIntent(pending, languageCode),
-  ]);
+  const overview = await fetchKeywordOverview(pending, locationCode, languageCode);
 
+  // Las que Labs no devuelve (long-tail sin datos) quedan "sin dato" y se
+  // cachean así: no se vuelven a pagar durante 30 días, y nunca se inventa un volumen.
   for (const kw of pending) {
-    const vol = volume.byKeyword.get(kw);
+    const o = overview.byKeyword.get(kw);
     data.set(kw, {
-      searchVolume: vol?.searchVolume ?? null,
-      competition: vol?.competition ?? null,
-      cpc: vol?.cpc ?? null,
-      intent: intent.byKeyword.get(kw) ?? null,
-      monthlySearches: vol?.monthlySearches ?? null,
+      searchVolume: o?.searchVolume ?? null,
+      competition: o?.competition ?? null,
+      cpc: o?.cpc ?? null,
+      intent: o?.intent ?? null,
+      monthlySearches: o?.monthlySearches ?? null,
+      difficulty: o?.difficulty ?? null,
     });
   }
 
-  // 3. Cada llamada con coste propio genera su propia fila de ApiUsageLog
-  //    (dos llamadas distintas, no una combinada — mismo razonamiento que
-  //     Módulo 4 separa modulo4.schema.article de .faq).
-  if (volume.costUsd !== null) {
-    usageLogs.push({ endpoint: "modulo1.keywords.volumen", costUsd: volume.costUsd });
-  }
-  if (intent.costUsd !== null) {
-    usageLogs.push({ endpoint: "modulo1.keywords.intencion", costUsd: intent.costUsd });
+  if (overview.costUsd !== null) {
+    usageLogs.push({ endpoint: "modulo1.keywords.overview", costUsd: overview.costUsd });
   }
 
-  // 4. Persistir al caché para la próxima vez.
+  // Persistir al caché para la próxima vez.
   await upsertCache(pending, data, languageCode, locationCode);
 
   return { data, usageLogs };

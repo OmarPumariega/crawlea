@@ -61,7 +61,7 @@ src/
 │   │   └── proyectos/              # Módulo 2 + resto de módulos anidados por [id]
 │   │       └── [id]/
 │   │           ├── layout.tsx      # CHOKE POINT: projectForSession → 404 si no es tuyo
-│   │           ├── perfil, tareas, notas, titulos-meta, schema, rank,
+│   │           ├── perfil, tareas, notas, titulos-meta, rank,
 │   │           │   google, competidores, backlinks, geogrid, informe
 │   │           ├── keywords/       # + keywords/arquitectura (pestaña por ruta)
 │   │           ├── contenido/      # + contenido/tfidf (pestaña por ruta)
@@ -120,7 +120,7 @@ El panel abandonó las pestañas horizontales por proyecto (el antiguo
   un segundo bloque bajo un divisor: `ProjectSwitcher.tsx` (combobox con buscador +
   sección "Recientes", últimos 5 vía `localStorage["crawlea:recentProjects"]`) seguido
   de la lista vertical fija de módulos que devuelve `projectNav()` — Perfil, Tareas,
-  Notas; grupos Investigación (Keywords), On-Page (Título y Meta, Schema, Contenido),
+  Notas; Keywords suelto, grupos On-Page (Analizador de URL, Título y Meta, Contenido),
   Técnico (Auditoría), Seguimiento (Rank Tracking, Google, Competidores, Backlinks,
   Geogrid solo si `isLocalBusiness`); e Informe. Las sub-herramientas se fusionaron
   como **pestañas por ruta** (`ModuleTabs.tsx` montado en el `layout.tsx` de cada

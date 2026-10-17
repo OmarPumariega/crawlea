@@ -3,7 +3,6 @@ import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeKeyword } from "@/lib/keywords/normalize";
 import { recomputeStudyPriorities } from "@/lib/keywords/study";
-import { upsertCache } from "@/lib/keywords/cache";
 
 type ItemIn = {
   keyword: string;
@@ -42,19 +41,6 @@ export async function POST(
     return NextResponse.json({ error: "Cuerpo de la petición inválido" }, { status: 400 });
   }
 
-  // Ubicación/idioma REALES de la fuente (p.ej. Competidores analizó con una
-  // ubicación local distinta a la del estudio "General"). Si no vienen, cae
-  // al comportamiento anterior (ubicación del propio estudio) — correcto para
-  // "pegar lista"/sugerencias, que sí son de la ubicación del estudio.
-  const rawSourceLocation = Number(body.locationCode);
-  const sourceLocationCode = Number.isInteger(rawSourceLocation) && rawSourceLocation > 0 ? rawSourceLocation : null;
-  const sourceLanguageCode =
-    typeof body.languageCode === "string" && /^[a-z]{2}$/i.test(body.languageCode)
-      ? body.languageCode.toLowerCase()
-      : null;
-  const cacheLocationCode = sourceLocationCode ?? study.locationCode;
-  const cacheLanguageCode = sourceLanguageCode ?? study.languageCode;
-
   const rawItems = Array.isArray(body.items) ? (body.items as ItemIn[]) : [];
   // Normaliza, dedupe dentro del lote y descarta vacíos.
   const seen = new Set<string>();
@@ -92,21 +78,11 @@ export async function POST(
         priority: 0, // se recalcula abajo
       })),
     });
-    // Mantiene el caché coherent (las sugerencias ya lo calentaron, pero si
-    // los datos vienen de otra fuente queda refrescado).
-    const cacheData = new Map(
-      toCreate.map((i) => [
-        i.keyword,
-        {
-          searchVolume: i.searchVolume ?? null,
-          competition: i.competition ?? null,
-          cpc: i.cpc ?? null,
-          intent: i.intent ?? null,
-          monthlySearches: i.monthlySearches ?? null,
-        },
-      ])
-    );
-    await upsertCache(toCreate.map((i) => i.keyword), cacheData, cacheLanguageCode, cacheLocationCode);
+    // OJO: aquí NO se escribe en KeywordDataCache. Esa caché es compartida entre
+    // todas las cuentas (el volumen es un dato objetivo), y estos valores los
+    // manda el navegador: aceptarlos permitiría a un usuario falsear lo que ven
+    // los demás. La caché solo la alimentan las respuestas reales de DataForSEO
+    // en el servidor (sugerencias y Keyword Overview).
     await recomputeStudyPriorities(studyId);
   }
 

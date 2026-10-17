@@ -15,7 +15,6 @@ export type SectionKey =
   | "keywords"
   | "arquitectura"
   | "titulos-meta"
-  | "schema"
   | "contenido"
   | "google"
   | "canibalizaciones"
@@ -35,7 +34,6 @@ export const SECTION_KEYS: SectionKey[] = [
   "keywords",
   "arquitectura",
   "titulos-meta",
-  "schema",
   "contenido",
   "google",
   "canibalizaciones",
@@ -55,7 +53,6 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   keywords: "Keywords",
   arquitectura: "Arquitectura de URLs",
   "titulos-meta": "Título y Meta",
-  schema: "Schema",
   contenido: "Contenido",
   google: "Google (Search Console)",
   canibalizaciones: "Canibalizaciones",
@@ -108,12 +105,17 @@ export function normalizeReportConfig(raw: unknown, base?: NormalizedConfig | nu
       }
     }
 
-    // order: array de claves válidas (si viene y es una permutación completa).
-    if (Array.isArray(obj.order) && obj.order.length === SECTION_KEYS.length) {
-      const valid = obj.order.filter((k): k is SectionKey =>
-        typeof k === "string" && (SECTION_KEYS as string[]).includes(k)
-      );
-      if (valid.length === SECTION_KEYS.length) order = valid;
+    // order: se conservan las claves válidas y sin repetir (una sección que ya no
+    // existe, como Schema, se descarta) y las que falten se añaden al final, así
+    // un orden guardado no se pierde cuando se añaden o quitan secciones.
+    if (Array.isArray(obj.order)) {
+      const valid: SectionKey[] = [];
+      for (const k of obj.order) {
+        if (typeof k === "string" && (SECTION_KEYS as string[]).includes(k) && !valid.includes(k as SectionKey)) {
+          valid.push(k as SectionKey);
+        }
+      }
+      if (valid.length > 0) order = [...valid, ...SECTION_KEYS.filter((k) => !valid.includes(k))];
     }
   }
 

@@ -84,24 +84,73 @@ export async function fetchSearchVolume(
   return { byKeyword, costUsd: typeof task.cost === "number" ? task.cost : null };
 }
 
-// Aplana monthly_searches (array de {year, month, searches}) a number[] ordenado
-// cronológicamente (más antiguo → más reciente). Devuelve null si no viene.
-// Exportado para reutilizarlo en suggestions.ts (mismo campo en keyword_info).
+// Aplana monthly_searches a number[] ordenado cronológicamente (más antiguo →
+// más reciente) y se queda con los ÚLTIMOS 12 meses. Acepta los dos formatos de
+// DataForSEO: Keywords Data ({year, month, searches}) y Labs ({year, month,
+// search_volume}, con hasta ~100 meses de histórico). Antes solo entendía el
+// primero, así que la estacionalidad de las sugerencias (Labs) llegaba siempre
+// vacía. Devuelve null si no viene. Exportado para suggestions.ts.
 export function flattenMonthlySearches(
   ms: unknown
 ): number[] | null {
   if (!Array.isArray(ms) || ms.length === 0) return null;
-  const sorted = [...ms]
-    .filter(
-      (m): m is { year: number; month: number; searches: number } =>
-        !!m &&
-        typeof (m as { year?: unknown }).year === "number" &&
-        typeof (m as { month?: unknown }).month === "number" &&
-        typeof (m as { searches?: unknown }).searches === "number"
-    )
-    .sort((a, b) => a.year * 12 + a.month - (b.year * 12 + b.month));
+  const valueOf = (m: Record<string, unknown>): number | null =>
+    typeof m.searches === "number" ? m.searches : typeof m.search_volume === "number" ? m.search_volume : null;
+  const sorted = (ms as Record<string, unknown>[])
+    .filter((m) => !!m && typeof m.year === "number" && typeof m.month === "number" && valueOf(m) !== null)
+    .sort((a, b) => (a.year as number) * 12 + (a.month as number) - ((b.year as number) * 12 + (b.month as number)));
   if (sorted.length === 0) return null;
-  return sorted.map((m) => m.searches);
+  return sorted.slice(-12).map((m) => valueOf(m) as number);
+}
+
+// Keyword Overview (DataForSEO Labs): volumen, competición, CPC, estacionalidad,
+// dificultad SEO e intención de un lote de keywords en UNA llamada (hasta 700).
+// Sustituye a search_volume (tarifa plana de 0,09$) + search_intent: unas 5 veces
+// más barato con 50 keywords y, además, trae la dificultad. Las keywords sin dato
+// en Labs (muy long-tail) NO se devuelven ni se cobran: llegan como "sin dato".
+export type OverviewDatum = KeywordVolume & { intent: IntentValue | null; difficulty: number | null };
+
+const OVERVIEW_MAX_PER_CALL = 700;
+
+export async function fetchKeywordOverview(
+  keywords: string[],
+  locationCode: number,
+  languageCode: string
+): Promise<{ byKeyword: Map<string, OverviewDatum>; costUsd: number | null }> {
+  const byKeyword = new Map<string, OverviewDatum>();
+  let cost = 0;
+  let anyCost = false;
+
+  for (let i = 0; i < keywords.length; i += OVERVIEW_MAX_PER_CALL) {
+    const chunk = keywords.slice(i, i + OVERVIEW_MAX_PER_CALL);
+    const task = await postTask(
+      "/v3/dataforseo_labs/google/keyword_overview/live",
+      { keywords: chunk, location_code: locationCode, language_code: languageCode },
+      "keyword-overview"
+    );
+    const resultArr = Array.isArray(task.result) ? (task.result as Array<Record<string, unknown>>) : [];
+    const items = Array.isArray(resultArr[0]?.items) ? (resultArr[0]!.items as Array<Record<string, unknown>>) : [];
+    for (const item of items) {
+      const kw = typeof item.keyword === "string" ? item.keyword : null;
+      if (!kw) continue;
+      const ki = (item.keyword_info ?? {}) as Record<string, unknown>;
+      const kp = (item.keyword_properties ?? {}) as Record<string, unknown>;
+      const si = (item.search_intent_info ?? {}) as Record<string, unknown>;
+      byKeyword.set(kw, {
+        searchVolume: typeof ki.search_volume === "number" ? ki.search_volume : null,
+        competition: isCompetition(ki.competition_level) ? ki.competition_level : null,
+        cpc: typeof ki.cpc === "number" ? round2(ki.cpc) : null,
+        monthlySearches: flattenMonthlySearches(ki.monthly_searches),
+        intent: mapIntent(typeof si.main_intent === "string" ? si.main_intent : undefined),
+        difficulty: typeof kp.keyword_difficulty === "number" ? kp.keyword_difficulty : null,
+      });
+    }
+    if (typeof task.cost === "number") {
+      cost += task.cost;
+      anyCost = true;
+    }
+  }
+  return { byKeyword, costUsd: anyCost ? cost : null };
 }
 
 // Intención de búsqueda. Aquí la estructura es más profunda:

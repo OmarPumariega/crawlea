@@ -12,15 +12,6 @@
 
 const RANK_COST_PER_DEPTH_UNIT = 0.0002;
 export const MAPS_COST_PER_POINT = 0.002;
-// Sugerencias de keywords: ~0,01$ por resultado devuelto (verificado contra la
-// doc: limit 1 → 0,0101$). Controla el coste con `limit`.
-export const SUGGESTION_COST_PER_RESULT = 0.01;
-
-// Estudio del Módulo 1: tarifa plana por llamada (hasta 1000 keywords) — una
-// de volumen (~0,09$) + una de intención (~0,013$). Solo aplica a keywords NO
-// cacheadas; las que ya lo están (30 días) no gastan.
-export const KEYWORDS_STUDY_FLAT_COST_USD = 0.1;
-
 // Chequeos/mes según frecuencia programada (manual no suma: solo al dispararlo).
 export const FREQUENCY_PER_MONTH: Record<string, number> = {
   manual: 0,
@@ -47,11 +38,6 @@ export function geogridCostUsd(gridSize: number): number {
   return Math.round(gridSize * gridSize * MAPS_COST_PER_POINT * 1000) / 1000;
 }
 
-// Coste estimado de una búsqueda de sugerencias (nº de resultados pedidos).
-export function suggestionsCostUsd(limit: number): number {
-  return Math.round(limit * SUGGESTION_COST_PER_RESULT * 100) / 100;
-}
-
 // DataForSEO Labs (competidores). Precio real publicado por DataForSEO para
 // estos endpoints: 0,012$ por tarea (fijo, cada llamada) + 0,00012$ por ítem
 // devuelto (dataforseo.com/pricing/dataforseo-labs/dataforseo-google-api).
@@ -67,6 +53,21 @@ const LABS_ITEM_COST_USD = 0.00012;
 // que pedir el máximo (1000, el techo real de ranked_keywords/domain_intersection)
 // no encarece el caso normal (un dominio con 15 keywords sigue costando lo de 15),
 // solo evita que un dominio grande se quede corto en la lista.
+// Keywords (Módulo 1) — también DataForSEO Labs, misma tarifa que Competidores:
+// 0,012$ por tarea + 0,00012$ por keyword devuelta (verificado contra los costes
+// reales en producción: 40 keywords → 0,0168$; las que Labs no devuelve no se
+// cobran). Antes se estimaba 0,01$ POR RESULTADO en sugerencias (20-40 veces el
+// coste real, y bloqueaba al plan Gratis) y una tarifa plana de 0,10$ al pegar lista.
+// Coste de una búsqueda de sugerencias (nº de resultados pedidos).
+export function suggestionsCostUsd(limit: number): number {
+  return Math.round((LABS_TASK_COST_USD + limit * LABS_ITEM_COST_USD) * 1000) / 1000;
+}
+// Coste de resolver N keywords (volumen, intención, dificultad y estacionalidad
+// en una sola llamada de Keyword Overview).
+export function keywordOverviewCostUsd(count: number): number {
+  return Math.round((LABS_TASK_COST_USD + count * LABS_ITEM_COST_USD) * 1000) / 1000;
+}
+
 export const COMPETITORS_ANALYZE_DEFAULT_LIMIT = 1000;
 export const COMPETITORS_GAP_DEFAULT_LIMIT = 1000;
 

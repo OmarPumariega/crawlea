@@ -420,10 +420,10 @@ export function analyzeHtml(input: {
   const microdata = $("[itemscope]").length > 0;
   const uniqueTypes = [...new Set(schemaTypes)];
   if (invalidJsonLd > 0) {
-    add({ id: "schema-valid", category: "datos", title: "JSON-LD válido", status: "fail", weight: 2, detail: `${invalidJsonLd} bloque(s) JSON-LD tienen errores de sintaxis y Google los ignorará.`, fix: "Corrígelos o genera uno nuevo en el módulo Schema." });
+    add({ id: "schema-valid", category: "datos", title: "JSON-LD válido", status: "fail", weight: 2, detail: `${invalidJsonLd} bloque(s) JSON-LD tienen errores de sintaxis y Google los ignorará.`, fix: "Corrígelos: valida el JSON-LD con la herramienta de pruebas de resultados enriquecidos de Google (search.google.com/test/rich-results) y vuelve a analizar." });
   }
   if (uniqueTypes.length === 0 && !microdata) {
-    add({ id: "schema", category: "datos", title: "Datos estructurados", status: "warn", weight: 2, detail: "No hay datos estructurados (schema.org).", fix: "Añade JSON-LD adecuado al tipo de página: puede dar resultados enriquecidos. Genéralo en el módulo Schema." });
+    add({ id: "schema", category: "datos", title: "Datos estructurados", status: "warn", weight: 2, detail: "No hay datos estructurados (schema.org).", fix: "Añade JSON-LD adecuado al tipo de página (Organization, LocalBusiness, Article, FAQPage…): puede dar resultados enriquecidos en Google." });
   } else if (uniqueTypes.length === 0) {
     add({ id: "schema", category: "datos", title: "Datos estructurados", status: "info", weight: 2, detail: "Hay microdatos (itemscope) pero ningún bloque JSON-LD.", fix: "Google recomienda JSON-LD; considera migrarlo." });
   } else {

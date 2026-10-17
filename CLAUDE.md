@@ -28,7 +28,7 @@ panel en `/app`, perfil `/app/perfil`, planes con límites (`src/lib/plans.ts`) 
 conexión Google por usuario. Panel de administración de cuentas en `/admin` (F2: resumen,
 usuarios, costes por cuenta). Web pública en `/` (F4). Stripe + gating de módulos (F3) hecha y en modo REAL (planes Gratis/Basic 9 €/Pro 25 €, con bolsa mensual de créditos que oculta al cliente el coste en USD — `src/lib/credits.ts`); pendiente OAuth verificado (F5).
 Alrededor de cada proyecto cuelgan, módulo a módulo: keyword research,
-títulos/metas, schema, rank tracking, integraciones Google, generación de
+títulos/metas, rank tracking, integraciones Google, generación de
 contenido, auditoría técnica y geogrid local SEO — los 9 módulos del spec están
 completos.
 
@@ -68,7 +68,7 @@ infraestructura (colas, caché, tablas de coste) para módulos que todavía no e
   (Claude, GPT, Gemini...) sin tocar código. Cliente con `timeout: 90_000` y
   `maxRetries: 0` explícitos (antes no tenía timeout propio y heredaba los 10 min
   por defecto del SDK, con reintentos automáticos sobre timeouts — causaba cuelgues
-  silenciosos en Título/Meta, Schema y Contenido que un usuario percibía como "se
+  silenciosos en Título/Meta y Contenido que un usuario percibía como "se
   cuelga siempre" sin relación real con el scraping)
 - **cheerio** (`src/lib/seo/scrape.ts`) — scraping de URLs reales para Módulo 3 y 4
 - **DataForSEO** (`src/lib/keywords/dataforseo.ts`) — Módulo 1: auth HTTP Basic
@@ -118,7 +118,7 @@ reutiliza llamadas ya pagadas).
 Ver [`docs/04-modelo-de-datos.md`](./docs/04-modelo-de-datos.md) para el detalle
 completo (31 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
 NAP, propiedad de Google seleccionada y tope de gasto opcional),
-`TitleMetaGeneration` y `SchemaGeneration` (historial de los Módulos 3 y 4),
+`TitleMetaGeneration` (historial del Módulo 3; `SchemaGeneration` quedó sin uso al retirar Schema),
 `ApiUsageLog` (coste por llamada a OpenRouter/DataForSEO, base del control de gasto),
 `GoogleConnection` (OAuth2 por usuario, Módulo 6), `ContentGeneration` (Módulo 7,
 con versionado por tema) + `UrlOptimization` (Módulo 7, "Optimizar URL existente"),
@@ -218,7 +218,7 @@ Proyectos. Tres bloques:
 ### Ficha de proyecto (`/admin/proyectos/[id]/...`)
 Módulos anidados por ruta, con el nav en el sidebar global (no pestañas locales), en
 este orden: Ficha (pestañas Datos y Notas), Tareas, Keywords (con la pestaña Arquitectura), Analizador de URL, Título y Meta,
-Schema, Contenido (con la pestaña TF-IDF), Auditoría (con las pestañas Enlaces y
+Contenido (con la pestaña TF-IDF), Auditoría (con las pestañas Enlaces y
 Canibalizaciones), Rank Tracking, Google, Competidores (con la pestaña Backlinks), Geogrid (solo si el
 proyecto es negocio local con coordenadas), Informe. Las sub-herramientas fusionadas son
 pestañas por ruta (`ModuleTabs.tsx` en el `layout.tsx` de cada módulo contenedor); las
@@ -273,7 +273,17 @@ sitio; ver el apartado "Copilot" más abajo.
   conjunto ES el estudio; las prioridades se recalculan en cada cambio. La
   **estacionalidad** (`monthly_searches`, 12 meses) llega gratis en la misma
   respuesta y se muestra como mini-sparkline "Tend." por keyword. Alternativa de
-  "pegar lista" (resuelve vía caché + volumen/intención) sigue disponible. Sobre
+  "pegar lista" sigue disponible y resuelve vía caché + **una sola llamada de Keyword
+  Overview** de Labs (volumen, intención, dificultad y estacionalidad; antes volumen
+  `google_ads` a tarifa plana de 0,09 $ + intención): 0,012 $ + 0,00012 $ por keyword
+  devuelta, unas 5 veces más barato con 50 keywords y con dificultad. Las keywords sin
+  dato en Labs (long-tail muy pequeña) no se devuelven ni se cobran y quedan "sin dato".
+  **Precios Labs verificados:** 0,012 $ por tarea + 0,00012 $ por ítem devuelto (sugerencias,
+  overview, competidores...); las sugerencias admiten hasta 500 resultados (~0,07 $).
+  `KeywordDataCache` es compartida entre cuentas, así que SOLO la escriben respuestas reales
+  de DataForSEO en el servidor, nunca datos mandados por el navegador; guarda también la
+  dificultad. `flattenMonthlySearches` entiende los dos formatos (Keywords Data y Labs) y se
+  queda con los últimos 12 meses. Sobre
   el estudio: "Generar estructura de URLs" (vía OpenRouter). Solo DataForSEO como
   fuente por ahora (Google Ads, fuente alternativa, pendiente). Además del alta
   manual (siembra o pegar lista, que sigue creando estudios nuevos para
@@ -321,18 +331,14 @@ sitio; ver el apartado "Copilot" más abajo.
   por `src/lib/net/safe-fetch.ts` (protección SSRF: solo http/https y puertos web, rechaza
   hosts privados/loopback/metadatos de nube, revalida cada redirección, tope de tamaño y de
   tiempo) y se limita a 30 análisis por usuario cada 10 min. `scrapePage` (Título y Meta,
-  Schema, Contenido) usa ahora la misma descarga segura.
+  Contenido) usa ahora la misma descarga segura.
 - **Título y Meta** (Módulo 3): URL → scraping real → 3 variantes de título/meta
   descripción vía OpenRouter, siguiendo [`docs/seo-rules.md`](./docs/seo-rules.md).
   Keyword objetivo manual opcional (puede venir del Módulo 1 cuando exista estudio).
-- **Schema** (Módulo 4): URL → analizar (heurística, sin LLM) → confirmar/cambiar tipo
-  en un catálogo data-driven de ~20 tipos de schema.org (combobox buscador agrupado
-  por categoría) → generar JSON-LD. Catálogo + builder/validador genéricos en
-  `src/lib/seo/schema/`. `LocalBusiness`, `Organization`, `WebSite` y `BreadcrumbList`
-  son deterministas (derivados del proyecto/página, sin coste de LLM); el resto usan
-  un ÚNICO prompt LLM genérico parametrizado por las propiedades reales del tipo en
-  schema.org y quedan registrados en `ApiUsageLog`. Añadir un tipo = añadir una
-  entrada al catálogo, sin tocar builders ni validadores.
+- **Schema** (Módulo 4) — **RETIRADO**: se quitó el módulo (menú, rutas, API, sección del
+  informe y `schema` de `MODULE_IDS`); `/schema` redirige al Analizador de URL, que sigue
+  detectando y validando los datos estructurados de una página. La tabla `SchemaGeneration`
+  se conserva (no se borran datos) pero ya no la usa nadie.
 - **Rank Tracking** (Módulo 5): keywords seguidas por proyecto (desacopladas de los
   estudios) → "comprobar ahora" síncrono vía DataForSEO SERP o frecuencias
   programadas (diaria/semanal/mensual) que procesa el cron. `depth` configurable

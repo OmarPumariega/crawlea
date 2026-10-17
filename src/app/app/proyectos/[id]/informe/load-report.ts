@@ -96,7 +96,6 @@ export async function loadInforme(
     competitors,
     structureStudy,
     titulosMetaGens,
-    schemaGens,
     contenidoGens,
     gscSnapshot,
     ga4Snapshot,
@@ -161,11 +160,6 @@ export async function loadInforme(
       where: { projectId: id },
       orderBy: { createdAt: "desc" },
       select: { url: true, variants: true, createdAt: true },
-    }),
-    prisma.schemaGeneration.findMany({
-      where: { projectId: id },
-      orderBy: { createdAt: "desc" },
-      select: { url: true, selectedType: true, valid: true, createdAt: true },
     }),
     prisma.contentGeneration.findMany({
       where: { projectId: id },
@@ -556,9 +550,6 @@ export async function loadInforme(
     arquitectura,
     "titulos-meta": titulosMetaGens.map((g) => ({
       url: g.url, variants: g.variants as unknown as { title: string; description: string }[], createdAt: g.createdAt,
-    })),
-    schema: schemaGens.map((g) => ({
-      url: g.url, selectedType: g.selectedType, valid: g.valid, createdAt: g.createdAt,
     })),
     contenido: contenidoGens.map((g) => ({ topic: g.topic, model: g.model, createdAt: g.createdAt })),
     google,

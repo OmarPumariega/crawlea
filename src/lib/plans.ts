@@ -13,7 +13,6 @@ export const MODULE_IDS = [
   "keywords",
   "analizador",
   "titulos-meta",
-  "schema",
   "rank",
   "google",
   "contenido",

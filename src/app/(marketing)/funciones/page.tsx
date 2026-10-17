@@ -55,7 +55,7 @@ const MODULES: Module[] = [
   {
     id: "contenido", kicker: "Títulos y contenido", title: "Títulos, datos estructurados y textos",
     text: "Genera lo que tu página necesita a partir de su contenido real, no de una plantilla.",
-    points: ["Tres variantes de título y descripción con los límites de caracteres", "Unos 20 tipos de datos estructurados (schema), validados", "Contenido para blog, página, producto o novedad de ficha de Google", "Optimiza una URL existente con una lista de cambios concretos"],
+    points: ["Tres variantes de título y descripción con los límites de caracteres", "Analizador de URL: título, encabezados, palabra clave, imágenes y datos estructurados, con cómo arreglarlo", "Contenido para blog, página, producto o novedad de ficha de Google", "Optimiza una URL existente con una lista de cambios concretos"],
     visual: <ContentMini />,
   },
   {

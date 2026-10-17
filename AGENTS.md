@@ -88,7 +88,7 @@ terceros, no por trabajo pendiente — ver `docs/01-vision-general.md`.
 - **OpenRouter** (`src/lib/seo/llm.ts`) — SDK `openai` apuntando a OpenRouter, modelo
   configurable por env var, no hardcodeado. Timeout de 90s + `maxRetries: 0` en el
   cliente (antes no tenía timeout propio y heredaba 10 min del SDK — causaba cuelgues
-  silenciosos en Título/Meta, Schema y Contenido)
+  silenciosos en Título/Meta y Contenido)
 - **DataForSEO** — cuatro productos distintos, cada uno con su propio coste: Keywords
   Data + Labs (Módulo 1, Competidores), SERP orgánico (Módulo 5, TF-IDF), Maps SERP
   (Módulo 9), Backlinks (módulo Backlinks — el único que no reutiliza llamadas ya

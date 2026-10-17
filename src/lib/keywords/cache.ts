@@ -14,6 +14,7 @@ export type CachedRow = {
   cpc: number | null;
   intent: string | null;
   monthlySearches: number[] | null;
+  difficulty: number | null;
 };
 
 type Datum = {
@@ -22,6 +23,7 @@ type Datum = {
   cpc: number | null;
   intent: string | null;
   monthlySearches: number[] | null;
+  difficulty?: number | null;
 };
 
 // Devuelve solo las keywords pedidas que tengan una fila fresca (< 30 días).
@@ -51,6 +53,7 @@ export async function getFreshCache(
       monthlySearches: Array.isArray(row.monthlySearches)
         ? (row.monthlySearches as unknown as number[])
         : null,
+      difficulty: row.difficulty,
     });
   }
   return map;
@@ -86,6 +89,7 @@ export async function upsertCache(
           cpc: d.cpc,
           intent: d.intent,
           monthlySearches: d.monthlySearches ?? undefined,
+          difficulty: d.difficulty ?? null,
           fetchedAt: new Date(),
         },
         update: {
@@ -94,6 +98,7 @@ export async function upsertCache(
           cpc: d.cpc,
           intent: d.intent,
           monthlySearches: d.monthlySearches ?? undefined,
+          difficulty: d.difficulty ?? null,
           fetchedAt: new Date(),
         },
       });

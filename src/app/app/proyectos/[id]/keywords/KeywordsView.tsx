@@ -112,7 +112,7 @@ const COMPETITION_STYLES: Record<string, string> = {
   MEDIUM: "text-accent-ink",
   LOW: "text-accent-ink",
 };
-const LIMITS = [10, 30, 50, 100];
+const LIMITS = [30, 100, 250, 500];
 
 function fmtCpc(v: number | string | null): string {
   if (v === null || v === undefined) return "—";
@@ -222,7 +222,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
 
   // Sugerencias
   const [seed, setSeed] = useState("");
-  const [limit, setLimit] = useState(30);
+  const [limit, setLimit] = useState(100);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [searching, setSearching] = useState(false);
   const [suggError, setSuggError] = useState("");

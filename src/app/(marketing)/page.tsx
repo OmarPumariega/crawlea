@@ -9,7 +9,7 @@ import Reveal from "@/components/marketing/Reveal";
 import FeatureCarousel from "@/components/marketing/FeatureCarousel";
 import FeatureCard from "@/components/marketing/FeatureCard";
 import PricingCards from "@/components/marketing/PricingCards";
-import { CrawlGrid, FactTile, RankStrip, SchemaCode, StepAdd, StepCrawl, StepFix } from "@/components/marketing/StepVisuals";
+import { CrawlGrid, FactTile, RankStrip, AnalyzerChecks, StepAdd, StepCrawl, StepFix } from "@/components/marketing/StepVisuals";
 import LogoMarquee from "@/components/marketing/LogoMarquee";
 import HeroAnalyzer from "@/components/marketing/HeroAnalyzer";
 import {
@@ -119,7 +119,7 @@ export default function HomePage() {
             <FeatureCard id="competidores" text="Compara tu visibilidad con la de cualquier dominio y descubre las palabras que ellos posicionan y tú no." points={["Tráfico orgánico estimado", "Distribución en top 3, 10 y 100", "Añade palabras a tu seguimiento con un clic"]} kicker="Competidores" title="Mídete con quien compite contigo">
               <CompetitorBars />
             </FeatureCard>
-            <FeatureCard id="contenido" text="Genera títulos, descripciones y textos a partir de tu página real, y optimiza las que ya tienes." points={["Tres variantes de título y descripción", "Datos estructurados (schema) validados", "Lista de cambios para páginas existentes"]} kicker="Contenido con IA" title="Títulos y textos a partir de tu página">
+            <FeatureCard id="contenido" text="Genera títulos, descripciones y textos a partir de tu página real, y optimiza las que ya tienes." points={["Tres variantes de título y descripción", "Analizador de URL: qué falta en cada página", "Lista de cambios para páginas existentes"]} kicker="Contenido con IA" title="Títulos y textos a partir de tu página">
               <ContentMini />
             </FeatureCard>
           </FeatureCarousel>
@@ -173,7 +173,7 @@ export default function HomePage() {
             <Reveal><FactTile big="5.000" label="páginas por rastreo: el sitio entero, no una muestra"><CrawlGrid /></FactTile></Reveal>
             <Reveal delay={70}><FactTile big="Top 100" label="profundidad del seguimiento de posiciones"><RankStrip /></FactTile></Reveal>
             <Reveal delay={140}><FactTile big="7×7" label="puntos de mapa de calor en Google Maps"><GeoHeat className="mx-auto max-w-[130px] gap-1" /></FactTile></Reveal>
-            <Reveal delay={210}><FactTile big="20" label="tipos de datos estructurados (schema)"><SchemaCode /></FactTile></Reveal>
+            <Reveal delay={210}><FactTile big="0–100" label="puntuación on-page de cualquier URL, con cómo arreglarla"><AnalyzerChecks /></FactTile></Reveal>
           </div>
 
           {/* Pasos */}
