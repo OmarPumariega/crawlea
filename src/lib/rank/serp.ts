@@ -1,5 +1,6 @@
 import { postTask } from "@/lib/dataforseo/client";
 import { getCachedSerpEntry, saveSerpCache, parseSerpExtras, type CachedSerpItem } from "@/lib/dataforseo/serp-cache";
+import { parseOwnResult, type SerpPanorama } from "@/lib/serp/panorama";
 import { madridDayBounds } from "@/lib/rank/day-guard";
 import { parseAiOverview, type AiOverviewResult, type Item as AioItem } from "@/lib/ai-visibility/overview";
 
@@ -36,6 +37,9 @@ export type SerpResult = {
   // AI Overview del mismo SERP (solo si se pidió `withAiOverview` y la llamada
   // fue fresca; undefined = no medido, p.ej. SERP servido desde caché).
   aiOverview?: Omit<AiOverviewResult, "costUsd">;
+  // Panorama del SERP (bloques, pack local, snippet destacado, cómo se ve tu
+  // resultado). Del SERP fresco, o de SerpCache si se sirvió de caché.
+  panorama?: SerpPanorama | null;
 };
 
 // Normaliza el dominio de un proyecto a su forma registrable: quita esquema,
@@ -157,7 +161,7 @@ export async function checkSerpRank(params: {
         title: c.title || null,
         description: c.description ?? null,
       }));
-      return buildResultFromMatchable(cachedItems, projectDomain, competitorDomains);
+      return { ...buildResultFromMatchable(cachedItems, projectDomain, competitorDomains), panorama: cachedEntry.panorama };
     }
   }
 
@@ -194,7 +198,8 @@ export async function checkSerpRank(params: {
   // Funcionalidades del SERP más allá de los orgánicos — misma respuesta ya
   // pagada, nunca se inspeccionaban (solo se miraba type:"organic"). Se
   // guardan en el mismo SerpCache que ya escribe este chequeo, coste cero.
-  const { peopleAlsoAsk, relatedSearches, featuredSnippet } = parseSerpExtras(allItems);
+  const serpExtras = parseSerpExtras(allItems, typeof resultObj.se_results_count === "number" ? resultObj.se_results_count : null);
+  const { peopleAlsoAsk, relatedSearches, featuredSnippet } = serpExtras;
 
   // Guarda el top-10 orgánico en la caché de SERP para que el TF-IDF (u otros
   // módulos) lo reutilice sin pagar otro SERP. CON await: el caller (check.ts)
@@ -223,6 +228,7 @@ export async function checkSerpRank(params: {
       peopleAlsoAsk,
       relatedSearches,
       featuredSnippet,
+      panorama: serpExtras.panorama,
     });
   }
 
@@ -231,5 +237,6 @@ export async function checkSerpRank(params: {
     ...result,
     costUsd: typeof task.cost === "number" ? task.cost : null,
     ...(params.withAiOverview ? { aiOverview: parseAiOverview(allItems as AioItem[], projectDomain) } : {}),
+    panorama: serpExtras.panorama ? { ...serpExtras.panorama, own: parseOwnResult(allItems, (d) => domainMatches(d, projectDomain)) } : null,
   };
 }

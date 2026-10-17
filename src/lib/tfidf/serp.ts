@@ -102,7 +102,7 @@ export async function fetchTopOrganic(params: {
     if (forCache.length >= 10) break;
   }
 
-  const extras = parseSerpExtras(items);
+  const extras = parseSerpExtras(items, typeof resultObj.se_results_count === "number" ? resultObj.se_results_count : null);
   if (forCache.length > 0) {
     saveSerpCache({ keyword, locationCode, languageCode, device, results: forCache, ...extras }).catch(() => {});
   }

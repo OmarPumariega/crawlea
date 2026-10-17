@@ -30,6 +30,9 @@ import RankVisibilityChart from "@/components/app/RankVisibilityChart";
 import { RadialGauge } from "@/components/ui/charts";
 import Modal from "@/components/app/Modal";
 import PageHeader from "@/components/app/PageHeader";
+import SerpPanoramaCard from "@/components/app/SerpPanoramaCard";
+import type { SerpPanorama } from "@/lib/serp/panorama";
+import { serpFeatureLabel } from "@/lib/serp/features";
 import Pill from "@/components/app/Pill";
 import LocationPicker, { type LocationValue } from "@/components/app/LocationPicker";
 import UrlLink from "@/components/app/UrlLink";
@@ -45,6 +48,8 @@ type RankPosition = {
   // SERP ya pagado; el histórico conserva la evolución del título/meta.
   title?: string | null;
   description?: string | null;
+  // Panorama del SERP de ese chequeo (bloques, pack local, snippet destacado…).
+  serp?: SerpPanorama | null;
 };
 
 type RankKeyword = {
@@ -195,6 +200,13 @@ function TrendIcon({ kw }: { kw: RankKeyword }) {
     return <TrendingDown className="h-3.5 w-3.5 text-alert-ink" />;
   }
   return <Minus className="h-3.5 w-3.5 text-ink-faint" />;
+}
+
+// Bloques del SERP que más importan (AI Overview, mapa y snippet destacado) en
+// el último chequeo de una keyword. `positions` viene de más reciente a más antigua.
+function latestFeatures(kw: { positions: RankPosition[] }): string[] {
+  const f = kw.positions[0]?.serp?.features ?? [];
+  return ["ai_overview", "local_pack", "featured_snippet"].filter((t) => f.includes(t));
 }
 
 export default function RankView({ projectId }: { projectId: string }) {
@@ -1021,8 +1033,13 @@ export default function RankView({ projectId }: { projectId: string }) {
                             </button>
                           )}
                         </div>
-                        {(kw.competitorPositions.length > 0 || kw.tfidfAvailable) && (
-                          <div className="pl-5 flex items-center gap-1.5 mt-0.5">
+                        {(kw.competitorPositions.length > 0 || kw.tfidfAvailable || latestFeatures(kw).length > 0) && (
+                          <div className="pl-5 flex flex-wrap items-center gap-1.5 mt-0.5">
+                            {latestFeatures(kw).map((f) => (
+                              <span key={f} className="text-[10px] px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-700 font-medium" title={serpFeatureLabel(f)}>
+                                {f === "ai_overview" ? "IA" : f === "local_pack" ? "Mapa" : "Snippet"}
+                              </span>
+                            ))}
                             {kw.competitorPositions.length > 0 && (
                               <span
                                 className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/[0.05] text-ink-soft"
@@ -1193,6 +1210,11 @@ export default function RankView({ projectId }: { projectId: string }) {
                                     <UrlLink url={history[history.length - 1]!.url!} className="text-xs" />
                                   </div>
                                 )}
+                                {/* Panorama del SERP del último chequeo (y novedades frente al anterior) */}
+                                <SerpPanoramaCard
+                                  serp={history[history.length - 1]?.serp}
+                                  previous={history.length > 1 ? history[history.length - 2]?.serp : null}
+                                />
                                 {/* Copy actual: cómo muestra Google tu resultado en el
                                     último chequeo. Dato gratis del SERP ya pagado. */}
                                 {(() => {

@@ -1,6 +1,7 @@
 import { requireSession, projectForSession } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { normalizeKeyword } from "@/lib/keywords/normalize";
 import { recomputeStudyPriorities } from "@/lib/keywords/study";
 
@@ -12,6 +13,7 @@ type ItemIn = {
   intent?: string | null;
   monthlySearches?: number[] | null;
   difficulty?: number | null;
+  extras?: Record<string, unknown> | null;
   source?: string | null;
 };
 
@@ -74,6 +76,7 @@ export async function POST(
         intent: i.intent ?? null,
         monthlySearches: i.monthlySearches ?? undefined,
         difficulty: i.difficulty ?? null,
+        extras: i.extras && typeof i.extras === "object" && !Array.isArray(i.extras) ? (i.extras as Prisma.InputJsonValue) : undefined,
         source: i.source ?? null,
         priority: 0, // se recalcula abajo
       })),

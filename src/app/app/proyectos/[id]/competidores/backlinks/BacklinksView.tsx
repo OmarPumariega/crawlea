@@ -49,7 +49,39 @@ type TopBacklink = {
   prevSeen: string | null;
   lastSeen: string | null;
   itemType: string | null;
+  domainFromCountry?: string | null;
+  domainFromIp?: string | null;
+  attributes?: string[] | null;
+  urlToSpamScore?: number | null;
+  urlToRedirectTarget?: string | null;
+  original?: boolean | null;
+  pageFromStatusCode?: number | null;
+  keywordsTop3?: number | null;
+  keywordsTop10?: number | null;
+  keywordsTop100?: number | null;
 };
+
+type Dist = { key: string; count: number }[];
+type Profile = {
+  firstSeen: string | null;
+  spamScore: number | null;
+  crawledPages: number | null;
+  internalLinks: number | null;
+  externalLinks: number | null;
+  brokenPages: number | null;
+  referringIps: number | null;
+  referringSubnets: number | null;
+  referringPages: number | null;
+  referringPagesNofollow: number | null;
+  referringDomainsNofollow: number | null;
+  site: { server: string | null; cms: string | null; platformType: string[] | null; ip: string | null; country: string | null };
+  tld: Dist;
+  countries: Dist;
+  platformTypes: Dist;
+  attributes: Dist;
+  linkTypes: Dist;
+  semanticLocations: Dist;
+} | null;
 
 type Snapshot = {
   id: string;
@@ -62,6 +94,7 @@ type Snapshot = {
   nofollowBacklinks: number | null;
   brokenBacklinks: number | null;
   topBacklinks: TopBacklink[] | null;
+  profile?: Profile;
   fetchedAt: string;
 } | null;
 
@@ -301,12 +334,66 @@ function BacklinkRow({ b }: { b: TopBacklink }) {
                   <span className="text-ink-faint">Contexto del enlace:</span> {b.textPre} <strong>[enlace]</strong> {b.textPost}
                 </div>
               )}
+              <div><span className="text-ink-faint">País del origen:</span> {b.domainFromCountry ?? "—"}</div>
+              <div><span className="text-ink-faint">IP del origen:</span> {b.domainFromIp ?? "—"}</div>
+              <div><span className="text-ink-faint">Atributos:</span> {b.attributes?.join(", ") || "ninguno"}</div>
+              <div><span className="text-ink-faint">En el HTML original:</span> {b.original == null ? "—" : b.original ? "sí" : "solo con JS"}</div>
+              <div><span className="text-ink-faint">Spam de la página destino:</span> {b.urlToSpamScore ?? "—"}</div>
+              <div><span className="text-ink-faint">Código de la página origen:</span> {b.pageFromStatusCode ?? "—"}</div>
+              <div><span className="text-ink-faint">Keywords de la página origen:</span> {b.keywordsTop3 == null ? "—" : `${b.keywordsTop3} top 3 · ${b.keywordsTop10} top 10 · ${b.keywordsTop100} top 100`}</div>
+              {b.urlToRedirectTarget && <div className="col-span-2 sm:col-span-4"><span className="text-ink-faint">Redirige a:</span> {b.urlToRedirectTarget}</div>}
               {b.semanticLocation && <div className="col-span-2 sm:col-span-4"><span className="text-ink-faint">Ubicación semántica:</span> {b.semanticLocation}</div>}
             </div>
           </td>
         </tr>
       )}
     </>
+  );
+}
+
+
+const PLATFORM_ES: Record<string, string> = { unknown: "Sin clasificar", blogs: "Blogs", cms: "CMS", organization: "Organizaciones", news: "Noticias", ecommerce: "Tiendas online", forums: "Foros", wiki: "Wikis", socialnetworks: "Redes sociales", directories: "Directorios", education: "Educación", government: "Gobierno" };
+
+function DistList({ title, items, label }: { title: string; items: Dist; label?: (k: string) => string }) {
+  if (items.length === 0) return null;
+  return (
+    <div>
+      <p className="mb-2 text-[13px] font-semibold text-ink-soft">{title}</p>
+      <BarList items={items.slice(0, 6).map((d) => ({ label: label ? label(d.key) : d.key, value: d.count }))} />
+    </div>
+  );
+}
+
+// Calidad del perfil de enlaces: todo sale del summary que ya se paga.
+function ProfileQuality({ snapshot }: { snapshot: NonNullable<Snapshot> }) {
+  const p = snapshot.profile;
+  if (!p) {
+    return <p className="mt-6 rounded-2xl bg-surface-muted px-4 py-3 text-xs text-ink-soft">Este análisis es anterior a «Calidad del perfil». Vuelve a analizar para ver el spam score, la diversidad de IPs y la distribución de enlaces.</p>;
+  }
+  const spamHigh = (p.spamScore ?? 0) >= 30;
+  const site = [p.site.cms, p.site.server, p.site.country].filter(Boolean).join(" · ");
+  return (
+    <div className="mt-6 border-t border-line pt-5">
+      <p className="mb-3 text-sm font-bold text-ink">Calidad del perfil de enlaces</p>
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-4 lg:grid-cols-6">
+        <div><dt className="text-xs text-ink-faint">Spam score</dt><dd className={cn("font-bold tabular-nums", spamHigh ? "text-alert-ink" : "text-ink")}>{p.spamScore ?? "—"}<span className="font-medium text-ink-faint"> /100</span></dd></div>
+        <div><dt className="text-xs text-ink-faint">IPs distintas</dt><dd className="font-bold tabular-nums text-ink">{fmtNum(p.referringIps)}</dd></div>
+        <div><dt className="text-xs text-ink-faint">Subredes</dt><dd className="font-bold tabular-nums text-ink">{fmtNum(p.referringSubnets)}</dd></div>
+        <div><dt className="text-xs text-ink-faint">Páginas que enlazan</dt><dd className="font-bold tabular-nums text-ink">{fmtNum(p.referringPages)}</dd></div>
+        <div><dt className="text-xs text-ink-faint">Dominios nofollow</dt><dd className="font-bold tabular-nums text-ink">{fmtNum(p.referringDomainsNofollow)}</dd></div>
+        <div><dt className="text-xs text-ink-faint">Páginas rotas propias</dt><dd className={cn("font-bold tabular-nums", (p.brokenPages ?? 0) > 0 ? "text-alert-ink" : "text-ink")}>{fmtNum(p.brokenPages)}</dd></div>
+        <div><dt className="text-xs text-ink-faint">Enlaces internos / externos</dt><dd className="font-bold tabular-nums text-ink">{fmtNum(p.internalLinks)} <span className="font-medium text-ink-faint">/ {fmtNum(p.externalLinks)}</span></dd></div>
+        <div><dt className="text-xs text-ink-faint">Páginas rastreadas</dt><dd className="font-bold tabular-nums text-ink">{fmtNum(p.crawledPages)}</dd></div>
+        <div><dt className="text-xs text-ink-faint">Primer enlace visto</dt><dd className="font-bold text-ink">{p.firstSeen ? new Date(p.firstSeen).toLocaleDateString("es-ES", { month: "short", year: "numeric" }) : "—"}</dd></div>
+        {site && <div className="col-span-2"><dt className="text-xs text-ink-faint">Sitio (CMS · servidor · país)</dt><dd className="font-bold text-ink">{site}</dd></div>}
+      </dl>
+      <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <DistList title="Por dominio de origen (TLD)" items={p.tld} label={(k) => "." + k} />
+        <DistList title="País de origen" items={p.countries} />
+        <DistList title="Tipo de web que enlaza" items={p.platformTypes} label={(k) => PLATFORM_ES[k] ?? k} />
+        <DistList title="Atributos del enlace" items={p.attributes} />
+      </div>
+    </div>
   );
 }
 
@@ -504,6 +591,13 @@ function DomainDetail({
                 <dd className="font-bold tabular-nums text-ink">{fmtNum(snapshot.brokenBacklinks)}</dd>
               </div>
             </dl>
+            {snapshot.profile && (
+              <dl className="mt-3 grid grid-cols-3 gap-3 text-sm">
+                <div><dt className="text-xs text-ink-faint">Spam</dt><dd className={cn("font-bold tabular-nums", (snapshot.profile.spamScore ?? 0) >= 30 ? "text-alert-ink" : "text-ink")}>{snapshot.profile.spamScore ?? "—"}</dd></div>
+                <div><dt className="text-xs text-ink-faint">IPs</dt><dd className="font-bold tabular-nums text-ink">{fmtNum(snapshot.profile.referringIps)}</dd></div>
+                <div><dt className="text-xs text-ink-faint">Págs. que enlazan</dt><dd className="font-bold tabular-nums text-ink">{fmtNum(snapshot.profile.referringPages)}</dd></div>
+              </dl>
+            )}
             {gap != null && (
               <button
                 onClick={onShowGap}
@@ -590,6 +684,7 @@ function DomainDetail({
           </div>
         </div>
       )}
+      {snapshot && <ProfileQuality snapshot={snapshot} />}
       {listModal}
     </Section>
   );

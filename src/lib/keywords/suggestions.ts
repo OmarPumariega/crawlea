@@ -1,5 +1,6 @@
 import { postTask } from "@/lib/dataforseo/client";
 import { mapIntent, flattenMonthlySearches, type IntentValue, type Competition } from "@/lib/keywords/dataforseo";
+import { parseKeywordExtras, type KeywordExtras } from "@/lib/keywords/parse-labs";
 import { upsertCache } from "@/lib/keywords/cache";
 import { normalizeKeyword } from "@/lib/keywords/normalize";
 
@@ -22,6 +23,7 @@ export type Suggestion = {
   // calentar el caché, nunca llegaba a la UI — ahora sí.
   difficulty: number | null;
   monthlySearches: number[] | null;
+  extras: KeywordExtras; // puja, tendencia, enlaces para competir...
 };
 
 function isLevel(v: unknown): v is Competition {
@@ -50,7 +52,7 @@ export async function fetchSuggestions(params: {
   const rawItems = Array.isArray(resultArr[0]?.items) ? (resultArr[0]!.items as Array<Record<string, unknown>>) : [];
 
   const items: Suggestion[] = [];
-  const cacheData = new Map<string, { searchVolume: number | null; competition: string | null; cpc: number | null; intent: string | null; monthlySearches: number[] | null; difficulty: number | null }>();
+  const cacheData = new Map<string, { searchVolume: number | null; competition: string | null; cpc: number | null; intent: string | null; monthlySearches: number[] | null; difficulty: number | null; extras: KeywordExtras }>();
 
   for (const item of rawItems) {
     const rawKw = typeof item.keyword === "string" ? item.keyword : null;
@@ -75,6 +77,7 @@ export async function fetchSuggestions(params: {
       intent,
       difficulty: typeof kp.keyword_difficulty === "number" ? kp.keyword_difficulty : null,
       monthlySearches,
+      extras: parseKeywordExtras(item),
     };
     items.push(suggestion);
     cacheData.set(kw, {
@@ -84,6 +87,7 @@ export async function fetchSuggestions(params: {
       intent,
       monthlySearches,
       difficulty: suggestion.difficulty,
+      extras: suggestion.extras,
     });
   }
 

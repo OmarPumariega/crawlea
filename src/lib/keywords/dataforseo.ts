@@ -15,10 +15,20 @@ import {
   DataForSeoError,
   postTask,
 } from "@/lib/dataforseo/client";
+import {
+  flattenMonthlySearches,
+  isCompetition,
+  mapIntent,
+  round2,
+  parseKeywordExtras,
+  type KeywordExtras,
+  type Competition,
+  type IntentValue,
+} from "@/lib/keywords/parse-labs";
 
-export { DataForSeoError };
+export { DataForSeoError, flattenMonthlySearches, mapIntent };
+export type { Competition, IntentValue, KeywordExtras };
 
-export type Competition = "HIGH" | "MEDIUM" | "LOW";
 
 export type KeywordVolume = {
   searchVolume: number | null;
@@ -30,11 +40,6 @@ export type KeywordVolume = {
   monthlySearches: number[] | null;
 };
 
-// "informacional" | "mixta" | "transaccional" — el vocabulario de 3 buckets
-// del proyecto (ver UI). Navigational y commercial (los dos labels intermedios
-// de DataForSEO) se agrupan como "mixta".
-export type IntentValue = "informacional" | "mixta" | "transaccional";
-
 export type VolumeResult = {
   byKeyword: Map<string, KeywordVolume>;
   costUsd: number | null;
@@ -45,13 +50,6 @@ export type IntentResult = {
   costUsd: number | null;
 };
 
-function isCompetition(v: unknown): v is Competition {
-  return v === "HIGH" || v === "MEDIUM" || v === "LOW";
-}
-
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
-}
 
 // Volumen de búsqueda + competición + CPC. `result` es un ARRAY con un
 // elemento por keyword pedida (las que no tienen dato llegan con sus campos
@@ -84,31 +82,16 @@ export async function fetchSearchVolume(
   return { byKeyword, costUsd: typeof task.cost === "number" ? task.cost : null };
 }
 
-// Aplana monthly_searches a number[] ordenado cronológicamente (más antiguo →
-// más reciente) y se queda con los ÚLTIMOS 12 meses. Acepta los dos formatos de
-// DataForSEO: Keywords Data ({year, month, searches}) y Labs ({year, month,
-// search_volume}, con hasta ~100 meses de histórico). Antes solo entendía el
-// primero, así que la estacionalidad de las sugerencias (Labs) llegaba siempre
-// vacía. Devuelve null si no viene. Exportado para suggestions.ts.
-export function flattenMonthlySearches(
-  ms: unknown
-): number[] | null {
-  if (!Array.isArray(ms) || ms.length === 0) return null;
-  const valueOf = (m: Record<string, unknown>): number | null =>
-    typeof m.searches === "number" ? m.searches : typeof m.search_volume === "number" ? m.search_volume : null;
-  const sorted = (ms as Record<string, unknown>[])
-    .filter((m) => !!m && typeof m.year === "number" && typeof m.month === "number" && valueOf(m) !== null)
-    .sort((a, b) => (a.year as number) * 12 + (a.month as number) - ((b.year as number) * 12 + (b.month as number)));
-  if (sorted.length === 0) return null;
-  return sorted.slice(-12).map((m) => valueOf(m) as number);
-}
-
 // Keyword Overview (DataForSEO Labs): volumen, competición, CPC, estacionalidad,
 // dificultad SEO e intención de un lote de keywords en UNA llamada (hasta 700).
 // Sustituye a search_volume (tarifa plana de 0,09$) + search_intent: unas 5 veces
 // más barato con 50 keywords y, además, trae la dificultad. Las keywords sin dato
 // en Labs (muy long-tail) NO se devuelven ni se cobran: llegan como "sin dato".
-export type OverviewDatum = KeywordVolume & { intent: IntentValue | null; difficulty: number | null };
+export type OverviewDatum = KeywordVolume & {
+  intent: IntentValue | null;
+  difficulty: number | null;
+  extras: KeywordExtras;
+};
 
 const OVERVIEW_MAX_PER_CALL = 700;
 
@@ -143,6 +126,7 @@ export async function fetchKeywordOverview(
         monthlySearches: flattenMonthlySearches(ki.monthly_searches),
         intent: mapIntent(typeof si.main_intent === "string" ? si.main_intent : undefined),
         difficulty: typeof kp.keyword_difficulty === "number" ? kp.keyword_difficulty : null,
+        extras: parseKeywordExtras(item),
       });
     }
     if (typeof task.cost === "number") {
@@ -182,18 +166,3 @@ export async function fetchSearchIntent(
   return { byKeyword, costUsd: typeof task.cost === "number" ? task.cost : null };
 }
 
-// Mapea los 4 labels de DataForSEO al vocabulario de 3 buckets del proyecto.
-// Navigational y commercial son ambos "intermedios" → se agrupan como mixta.
-export function mapIntent(label: string | undefined): IntentValue | null {
-  switch (label) {
-    case "informational":
-      return "informacional";
-    case "transactional":
-      return "transaccional";
-    case "navigational":
-    case "commercial":
-      return "mixta";
-    default:
-      return null;
-  }
-}

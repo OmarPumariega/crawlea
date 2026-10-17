@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
+import { parsePanorama, type SerpPanorama } from "@/lib/serp/panorama";
 
 // Caché de SERP orgánico compartida entre rank tracking (escritor) y TF-IDF
 // (lector). Evita pagar dos veces por el mismo SERP: cuando el rank tracking
@@ -34,6 +35,7 @@ export type CachedSerpExtras = {
   peopleAlsoAsk: PeopleAlsoAskItem[] | null;
   relatedSearches: string[] | null;
   featuredSnippet: FeaturedSnippet | null;
+  panorama: SerpPanorama | null; // bloques del SERP, pack local, snippet…
 };
 
 export type CachedSerpEntry = CachedSerpExtras & { results: CachedSerpItem[] };
@@ -43,7 +45,7 @@ export type CachedSerpEntry = CachedSerpExtras & { results: CachedSerpItem[] };
 // serp/google/organic/live/advanced — compartido entre rank/serp.ts (Módulo 5)
 // y tfidf/serp.ts, que llaman al mismo endpoint por caminos distintos (uno
 // siempre pide, el otro solo si no hay caché).
-export function parseSerpExtras(items: Array<Record<string, unknown>>): CachedSerpExtras {
+export function parseSerpExtras(items: Array<Record<string, unknown>>, resultsCount: number | null = null): CachedSerpExtras {
   const paaRaw = items.find((it) => it.type === "people_also_ask");
   const paaSubItems = Array.isArray(paaRaw?.items) ? (paaRaw!.items as Array<Record<string, unknown>>) : [];
   const peopleAlsoAsk = paaSubItems
@@ -68,6 +70,7 @@ export function parseSerpExtras(items: Array<Record<string, unknown>>): CachedSe
     peopleAlsoAsk: peopleAlsoAsk.length > 0 ? peopleAlsoAsk : null,
     relatedSearches: relatedSearches.length > 0 ? relatedSearches : null,
     featuredSnippet,
+    panorama: parsePanorama(items, resultsCount),
   };
 }
 
@@ -111,6 +114,7 @@ export async function getCachedSerpEntry(params: {
     peopleAlsoAsk: (row.peopleAlsoAsk as unknown as PeopleAlsoAskItem[] | null) ?? null,
     relatedSearches: (row.relatedSearches as unknown as string[] | null) ?? null,
     featuredSnippet: (row.featuredSnippet as unknown as FeaturedSnippet | null) ?? null,
+    panorama: (row.panorama as unknown as SerpPanorama | null) ?? null,
   };
 }
 
@@ -123,15 +127,18 @@ export async function saveSerpCache(params: {
   peopleAlsoAsk?: PeopleAlsoAskItem[] | null;
   relatedSearches?: string[] | null;
   featuredSnippet?: FeaturedSnippet | null;
+  panorama?: SerpPanorama | null;
 }): Promise<void> {
   const extras = {
     peopleAlsoAsk: params.peopleAlsoAsk ?? null,
     relatedSearches: params.relatedSearches ?? null,
     featuredSnippet: params.featuredSnippet ?? null,
+    panorama: params.panorama ?? null,
   } as unknown as {
     peopleAlsoAsk: Prisma.InputJsonValue | typeof Prisma.JsonNull;
     relatedSearches: Prisma.InputJsonValue | typeof Prisma.JsonNull;
     featuredSnippet: Prisma.InputJsonValue | typeof Prisma.JsonNull;
+    panorama: Prisma.InputJsonValue | typeof Prisma.JsonNull;
   };
   await prisma.serpCache.upsert({
     where: {

@@ -293,3 +293,17 @@ esta fase.
 
 Se añaden en la sesión de planificación de cada módulo, no por adelantado, para no
 migrar tablas que luego cambian de forma al conocer el caso de uso real.
+
+## Ampliación: datos completos de DataForSEO
+
+Columnas añadidas para no descartar nada de lo ya pagado (todas opcionales; filas anteriores quedan a `null`):
+
+| Modelo | Columna | Contenido |
+|---|---|---|
+| `VisibilitySnapshot` | `trafficValue`, `movement`, `paid`, `dataVersion` | valor del tráfico, movimiento de keywords, presencia de pago; `dataVersion` 2 = completo (`avgPosition` obsoleto) |
+| `Competitor` | `contentGapVersion` | versión del content gap guardado |
+| `SerpCache` / `RankPosition` | `panorama` / `serp` | bloques del SERP, pack local y resultado propio |
+| `BacklinkSnapshot` | `profile` | calidad del perfil: spam, IPs, TLD, países, plataformas, atributos, sitio |
+| `OnPageAnalysis` | `extras` | tiempos, CLS, peso, recursos, coherencia, duplicados, Open Graph, cabeceras |
+| `Keyword` / `KeywordDataCache` | `extras` | puja, índice de competición, tendencia, enlaces medios del top |
+| `AiCheck` | `fanOutQueries`, `inputTokens`, `outputTokens` | búsquedas internas del asistente y tokens |

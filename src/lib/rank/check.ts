@@ -91,7 +91,7 @@ export async function checkRankKeyword(rankKeywordId: string): Promise<{
     select: { domain: true },
   });
 
-  const { rank, costUsd, competitors: competitorRanks, aiOverview } = await checkSerpRank({
+  const { rank, costUsd, competitors: competitorRanks, aiOverview, panorama } = await checkSerpRank({
     keyword: rk.keyword,
     locationCode: rk.locationCode,
     languageCode: rk.languageCode,
@@ -115,6 +115,9 @@ export async function checkRankKeyword(rankKeywordId: string): Promise<{
         // la evolución del título/meta descripción a lo largo del tiempo.
         title: rank.title,
         description: rank.description,
+        // Panorama del SERP de ese día (bloques, pack local, snippet…): permite ver
+        // cuándo aparece un AI Overview o un mapa en una búsqueda que sigues.
+        serp: panorama ? (JSON.parse(JSON.stringify(panorama)) as object) : undefined,
       },
     }),
     prisma.rankKeyword.update({

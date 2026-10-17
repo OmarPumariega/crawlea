@@ -1,5 +1,8 @@
 import { postTask } from "@/lib/dataforseo/client";
 import { normalizeDomain } from "@/lib/rank/serp";
+import { parseBacklinkProfile, type BacklinkProfile } from "./parse";
+
+export type { BacklinkProfile } from "./parse";
 
 // Backlinks (enlazado externo) — Tier 3, API de Backlinks de DataForSEO,
 // producto separado del ya integrado (Labs/SERP/Keywords Data/Maps): esto
@@ -21,6 +24,7 @@ export type BacklinkSummary = {
   dofollowBacklinks: number | null;
   nofollowBacklinks: number | null;
   brokenBacklinks: number | null;
+  profile: BacklinkProfile; // resto del summary: calidad, distribuciones, sitio
 };
 
 // TODOS los campos que devuelve el item de /v3/backlinks/backlinks/live —
@@ -60,6 +64,16 @@ export type TopBacklink = {
   prevSeen: string | null;
   lastSeen: string | null;
   itemType: string | null;
+  domainFromCountry: string | null;
+  domainFromIp: string | null;
+  attributes: string[] | null; // nofollow, sponsored, ugc, noopener...
+  urlToSpamScore: number | null;
+  urlToRedirectTarget: string | null;
+  original: boolean | null; // enlace presente en el HTML original (no inyectado por JS)
+  pageFromStatusCode: number | null;
+  keywordsTop3: number | null; // keywords en top 3/10/100 de la página que enlaza
+  keywordsTop10: number | null;
+  keywordsTop100: number | null;
 };
 
 type SummaryItem = {
@@ -107,6 +121,18 @@ type BacklinkItem = {
   prev_seen?: string;
   last_seen?: string;
   item_type?: string;
+  domain_from_country?: string;
+  domain_from_ip?: string;
+  attributes?: string[] | null;
+  url_to_spam_score?: number;
+  url_to_redirect_target?: string | null;
+  original?: boolean;
+  page_from_status_code?: number;
+  ranked_keywords_info?: {
+    page_from_keywords_count_top_3?: number;
+    page_from_keywords_count_top_10?: number;
+    page_from_keywords_count_top_100?: number;
+  } | null;
 };
 
 export async function fetchBacklinkSummary(
@@ -135,6 +161,7 @@ export async function fetchBacklinkSummary(
       dofollowBacklinks: dofollow,
       nofollowBacklinks: typeof item.backlinks_nofollow === "number" ? item.backlinks_nofollow : null,
       brokenBacklinks: typeof item.broken_backlinks === "number" ? item.broken_backlinks : null,
+      profile: parseBacklinkProfile(item as Record<string, unknown>),
     },
     costUsd: typeof task.cost === "number" ? task.cost : null,
   };
@@ -182,6 +209,16 @@ function mapBacklinkItem(it: BacklinkItem): TopBacklink {
     prevSeen: typeof it.prev_seen === "string" ? it.prev_seen : null,
     lastSeen: typeof it.last_seen === "string" ? it.last_seen : null,
     itemType: typeof it.item_type === "string" ? it.item_type : null,
+    domainFromCountry: typeof it.domain_from_country === "string" ? it.domain_from_country : null,
+    domainFromIp: typeof it.domain_from_ip === "string" ? it.domain_from_ip : null,
+    attributes: Array.isArray(it.attributes) ? it.attributes : null,
+    urlToSpamScore: typeof it.url_to_spam_score === "number" ? it.url_to_spam_score : null,
+    urlToRedirectTarget: typeof it.url_to_redirect_target === "string" ? it.url_to_redirect_target : null,
+    original: typeof it.original === "boolean" ? it.original : null,
+    pageFromStatusCode: typeof it.page_from_status_code === "number" ? it.page_from_status_code : null,
+    keywordsTop3: typeof it.ranked_keywords_info?.page_from_keywords_count_top_3 === "number" ? it.ranked_keywords_info.page_from_keywords_count_top_3 : null,
+    keywordsTop10: typeof it.ranked_keywords_info?.page_from_keywords_count_top_10 === "number" ? it.ranked_keywords_info.page_from_keywords_count_top_10 : null,
+    keywordsTop100: typeof it.ranked_keywords_info?.page_from_keywords_count_top_100 === "number" ? it.ranked_keywords_info.page_from_keywords_count_top_100 : null,
   };
 }
 

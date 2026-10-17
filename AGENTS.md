@@ -211,3 +211,14 @@ solo con `NODE_ENV=production` — para probarlo de verdad hace falta
 - [`docs/02-arquitectura.md`](./docs/02-arquitectura.md) — stack, estructura de
   carpetas, decisiones de infraestructura y por qué
 - [`docs/04-modelo-de-datos.md`](./docs/04-modelo-de-datos.md) — esquema Prisma completo
+
+## Regla: toda la respuesta de DataForSEO se guarda y se muestra
+
+No se descarta ningún campo de una petición ya pagada: se guarda (columna o `Json`) y se
+muestra en alguna vista, en el Copilot o en el Informe. Parsers puros (solo imports
+relativos) para probarlos con respuestas reales: `src/lib/competitors/parse.ts`,
+`src/lib/keywords/parse-labs.ts`, `src/lib/backlinks/parse.ts`, `src/lib/onpage/parse-extras.ts`,
+`src/lib/serp/panorama.ts`. Campos nuevos: `VisibilitySnapshot` (valor del tráfico, movimiento,
+pago, `dataVersion`), `SerpCache.panorama`/`RankPosition.serp`, `BacklinkSnapshot.profile`,
+`OnPageAnalysis.extras`, `Keyword.extras`/`KeywordDataCache.extras`, `AiCheck.fanOutQueries`;
+el Geogrid guarda la ficha completa de cada negocio del pack. Detalle en CLAUDE.md.

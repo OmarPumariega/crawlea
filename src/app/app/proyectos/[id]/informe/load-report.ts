@@ -9,6 +9,7 @@ import { getGoogleClient, GoogleNotConnectedError } from "@/lib/google/client";
 import { listCannibalizations } from "@/lib/google/search-console";
 import { normalizeDomain } from "@/lib/competitors/dataforseo";
 import type { PositionBuckets } from "@/components/app/PositionDistribution";
+import type { DomainMovement as Movement } from "@/lib/competitors/types";
 import { buildStructureTree, type StructureTreeNode } from "@/lib/keywords/structure-tree";
 import { normalizeKeyword } from "@/lib/keywords/normalize";
 import type { StructurePage } from "@/lib/keywords/structure";
@@ -248,7 +249,7 @@ export async function loadInforme(
     ? await prisma.visibilitySnapshot.findFirst({
         where: { projectId: id, domain: ownDomain },
         orderBy: { fetchedAt: "desc" },
-        select: { organicTraffic: true, organicKeywords: true, positionBuckets: true, avgPosition: true, topKeywords: true, fetchedAt: true },
+        select: { organicTraffic: true, organicKeywords: true, positionBuckets: true, avgPosition: true, topKeywords: true, trafficValue: true, movement: true, fetchedAt: true },
       })
     : null;
   const ownVisibility: ReportData["competitors"]["own"] = ownSnapshot
@@ -258,6 +259,8 @@ export async function loadInforme(
         positionBuckets: (ownSnapshot.positionBuckets ?? null) as PositionBuckets | null,
         avgPosition: ownSnapshot.avgPosition,
         topKeywords: ownSnapshot.topKeywords as TopKeyword[] | null,
+        trafficValue: ownSnapshot.trafficValue,
+        movement: (ownSnapshot.movement ?? null) as Movement | null,
         fetchedAt: ownSnapshot.fetchedAt,
       }
     : null;
@@ -267,7 +270,7 @@ export async function loadInforme(
       const snap = await prisma.visibilitySnapshot.findFirst({
         where: { projectId: id, domain: c.domain },
         orderBy: { fetchedAt: "desc" },
-        select: { organicTraffic: true, organicKeywords: true, positionBuckets: true, avgPosition: true, topKeywords: true, fetchedAt: true },
+        select: { organicTraffic: true, organicKeywords: true, positionBuckets: true, avgPosition: true, topKeywords: true, trafficValue: true, movement: true, fetchedAt: true },
       });
       return {
         domain: c.domain,
@@ -275,6 +278,8 @@ export async function loadInforme(
         organicKeywords: snap?.organicKeywords ?? null,
         positionBuckets: (snap?.positionBuckets ?? null) as PositionBuckets | null,
         avgPosition: snap?.avgPosition ?? null,
+        trafficValue: snap?.trafficValue ?? null,
+        movement: (snap?.movement ?? null) as Movement | null,
         topKeywords: (snap?.topKeywords ?? null) as ReportData["competitors"]["items"][number]["topKeywords"],
         contentGap: (c.contentGap ?? null) as ReportData["competitors"]["items"][number]["contentGap"],
         contentGapAt: c.contentGapAt,
@@ -451,7 +456,7 @@ export async function loadInforme(
     ? await prisma.backlinkSnapshot.findFirst({
         where: { projectId: id, domain: ownDomain },
         orderBy: { fetchedAt: "desc" },
-        select: { rank: true, backlinksTotal: true, referringDomains: true, brokenBacklinks: true, fetchedAt: true },
+        select: { rank: true, backlinksTotal: true, referringDomains: true, brokenBacklinks: true, profile: true, fetchedAt: true },
       })
     : null;
   const competitorBacklinks = await Promise.all(
@@ -459,9 +464,10 @@ export async function loadInforme(
       const snap = await prisma.backlinkSnapshot.findFirst({
         where: { projectId: id, domain: c.domain },
         orderBy: { fetchedAt: "desc" },
-        select: { rank: true, backlinksTotal: true, referringDomains: true, fetchedAt: true },
+        select: { rank: true, backlinksTotal: true, referringDomains: true, profile: true, fetchedAt: true },
       });
-      return { domain: c.domain, rank: snap?.rank ?? null, backlinksTotal: snap?.backlinksTotal ?? null, referringDomains: snap?.referringDomains ?? null };
+      const prof = (snap?.profile ?? null) as { spamScore?: number | null; referringIps?: number | null } | null;
+      return { domain: c.domain, rank: snap?.rank ?? null, backlinksTotal: snap?.backlinksTotal ?? null, referringDomains: snap?.referringDomains ?? null, spamScore: prof?.spamScore ?? null, referringIps: prof?.referringIps ?? null };
     })
   );
   const backlinksData: ReportData["backlinks"] =
@@ -473,6 +479,8 @@ export async function loadInforme(
                 backlinksTotal: ownBacklinks.backlinksTotal,
                 referringDomains: ownBacklinks.referringDomains,
                 brokenBacklinks: ownBacklinks.brokenBacklinks,
+                spamScore: ((ownBacklinks.profile ?? null) as { spamScore?: number | null } | null)?.spamScore ?? null,
+                referringIps: ((ownBacklinks.profile ?? null) as { referringIps?: number | null } | null)?.referringIps ?? null,
                 fetchedAt: ownBacklinks.fetchedAt,
               }
             : null,

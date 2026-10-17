@@ -157,4 +157,8 @@
   .data-table tbody tr:last-child td { border-bottom: 0; }
   .data-table tbody tr:hover td { background: color-mix(in srgb, var(--surface-muted) 60%, transparent); }
   .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  /* Variante compacta: tablas con muchas columnas que deben caber sin scroll horizontal. */
+  .data-table-compact th, .data-table-compact td { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .data-table-compact th:first-child, .data-table-compact td:first-child { padding-left: 1.25rem; }
+  .data-table-compact th:last-child, .data-table-compact td:last-child { padding-right: 1.25rem; }
 }

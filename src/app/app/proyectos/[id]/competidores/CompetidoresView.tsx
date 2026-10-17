@@ -27,25 +27,15 @@ import StatTile from "@/components/ui/StatTile";
 import Toolbar from "@/components/ui/Toolbar";
 import Modal from "@/components/app/Modal";
 import { AreaSpark, BarList, RadialGauge } from "@/components/ui/charts";
+import type { RankedKeyword, DomainMovement, PaidMetrics } from "@/lib/competitors/types";
+import { serpFeatureLabel, interestingSerpFeatures } from "@/lib/serp/features";
 
 // Item enriquecido de keyword (visibilidad o content gap). Todos los campos
 // extra llegan GRATIS en la misma respuesta Labs que ya pagábamos — antes se
 // descartaban. CPC y dificultad sirven para priorizar; la URL y el snippet
 // (description) son "cómo posiciona el competidor", el ejemplo de copy más
 // accionable de todo el módulo.
-type TopKeyword = {
-  keyword: string;
-  position: number | null;
-  volume: number | null;
-  competition: string | null; // HIGH | MEDIUM | LOW (Google Ads, no es dificultad SEO)
-  competitionIndex: number | null; // 0-100 (Google Ads, no es dificultad SEO)
-  cpc: number | null;
-  monthlySearches: number[] | null;
-  difficulty: number | null; // 0-100, dificultad SEO real (keyword_properties.keyword_difficulty)
-  title: string | null;
-  url: string | null;
-  description: string | null;
-};
+type TopKeyword = RankedKeyword;
 
 // Análisis on-page de una URL suelta (Screaming Frog-like), vía DataForSEO
 // On-Page API — ver src/lib/onpage/. Los campos boolean/issues reflejan
@@ -73,8 +63,41 @@ type OnPageAnalysisData = {
   internalLinksCount: number | null;
   externalLinksCount: number | null;
   hasBrokenLinks: boolean | null;
+  extras?: {
+    timing: {
+      timeToInteractive: number | null;
+      domComplete: number | null;
+      largestContentfulPaint: number | null;
+      firstInputDelay: number | null;
+      waiting: number | null;
+      duration: number | null;
+    } | null;
+    cumulativeLayoutShift: number | null;
+    scripts: { count: number | null; size: number | null };
+    stylesheets: { count: number | null; size: number | null };
+    renderBlockingScripts: number | null;
+    renderBlockingStylesheets: number | null;
+    size: number | null;
+    encodedSize: number | null;
+    contentEncoding: string | null;
+    server: string | null;
+    cacheable: boolean | null;
+    consistency: { description: number | null; title: number | null; keywords: number | null };
+    canonical: string | null;
+    generator: string | null;
+    clickDepth: number | null;
+    duplicates: { title: boolean | null; description: boolean | null; content: boolean | null; metaTags: string[] | null };
+    resourceErrors: number | null;
+    resourceWarnings: number | null;
+    brokenResources: boolean | null;
+    social: Record<string, string> | null;
+  } | null;
   fetchedAt: string;
 };
+
+const fmtMs = (v: number | null | undefined) => (v == null || v === 0 ? "—" : v >= 1000 ? `${(v / 1000).toFixed(1)} s` : `${Math.round(v)} ms`);
+const fmtKb = (v: number | null | undefined) => (v == null ? "—" : v >= 1048576 ? `${(v / 1048576).toFixed(1)} MB` : `${Math.round(v / 1024)} KB`);
+const fmtPct = (v: number | null | undefined) => (v == null ? "—" : `${Math.round(v * 100)}%`);
 
 // Etiquetas en español para las incidencias más relevantes — el resto (hay
 // ~45 posibles) se muestra con el nombre crudo formateado, sin necesidad de
@@ -106,6 +129,58 @@ const ONPAGE_ISSUE_LABELS: Record<string, string> = {
 
 function onPageIssueLabel(key: string): string {
   return ONPAGE_ISSUE_LABELS[key] ?? key.replace(/_/g, " ");
+}
+
+function OnPageExtrasBlock({ x }: { x: NonNullable<OnPageAnalysisData["extras"]> }) {
+  const cell = (label: string, value: string, bad?: boolean) => (
+    <div className="bg-background rounded-lg p-2">
+      <p className="text-ink-faint">{label}</p>
+      <p className={cn("font-semibold", bad ? "text-alert-ink" : "text-ink")}>{value}</p>
+    </div>
+  );
+  const dupes = [x.duplicates.title && "título", x.duplicates.description && "meta descripción", x.duplicates.content && "contenido"].filter(Boolean) as string[];
+  const social = x.social ? Object.entries(x.social) : [];
+  return (
+    <div className="space-y-2">
+      <p className="text-ink-soft font-medium">Rendimiento y peso</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {cell("Interactiva a los", fmtMs(x.timing?.timeToInteractive), (x.timing?.timeToInteractive ?? 0) > 3800)}
+        {cell("Respuesta del servidor", fmtMs(x.timing?.waiting), (x.timing?.waiting ?? 0) > 800)}
+        {cell("Carga completa", fmtMs(x.timing?.domComplete))}
+        {cell("Desplazamiento (CLS)", x.cumulativeLayoutShift == null ? "—" : x.cumulativeLayoutShift.toFixed(2), (x.cumulativeLayoutShift ?? 0) > 0.1)}
+        {cell("Peso HTML", `${fmtKb(x.size)}${x.encodedSize != null ? ` → ${fmtKb(x.encodedSize)}` : ""}`)}
+        {cell("Scripts", `${x.scripts.count ?? "—"}${x.scripts.size ? ` · ${fmtKb(x.scripts.size)}` : ""}`)}
+        {cell("Hojas de estilo", `${x.stylesheets.count ?? "—"}${x.stylesheets.size ? ` · ${fmtKb(x.stylesheets.size)}` : ""}`)}
+        {cell("Bloquean el pintado", `${(x.renderBlockingScripts ?? 0) + (x.renderBlockingStylesheets ?? 0)}`, (x.renderBlockingScripts ?? 0) + (x.renderBlockingStylesheets ?? 0) > 5)}
+      </div>
+      <div className="flex flex-wrap gap-3 text-ink-soft">
+        {x.server && <span>Servidor: <strong className="text-ink">{x.server}</strong></span>}
+        {x.contentEncoding && <span>Compresión: <strong className="text-ink">{x.contentEncoding}</strong></span>}
+        {x.cacheable != null && <span>Caché del navegador: <strong className="text-ink">{x.cacheable ? "sí" : "no"}</strong></span>}
+        {x.clickDepth != null && <span>Clics desde la home: <strong className="text-ink">{x.clickDepth}</strong></span>}
+        {x.generator && <span className="truncate max-w-[260px]">Generado con: <strong className="text-ink">{x.generator}</strong></span>}
+        {(x.resourceErrors ?? 0) > 0 && <span className="text-alert-ink font-medium">{x.resourceErrors} errores de recursos</span>}
+        {(x.resourceWarnings ?? 0) > 0 && <span>{x.resourceWarnings} avisos de recursos</span>}
+      </div>
+      <div className="flex flex-wrap gap-3 text-ink-soft">
+        <span>Título ↔ contenido: <strong className="text-ink">{fmtPct(x.consistency.title)}</strong></span>
+        <span>Meta ↔ contenido: <strong className="text-ink">{fmtPct(x.consistency.description)}</strong></span>
+        {x.canonical && <span className="truncate max-w-[320px]">Canonical: <strong className="text-ink">{x.canonical}</strong></span>}
+        {dupes.length > 0 && <span className="text-alert-ink font-medium">Duplicado: {dupes.join(", ")}</span>}
+        {x.duplicates.metaTags && x.duplicates.metaTags.length > 0 && <span className="text-alert-ink">Etiquetas meta repetidas: {x.duplicates.metaTags.join(", ")}</span>}
+      </div>
+      {social.length > 0 && (
+        <div className="space-y-0.5">
+          <p className="text-ink-soft font-medium">Redes sociales (Open Graph / Twitter)</p>
+          <ul className="text-ink-soft">
+            {social.slice(0, 10).map(([k, v]) => (
+              <li key={k} className="truncate"><span className="text-ink-faint">{k}:</span> {v}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function OnPageReportDetail({ analysis }: { analysis: OnPageAnalysisData }) {
@@ -142,6 +217,10 @@ function OnPageReportDetail({ analysis }: { analysis: OnPageAnalysisData }) {
           <span className="text-alert-ink font-medium">Tiene enlaces rotos</span>
         )}
       </div>
+
+      {analysis.extras ? <OnPageExtrasBlock x={analysis.extras} /> : (
+        <p className="rounded-lg bg-surface-muted px-2 py-1.5 text-ink-faint">Este análisis es anterior a los datos de rendimiento y redes. Vuelve a analizar para verlos.</p>
+      )}
 
       {htagLevels.length > 0 && (
         <div className="space-y-1">
@@ -261,7 +340,10 @@ type Snapshot = {
   organicTraffic: number | null;
   organicKeywords: number | null;
   positionBuckets: PositionBuckets | null;
-  avgPosition: number | null;
+  avgPosition: number | null; // obsoleto: Labs no lo devuelve
+  trafficValue?: number | null;
+  movement?: DomainMovement | null;
+  paid?: PaidMetrics | null;
   topKeywords: TopKeyword[] | null;
   fetchedAt: string;
 } | null;
@@ -311,6 +393,65 @@ function fmtCpc(v: number | null | undefined): string {
   // chequear solo `=== null` dejaba pasar undefined y rompía en .toFixed().
   if (v == null) return "—";
   return `${(v as number).toFixed(2)}$`;
+}
+
+// Valor del tráfico = lo que costaría ese tráfico comprándolo en Google Ads.
+function fmtMoney(v: number | null | undefined): string {
+  if (v == null) return "—";
+  if (v >= 1000) return `${(v / 1000).toFixed(1)}k $`;
+  return `${v.toFixed(v < 10 ? 2 : 0)} $`;
+}
+
+const INTENT_SHORT: Record<string, string> = { informacional: "Informativa", mixta: "Mixta", transaccional: "Transaccional" };
+
+function IntentTag({ intent }: { intent: string | null | undefined }) {
+  if (!intent) return <span className="text-ink-faint">—</span>;
+  return (
+    <span className={cn("inline-block rounded px-1.5 py-0.5 font-medium", intent === "transaccional" ? "bg-brand-100 text-brand-700" : "bg-surface-muted text-ink-soft")}>
+      {INTENT_SHORT[intent] ?? intent}
+    </span>
+  );
+}
+
+// Variación anual del volumen de búsqueda (search_volume_trend.yearly).
+function TrendTag({ trend }: { trend: TopKeyword["trend"] }) {
+  const y = trend?.yearly;
+  if (y == null) return <span className="text-ink-faint">—</span>;
+  if (y === 0) return <span className="text-ink-faint">=</span>;
+  return <span className={cn("tabular-nums font-medium", y > 0 ? "text-brand" : "text-alert-ink")}>{y > 0 ? "▲" : "▼"} {Math.abs(y)}%</span>;
+}
+
+// Cómo ha cambiado la posición del dominio desde la medición anterior.
+function MoveTag({ k }: { k: TopKeyword }) {
+  const m = k.movement;
+  if (k.isLost) return <span className="text-alert-ink" title="Ha salido de los resultados">perdida</span>;
+  if (!m) return null;
+  if (m.isNew) return <span className="text-brand" title="Keyword nueva">nueva</span>;
+  if (m.previous != null && k.position != null && m.previous !== k.position) {
+    const d = m.previous - k.position;
+    return <span className={cn("tabular-nums", d > 0 ? "text-brand" : "text-alert-ink")} title={`Antes #${m.previous}`}>{d > 0 ? "▲" : "▼"}{Math.abs(d)}</span>;
+  }
+  return null;
+}
+
+// Altas, subidas, bajadas y pérdidas de keywords del dominio entre mediciones.
+function MovementBadges({ movement }: { movement: DomainMovement | null | undefined }) {
+  if (!movement) return <span className="text-ink-faint">—</span>;
+  const items: [string, number, string, string][] = [
+    ["+", movement.new, "text-brand", "keywords nuevas"],
+    ["▲", movement.up, "text-brand", "keywords que suben"],
+    ["▼", movement.down, "text-alert-ink", "keywords que bajan"],
+    ["−", movement.lost, "text-alert-ink", "keywords perdidas"],
+  ];
+  return (
+    <span className="inline-flex items-center gap-2 tabular-nums">
+      {items.map(([sym, n, cls, title]) => (
+        <span key={title} className={n > 0 ? cls : "text-ink-faint"} title={`${n} ${title}`}>
+          {sym}{n}
+        </span>
+      ))}
+    </span>
+  );
 }
 
 // Mini-sparkline de estacionalidad (12 meses). El dato llega gratis en cada
@@ -466,6 +607,66 @@ function TopKeywords({ keywords, title }: { keywords: TopKeyword[] | null; title
   );
 }
 
+// Todo lo que sabemos de una keyword de un dominio: cómo lo posiciona (copy),
+// cuánto tráfico y valor aporta, hacia dónde va la demanda, lo que cuesta
+// competir (enlaces, autoridad, pujas) y cómo es el SERP.
+function KeywordDetail({ k, projectId }: { k: TopKeyword; projectId: string }) {
+  const fmtPct = (v: number | null | undefined) => (v == null ? "—" : `${v > 0 ? "+" : ""}${v}%`);
+  const bn = k.backlinksNeeded;
+  const features = interestingSerpFeatures(k.serpFeatures);
+  const rows: [string, React.ReactNode][] = [
+    ["Tráfico estimado", k.etv != null ? `${k.etv.toFixed(k.etv < 10 ? 1 : 0)} visitas/mes${k.trafficValue != null ? ` · valen ${fmtMoney(k.trafficValue)}` : ""}` : "—"],
+    ["Demanda", `mensual ${fmtPct(k.trend?.monthly)} · trimestral ${fmtPct(k.trend?.quarterly)} · anual ${fmtPct(k.trend?.yearly)}`],
+    ["Pujas Google Ads", k.bidLow != null || k.bidHigh != null ? `${fmtCpc(k.bidLow)} – ${fmtCpc(k.bidHigh)} (parte superior)` : `CPC ${fmtCpc(k.cpc)}${k.competitionIndex != null ? ` · competición ${k.competitionIndex}/100` : ""}`],
+    [
+      "Para competir",
+      bn
+        ? `unos ${bn.referringDomains != null ? Math.round(bn.referringDomains) : "?"} dominios y ${bn.backlinks != null ? Math.round(bn.backlinks) : "?"} backlinks de media${bn.dofollow != null ? ` (${Math.round(bn.dofollow)} dofollow)` : ""}${bn.mainDomainRank != null ? ` · autoridad media ${Math.round(bn.mainDomainRank)}` : ""}`
+        : "—",
+    ],
+    [
+      "Su página",
+      k.pageLinks || k.pageRank != null
+        ? `${k.pageLinks?.referringDomains ?? "?"} dominios · ${k.pageLinks?.backlinks ?? "?"} backlinks · autoridad de página ${k.pageRank ?? "?"} / dominio ${k.domainRank ?? "?"}`
+        : "—",
+    ],
+    ["Movimiento", k.isLost ? "ha salido de los resultados" : k.movement ? (k.movement.isNew ? "keyword nueva" : k.movement.previous != null ? `antes #${k.movement.previous}, ahora ${k.position != null ? `#${k.position}` : "—"}` : "sin cambios") : "—"],
+  ];
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      <div className="space-y-1.5">
+        {k.title && <p className="text-xs font-medium text-ink">{k.title}</p>}
+        {k.description && <p className="text-xs leading-relaxed text-ink-soft">{k.description}</p>}
+        {k.url && (
+          <a href={k.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] text-accent-ink hover:underline">
+            <span className="max-w-md truncate">{k.url}</span>
+            <ExternalLink className="h-3 w-3 shrink-0" />
+          </a>
+        )}
+        {k.url && <OnPageButton projectId={projectId} url={k.url} />}
+      </div>
+      <div className="space-y-2">
+        <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1 text-xs">
+          {rows.map(([label, value]) => (
+            <Fragment key={label}>
+              <dt className="text-ink-faint">{label}</dt>
+              <dd className="text-ink-soft">{value}</dd>
+            </Fragment>
+          ))}
+        </dl>
+        {(features.length > 0 || k.serpResults != null) && (
+          <div className="flex flex-wrap items-center gap-1.5 border-t border-line pt-2">
+            <span className="text-[11px] text-ink-faint">SERP{k.serpResults != null ? ` · ${k.serpResults.toLocaleString("es-ES")} resultados` : ""}:</span>
+            {features.map((f) => (
+              <span key={f} className="rounded bg-surface px-1.5 py-0.5 text-[11px] text-ink-soft">{serpFeatureLabel(f)}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Content gap como TABLA rica: cada fila es accionable — volumen, CPC y
 // dificultad para priorizar, y al expandir, el snippet + título + URL con la
 // que el competidor posiciona esa keyword (ejemplo de copy). Antes solo se veían
@@ -505,14 +706,18 @@ function ContentGapList({
       ) : (
         <div className={cn("overflow-y-auto border border-line rounded-xl", tall ? "max-h-[420px]" : "max-h-80")}>
           <table className="w-full text-xs">
-            <thead className="sticky top-0 bg-background text-left text-ink-faint">
+            <thead className="sticky top-0 z-10 bg-background text-left text-ink-faint">
               <tr>
                 <th className="py-1.5 pl-2 pr-2 font-medium">Keyword</th>
-                <th className="py-1.5 px-2 font-medium text-right">Vol.</th>
-                <th className="py-1.5 px-2 font-medium text-center">Tend.</th>
+                <th className="py-1.5 px-2 font-medium text-right" title="Búsquedas al mes">Vol.</th>
+                <th className="py-1.5 px-2 font-medium text-right" title="Visitas al mes que recibe el dominio por esta keyword (estimación)">Tráfico</th>
+                <th className="py-1.5 px-2 font-medium">Intención</th>
+                <th className="py-1.5 px-2 font-medium text-center" title="Estacionalidad de los últimos 12 meses">Estac.</th>
+                <th className="py-1.5 px-2 font-medium text-right" title="Variación anual del volumen de búsqueda">Año</th>
+                <th className="py-1.5 px-2 font-medium text-right" title="Dificultad SEO real (0-100)">Dif.</th>
+                <th className="py-1.5 px-2 font-medium text-right" title="Dominios de referencia que tienen de media las páginas que ya posicionan: lo que hace falta para competir">Enlaces</th>
                 <th className="py-1.5 px-2 font-medium text-right">CPC</th>
-                <th className="py-1.5 px-2 font-medium text-right">Dif.</th>
-                <th className="py-1.5 px-2 font-medium text-right">#</th>
+                <th className="py-1.5 px-2 font-medium text-right">Pos.</th>
                 <th className="py-1.5 pr-2 pl-2" />
               </tr>
             </thead>
@@ -520,53 +725,33 @@ function ContentGapList({
               {filtered.map((k, i) => {
                 const dif = difficulty(k.difficulty);
                 const isOpen = expanded === `${i}-${k.keyword}`;
-                const hasDetail = Boolean(k.description || k.title || k.url);
                 return (
                   <Fragment key={i}>
-                    <tr className="border-t border-line hover:bg-background/60">
-                      <td className="py-1.5 pl-2 pr-2 text-ink font-medium">{k.keyword}</td>
-                      <td className="py-1.5 px-2 text-right text-ink-soft tabular-nums">
-                        {k.volume != null ? k.volume.toLocaleString("es-ES") : "—"}
-                      </td>
-                      <td className="py-1.5 px-2 text-center">
-                        <SeasonalitySparkline points={k.monthlySearches} />
-                      </td>
-                      <td className="py-1.5 px-2 text-right text-ink-soft tabular-nums">{fmtCpc(k.cpc)}</td>
+                    <tr className="cursor-pointer border-t border-line hover:bg-background/60" onClick={() => setExpanded(isOpen ? null : `${i}-${k.keyword}`)}>
+                      <td className="py-1.5 pl-2 pr-2 font-medium text-ink">{k.keyword}</td>
+                      <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{k.volume != null ? k.volume.toLocaleString("es-ES") : "—"}</td>
+                      <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{k.etv != null ? fmtTraffic(k.etv) : "—"}</td>
+                      <td className="py-1.5 px-2"><IntentTag intent={k.intent} /></td>
+                      <td className="py-1.5 px-2 text-center"><SeasonalitySparkline points={k.monthlySearches} /></td>
+                      <td className="py-1.5 px-2 text-right"><TrendTag trend={k.trend} /></td>
                       <td className="py-1.5 px-2 text-right">
-                        <span className={cn("inline-block px-1.5 py-0.5 rounded font-medium", dif.cls)}>{dif.label}</span>
+                        <span className={cn("inline-block rounded px-1.5 py-0.5 font-medium", dif.cls)}>{dif.label}</span>
                       </td>
-                      <td className="py-1.5 px-2 text-right text-ink-soft tabular-nums">
-                        {k.position != null ? `#${k.position}` : "—"}
+                      <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft" title="Dominios de referencia medios de las páginas que posicionan">
+                        {k.backlinksNeeded?.referringDomains != null ? `~${Math.round(k.backlinksNeeded.referringDomains)}` : "—"}
                       </td>
-                      <td className="py-1.5 pr-2 pl-2 text-right">
-                        {hasDetail && (
-                          <button
-                            onClick={() => setExpanded(isOpen ? null : `${i}-${k.keyword}`)}
-                            className="text-ink-faint hover:text-ink-soft"
-                            title="Ver cómo lo posiciona el competidor"
-                          >
-                            {isOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                          </button>
-                        )}
+                      <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">{fmtCpc(k.cpc)}</td>
+                      <td className="py-1.5 px-2 text-right tabular-nums text-ink-soft">
+                        {k.position != null ? `#${k.position}` : "—"} <MoveTag k={k} />
+                      </td>
+                      <td className="py-1.5 pl-2 pr-2 text-right text-ink-faint">
+                        {isOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                       </td>
                     </tr>
-                    {isOpen && hasDetail && (
+                    {isOpen && (
                       <tr className="border-t border-line bg-accent-tint/40">
-                        <td colSpan={7} className="px-3 py-2 space-y-1">
-                          {k.title && <p className="text-xs font-medium text-ink">{k.title}</p>}
-                          {k.description && (
-                            <p className="text-xs text-ink-soft leading-relaxed">{k.description}</p>
-                          )}
-                          {k.url && (
-                            <a
-                              href={k.url} target="_blank" rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-[11px] text-accent-ink hover:underline"
-                            >
-                              <span className="truncate max-w-md">{k.url}</span>
-                              <ExternalLink className="h-3 w-3 shrink-0" />
-                            </a>
-                          )}
-                          {k.url && <OnPageButton projectId={projectId} url={k.url} />}
+                        <td colSpan={11} className="px-3 py-3">
+                          <KeywordDetail k={k} projectId={projectId} />
                         </td>
                       </tr>
                     )}
@@ -1123,14 +1308,15 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
               </>
           }
         >
-          <div className="overflow-x-auto">
-            <table className="data-table">
+          <div>
+            <table className="data-table data-table-compact">
               <thead>
                 <tr>
                   <th>Dominio</th>
-                  <th className="w-[28%]">Tráfico estimado</th>
+                  <th className="w-[20%]">Tráfico estimado</th>
                   <th className="num">Keywords</th>
-                  <th className="num">Posición media</th>
+                  <th className="num" title="Lo que costaría ese tráfico comprándolo en Google Ads">Valor del tráfico</th>
+                  <th title="Keywords nuevas (+), que suben (▲), que bajan (▼) y perdidas (−) desde la medición anterior">Movimiento</th>
                   <th>Fuerza del dominio</th>
                   <th className="num" title="Autoridad del dominio (0-1000), del análisis de backlinks">Autoridad</th>
                   <th className="num">Backlinks</th>
@@ -1160,7 +1346,8 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                             </div>
                           </td>
                           <td className="num text-ink-soft">{r.snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</td>
-                          <td className="num text-ink-soft">{r.snapshot?.avgPosition?.toFixed(1) ?? "—"}</td>
+                          <td className="num text-ink-soft">{fmtMoney(r.snapshot?.trafficValue)}</td>
+                          <td><MovementBadges movement={r.snapshot?.movement} /></td>
                           <td>
                             {r.snapshot?.positionBuckets ? (
                               <PositionDistribution buckets={r.snapshot.positionBuckets} avgPosition={r.snapshot.avgPosition} />
@@ -1170,7 +1357,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                           </td>
                         </>
                       ) : (
-                        <td colSpan={4}>
+                        <td colSpan={5}>
                           <Pill tone="neutral">Sin analizar</Pill>
                         </td>
                       )}
@@ -1308,8 +1495,12 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                       <dd className="font-bold tabular-nums text-ink">{c.snapshot?.organicKeywords?.toLocaleString("es-ES") ?? "—"}</dd>
                     </div>
                     <div>
-                      <dt className="text-xs text-ink-faint">Posición media</dt>
-                      <dd className="font-bold tabular-nums text-ink">{c.snapshot?.avgPosition?.toFixed(1) ?? "—"}</dd>
+                      <dt className="text-xs text-ink-faint">Valor del tráfico</dt>
+                      <dd className="font-bold tabular-nums text-ink">{fmtMoney(c.snapshot?.trafficValue)}</dd>
+                    </div>
+                    <div className="col-span-2">
+                      <dt className="text-xs text-ink-faint">Movimiento de keywords</dt>
+                      <dd className="text-sm font-semibold"><MovementBadges movement={c.snapshot?.movement} /></dd>
                     </div>
                   </dl>
 
@@ -1416,7 +1607,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                   {[
                     { l: "Tráfico orgánico", v: fmtTraffic(snap.organicTraffic), h: "visitas/mes (estimación)" },
                     { l: "Keywords orgánicas", v: snap.organicKeywords?.toLocaleString("es-ES") ?? "—", h: "posicionadas en Google" },
-                    { l: "Posición media", v: snap.avgPosition?.toFixed(1) ?? "—", h: "de todas sus keywords" },
+                    { l: "Valor del tráfico", v: fmtMoney(snap.trafficValue), h: "lo que costaría en Google Ads" },
                   ].map((k) => (
                     <div key={k.l} className="rounded-2xl border border-line p-4">
                       <p className="text-xs font-semibold text-ink-soft">{k.l}</p>
@@ -1476,6 +1667,40 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                     )}
                   </div>
                 </div>
+
+                {(snap.movement || snap.paid) && (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="rounded-2xl border border-line p-4">
+                      <p className="text-sm font-semibold text-ink">Movimiento de keywords</p>
+                      <p className="mt-0.5 text-xs text-ink-faint">Desde la medición anterior de Google.</p>
+                      {snap.movement ? (
+                        <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+                          {([["Nuevas", snap.movement.new, "text-brand"], ["Suben", snap.movement.up, "text-brand"], ["Bajan", snap.movement.down, "text-alert-ink"], ["Perdidas", snap.movement.lost, "text-alert-ink"]] as const).map(([l, n, cls]) => (
+                            <div key={l}>
+                              <p className={cn("text-2xl font-extrabold tabular-nums", n > 0 ? cls : "text-ink-faint")}>{n}</p>
+                              <p className="text-[11px] text-ink-faint">{l}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-xs text-ink-faint">Sin datos de movimiento.</p>
+                      )}
+                    </div>
+                    <div className="rounded-2xl border border-line p-4">
+                      <p className="text-sm font-semibold text-ink">Anuncios de pago</p>
+                      <p className="mt-0.5 text-xs text-ink-faint">Keywords por las que este dominio paga en Google Ads.</p>
+                      {snap.paid ? (
+                        <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
+                          <div><dd className="text-2xl font-extrabold tabular-nums text-ink">{snap.paid.keywords?.toLocaleString("es-ES") ?? "—"}</dd><dt className="text-[11px] text-ink-faint">keywords</dt></div>
+                          <div><dd className="text-2xl font-extrabold tabular-nums text-ink">{fmtTraffic(snap.paid.traffic)}</dd><dt className="text-[11px] text-ink-faint">visitas/mes</dt></div>
+                          <div><dd className="text-2xl font-extrabold tabular-nums text-ink">{fmtMoney(snap.paid.cost)}</dd><dt className="text-[11px] text-ink-faint">inversión est.</dt></div>
+                        </dl>
+                      ) : (
+                        <p className="mt-2 text-xs text-ink-faint">No detectamos anuncios de pago.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {snap.topKeywords && snap.topKeywords.length > 0 && (
                   <ContentGapList

@@ -1,5 +1,6 @@
 import { postTask } from "@/lib/dataforseo/client";
 import { normalizeDomain, domainMatches } from "@/lib/rank/serp";
+import { formatWorkHours } from "./places-search";
 
 // Cliente de Maps SERP de DataForSEO (Módulo 9 — Geogrid). Consulta Google
 // Maps en una coordenada exacta (location_coordinate "lat,lng,zoom") y
@@ -40,6 +41,20 @@ export type MapsTopItem = {
   placeId: string | null;
   domain: string | null;
   isMatch: boolean; // true si es el negocio del proyecto
+  // Resto de la ficha que ya devuelve Maps SERP (antes se descartaba): sirve
+  // para comparar tu ficha con la de los competidores locales.
+  phone?: string | null;
+  hours?: string | null; // horario resumido, null si la ficha no lo trae
+  totalPhotos?: number | null;
+  isClaimed?: boolean | null; // ficha reclamada por el negocio
+  ratingDistribution?: Record<string, number> | null; // "1".."5" → nº de reseñas
+  additionalCategories?: string[] | null;
+  priceLevel?: string | null;
+  bookOnlineUrl?: string | null;
+  mainImage?: string | null;
+  city?: string | null;
+  zip?: string | null;
+  localJustifications?: string[] | null;
 };
 
 // Antes 5: recortaba el pack local pagado sin motivo. El array completo (10-20
@@ -65,7 +80,28 @@ type MapsItem = {
   longitude?: number;
   rating?: { value?: number; votes_count?: number } | null;
   category?: string | null;
+  phone?: string | null;
+  work_hours?: { timetable?: Parameters<typeof formatWorkHours>[0] } | null;
+  total_photos?: number | null;
+  is_claimed?: boolean | null;
+  rating_distribution?: Record<string, number> | null;
+  additional_categories?: string[] | null;
+  price_level?: string | null;
+  book_online_url?: string | null;
+  main_image?: string | null;
+  address_info?: { city?: string | null; zip?: string | null } | null;
+  local_justifications?: unknown;
 };
+
+// local_justifications trae textos tipo «Reseñas: "…"» o «Su sitio web menciona…»:
+// se guardan como texto plano si vienen como string o con campo text.
+function justifications(v: unknown): string[] | null {
+  if (!Array.isArray(v)) return null;
+  const out = v
+    .map((x) => (typeof x === "string" ? x : typeof (x as { text?: unknown })?.text === "string" ? (x as { text: string }).text : null))
+    .filter((x): x is string => Boolean(x));
+  return out.length > 0 ? out : null;
+}
 
 function normalizeName(s: string): string {
   return s.trim().toLowerCase().replace(/\s+/g, " ");
@@ -136,6 +172,22 @@ export async function checkMapsRank(params: {
       placeId: itemPlaceId || null,
       domain: itemDomain || null,
       isMatch,
+      phone: typeof item.phone === "string" && item.phone ? item.phone : null,
+      hours: formatWorkHours(item.work_hours?.timetable),
+      totalPhotos: typeof item.total_photos === "number" ? item.total_photos : null,
+      isClaimed: typeof item.is_claimed === "boolean" ? item.is_claimed : null,
+      ratingDistribution:
+        item.rating_distribution && typeof item.rating_distribution === "object" ? item.rating_distribution : null,
+      additionalCategories:
+        Array.isArray(item.additional_categories) && item.additional_categories.length > 0
+          ? item.additional_categories
+          : null,
+      priceLevel: typeof item.price_level === "string" ? item.price_level : null,
+      bookOnlineUrl: typeof item.book_online_url === "string" ? item.book_online_url : null,
+      mainImage: typeof item.main_image === "string" ? item.main_image : null,
+      city: typeof item.address_info?.city === "string" ? item.address_info.city : null,
+      zip: typeof item.address_info?.zip === "string" ? item.address_info.zip : null,
+      localJustifications: justifications(item.local_justifications),
     };
     allRanked.push(entry);
 

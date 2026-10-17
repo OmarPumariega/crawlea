@@ -16,7 +16,7 @@ export const DOMAIN_DATA_FRESH_MS = 7 * 24 * 60 * 60 * 1000;
 async function getFreshVisibilitySnapshot(projectId: string, domain: string) {
   const cutoff = new Date(Date.now() - DOMAIN_DATA_FRESH_MS);
   return prisma.visibilitySnapshot.findFirst({
-    where: { projectId, domain, fetchedAt: { gt: cutoff } },
+    where: { projectId, domain, fetchedAt: { gt: cutoff }, dataVersion: { gte: 2 } },
     orderBy: { fetchedAt: "desc" },
   });
 }
@@ -25,8 +25,8 @@ export async function isVisibilityFresh(projectId: string, domain: string): Prom
   return (await getFreshVisibilitySnapshot(projectId, domain)) !== null;
 }
 
-export function isContentGapFresh(contentGapAt: Date | null): boolean {
-  if (!contentGapAt) return false;
+export function isContentGapFresh(contentGapAt: Date | null, version = 2): boolean {
+  if (!contentGapAt || version < 2) return false;
   return contentGapAt.getTime() > Date.now() - DOMAIN_DATA_FRESH_MS;
 }
 
@@ -58,7 +58,10 @@ export async function analyzeCompetitorVisibility(
       organicTraffic: overview.organicTraffic,
       organicKeywords: overview.organicKeywords,
       positionBuckets: overview.positionBuckets ?? undefined,
-      avgPosition: overview.avgPosition ?? undefined,
+      trafficValue: overview.trafficValue ?? undefined,
+      movement: overview.movement ?? undefined,
+      paid: overview.paid ?? undefined,
+      dataVersion: 2,
       topKeywords: ranked.items as unknown as Prisma.InputJsonValue,
     },
   });
@@ -82,11 +85,11 @@ export async function analyzeCompetitorVisibility(
 // actualiza el competidor y registra el coste.
 export async function computeCompetitorContentGap(
   projectId: string,
-  competitor: { id: string; domain: string; contentGap: unknown; contentGapAt: Date | null },
+  competitor: { id: string; domain: string; contentGap: unknown; contentGapAt: Date | null; contentGapVersion?: number },
   projectDomain: string,
   opts: { locationCode: number; languageCode: string; limit: number }
 ): Promise<{ contentGap: RankedKeyword[]; contentGapAt: Date; fromCache: boolean }> {
-  if (isContentGapFresh(competitor.contentGapAt)) {
+  if (isContentGapFresh(competitor.contentGapAt, competitor.contentGapVersion ?? 1)) {
     return {
       contentGap: ((competitor.contentGap as unknown as RankedKeyword[]) ?? []),
       contentGapAt: competitor.contentGapAt as Date,
@@ -105,7 +108,7 @@ export async function computeCompetitorContentGap(
 
   const updated = await prisma.competitor.update({
     where: { id: competitor.id },
-    data: { contentGap: items as unknown as Prisma.InputJsonValue, contentGapAt: new Date() },
+    data: { contentGap: items as unknown as Prisma.InputJsonValue, contentGapAt: new Date(), contentGapVersion: 2 },
   });
 
   if (costUsd !== null) {

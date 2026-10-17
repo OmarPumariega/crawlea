@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
+import type { KeywordExtras } from "@/lib/keywords/parse-labs";
+import type { Prisma } from "@prisma/client";
 
 // Caché de resultados de DataForSEO (sección 5 del spec: "evitar pagar dos
 // veces por el mismo dato"). Clave por (keyword, idioma, ubicación), no por
@@ -15,6 +17,7 @@ export type CachedRow = {
   intent: string | null;
   monthlySearches: number[] | null;
   difficulty: number | null;
+  extras: KeywordExtras | null;
 };
 
 type Datum = {
@@ -24,6 +27,7 @@ type Datum = {
   intent: string | null;
   monthlySearches: number[] | null;
   difficulty?: number | null;
+  extras?: KeywordExtras | null;
 };
 
 // Devuelve solo las keywords pedidas que tengan una fila fresca (< 30 días).
@@ -54,6 +58,7 @@ export async function getFreshCache(
         ? (row.monthlySearches as unknown as number[])
         : null,
       difficulty: row.difficulty,
+      extras: (row.extras as unknown as KeywordExtras | null) ?? null,
     });
   }
   return map;
@@ -90,6 +95,7 @@ export async function upsertCache(
           intent: d.intent,
           monthlySearches: d.monthlySearches ?? undefined,
           difficulty: d.difficulty ?? null,
+          extras: (d.extras ?? undefined) as unknown as Prisma.InputJsonValue | undefined,
           fetchedAt: new Date(),
         },
         update: {
@@ -99,6 +105,7 @@ export async function upsertCache(
           intent: d.intent,
           monthlySearches: d.monthlySearches ?? undefined,
           difficulty: d.difficulty ?? null,
+          extras: (d.extras ?? undefined) as unknown as Prisma.InputJsonValue | undefined,
           fetchedAt: new Date(),
         },
       });

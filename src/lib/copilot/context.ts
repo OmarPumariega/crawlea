@@ -48,13 +48,45 @@ export async function buildProjectContext(projectId: string): Promise<string> {
 
   const monthCost = monthCostAgg._sum.costUsd ? Number(monthCostAgg._sum.costUsd) : 0;
 
+  // Datos de los módulos de Competidores, Backlinks, SEO local y Visibilidad IA:
+  // el último snapshot por dominio (distinct) — ya pagado, el Copilot solo lo lee.
+  const [visSnapshots, blSnapshots, geoRun, aiOverviews] = await Promise.all([
+    prisma.visibilitySnapshot.findMany({
+      where: { projectId },
+      orderBy: { fetchedAt: "desc" },
+      distinct: ["domain"],
+      select: { domain: true, organicTraffic: true, organicKeywords: true, trafficValue: true, positionBuckets: true, movement: true, paid: true },
+    }),
+    prisma.backlinkSnapshot.findMany({
+      where: { projectId },
+      orderBy: { fetchedAt: "desc" },
+      distinct: ["domain"],
+      select: { domain: true, rank: true, backlinksTotal: true, referringDomains: true, brokenBacklinks: true, profile: true },
+    }),
+    prisma.geogridRun.findFirst({
+      where: { projectId, status: "completed" },
+      orderBy: { completedAt: "desc" },
+      select: { keyword: true, gridSize: true, foundCount: true, averagePosition: true },
+    }),
+    prisma.aiOverviewCheck.findMany({
+      where: { rankKeyword: { projectId } },
+      orderBy: { checkedAt: "desc" },
+      distinct: ["rankKeywordId"],
+      select: { hasOverview: true, cited: true },
+    }),
+  ]);
+
   const hasData =
     latestAudit !== null ||
     rankKeywords.length > 0 ||
     studyCount > 0 ||
     monthCost > 0 ||
     gscSnapshot !== null ||
-    ga4Snapshot !== null;
+    ga4Snapshot !== null ||
+    visSnapshots.length > 0 ||
+    blSnapshots.length > 0 ||
+    geoRun !== null ||
+    aiOverviews.length > 0;
   if (!hasData) return "El proyecto aún no tiene datos suficientes.";
 
   const lines: string[] = [];
@@ -146,6 +178,53 @@ export async function buildProjectContext(projectId: string): Promise<string> {
         .join("; ");
       lines.push(`Canales de tráfico principales: ${topChannels}.`);
     }
+  }
+
+  // Competidores: visibilidad estimada por dominio (propio y competidores).
+  if (visSnapshots.length > 0) {
+    lines.push("Visibilidad orgánica (Labs, último análisis por dominio):");
+    for (const v of visSnapshots.slice(0, 8)) {
+      const b = v.positionBuckets as { top3?: number; top10?: number; top100?: number } | null;
+      const m = v.movement as { new?: number; up?: number; down?: number; lost?: number } | null;
+      const paid = v.paid as { keywords?: number } | null;
+      lines.push(
+        `  - ${v.domain}: ~${Math.round(v.organicTraffic ?? 0)} visitas/mes, ${v.organicKeywords ?? "—"} keywords` +
+          (b ? ` (top3 ${b.top3 ?? 0}, top10 ${b.top10 ?? 0}, top100 ${b.top100 ?? 0})` : "") +
+          (v.trafficValue != null ? `, ese tráfico valdría ${Math.round(v.trafficValue)} € en anuncios` : "") +
+          (m ? `, movimiento: +${m.new ?? 0} nuevas, ${m.up ?? 0} suben, ${m.down ?? 0} bajan, ${m.lost ?? 0} perdidas` : "") +
+          (paid?.keywords ? `, ${paid.keywords} keywords de pago` : "")
+      );
+    }
+  }
+
+  // Backlinks: autoridad y calidad del perfil de enlaces por dominio.
+  if (blSnapshots.length > 0) {
+    lines.push("Backlinks (último análisis por dominio):");
+    for (const b of blSnapshots.slice(0, 8)) {
+      const p = b.profile as { spamScore?: number | null; referringIps?: number | null } | null;
+      lines.push(
+        `  - ${b.domain}: autoridad ${b.rank ?? "—"}/1000, ${b.backlinksTotal ?? "—"} backlinks de ${b.referringDomains ?? "—"} dominios` +
+          (p?.spamScore != null ? `, spam score ${p.spamScore}/100` : "") +
+          (p?.referringIps != null ? `, ${p.referringIps} IPs distintas` : "") +
+          ((b.brokenBacklinks ?? 0) > 0 ? `, ${b.brokenBacklinks} enlaces rotos` : "")
+      );
+    }
+  }
+
+  if (geoRun) {
+    lines.push(
+      `Último geogrid (SEO local): «${geoRun.keyword}», rejilla ${geoRun.gridSize}×${geoRun.gridSize}, ` +
+        `apareces en ${geoRun.foundCount ?? 0} de ${geoRun.gridSize * geoRun.gridSize} puntos, ` +
+        `posición media ${geoRun.averagePosition != null ? geoRun.averagePosition.toFixed(1) : "—"}.`
+    );
+  }
+
+  if (aiOverviews.length > 0) {
+    const withOv = aiOverviews.filter((a) => a.hasOverview).length;
+    const cited = aiOverviews.filter((a) => a.cited).length;
+    lines.push(
+      `AI Overview de Google (${aiOverviews.length} keywords medidas): lo muestra en ${withOv}, te cita en ${cited}.`
+    );
   }
 
   return lines.join("\n");

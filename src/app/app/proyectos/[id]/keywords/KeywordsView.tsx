@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Loader2,
   ChevronDown,
+  ChevronRight,
   Search,
   Plus,
   Trash2,
@@ -43,12 +44,60 @@ type Keyword = {
   // Sugerencias (DataForSEO Labs) o import de Competidores/Geogrid; "pegar
   // lista" no la resuelve (el endpoint plano de volumen no la incluye).
   difficulty?: number | null;
+  extras?: KwExtras | null;
   priority: number;
   // Cruce gratis con TF-IDF y Rank Tracking (ya calculado/trackeado en otro
   // módulo) — se pinta solo, sin que el usuario tenga que ir a buscarlo.
   tfidfAvailable?: boolean;
   rankPosition?: number | null;
 };
+
+// Resto de métricas de Labs que llegan con el volumen (puja, tendencia, enlaces
+// que tienen de media las páginas que posicionan...). Ver KeywordExtras.
+type KwExtras = {
+  bidLow: number | null;
+  bidHigh: number | null;
+  competitionIndex: number | null;
+  trend: { monthly: number | null; quarterly: number | null; yearly: number | null } | null;
+  backlinksNeeded: {
+    backlinks: number | null;
+    referringDomains: number | null;
+    referringMainDomains: number | null;
+    pageRank: number | null;
+    domainRank: number | null;
+  } | null;
+  coreKeyword: string | null;
+  wordsCount: number | null;
+};
+
+const fmtTrend = (v: number | null | undefined) =>
+  v == null ? "—" : `${v > 0 ? "+" : ""}${Math.round(v)}%`;
+
+function KeywordExtrasDetail({ x }: { x: KwExtras }) {
+  const b = x.backlinksNeeded;
+  const cell = (label: string, value: string, neg?: boolean) => (
+    <div>
+      <p className="text-ink-faint">{label}</p>
+      <p className={cn("font-semibold tabular-nums", neg ? "text-alert-ink" : "text-ink")}>{value}</p>
+    </div>
+  );
+  return (
+    <div className="grid grid-cols-2 gap-x-6 gap-y-2 py-1 text-xs sm:grid-cols-4 lg:grid-cols-6">
+      {cell("Puja Google Ads", x.bidLow != null || x.bidHigh != null ? `${x.bidLow ?? "—"} – ${x.bidHigh ?? "—"} €` : "—")}
+      {cell("Índice de competición", x.competitionIndex != null ? `${x.competitionIndex}/100` : "—")}
+      {cell("Tendencia mensual", fmtTrend(x.trend?.monthly), (x.trend?.monthly ?? 0) < 0)}
+      {cell("Trimestral", fmtTrend(x.trend?.quarterly), (x.trend?.quarterly ?? 0) < 0)}
+      {cell("Anual", fmtTrend(x.trend?.yearly), (x.trend?.yearly ?? 0) < 0)}
+      {x.wordsCount != null && cell("Palabras", String(x.wordsCount))}
+      {b && cell("Enlaces de media (top)", b.backlinks != null ? String(Math.round(b.backlinks)) : "—")}
+      {b && cell("Dominios que enlazan", b.referringDomains != null ? String(Math.round(b.referringDomains)) : "—")}
+      {b && cell("Autoridad de dominio media", b.domainRank != null ? String(Math.round(b.domainRank)) : "—")}
+      {b && cell("Autoridad de página media", b.pageRank != null ? String(Math.round(b.pageRank)) : "—")}
+      {x.coreKeyword && cell("Keyword principal", x.coreKeyword)}
+      {b && <p className="col-span-full text-ink-faint">«Enlaces de media» es lo que tienen de media las páginas que hoy posicionan para esta keyword: orienta cuántos necesitas para competir.</p>}
+    </div>
+  );
+}
 
 type StructurePage = {
   slug: string;
@@ -90,6 +139,7 @@ type Suggestion = {
   intent: string | null;
   difficulty: number | null;
   monthlySearches: number[] | null;
+  extras?: KwExtras | null;
 };
 
 // Mismo criterio que Competidores: dificultad SEO real (0-100), no el proxy
@@ -207,6 +257,7 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
   // Tabla del estudio: búsqueda y paginación (los estudios importados tienen cientos de filas).
   const [kwSearch, setKwSearch] = useState("");
   const [kwShown, setKwShown] = useState(50);
+  const [openKw, setOpenKw] = useState<Set<string>>(new Set());
   const [newOpen, setNewOpen] = useState(false);
   const [loadingStudies, setLoadingStudies] = useState(true);
 
@@ -856,8 +907,29 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                     </thead>
                     <tbody>
                       {shown.map((kw) => (
-                        <tr key={kw.id}>
-                          <td className="font-medium">{kw.keyword}</td>
+                        <Fragment key={kw.id}>
+                        <tr>
+                          <td className="font-medium">
+                            {kw.extras ? (
+                              <button
+                                onClick={() =>
+                                  setOpenKw((prev) => {
+                                    const n = new Set(prev);
+                                    if (n.has(kw.id)) n.delete(kw.id);
+                                    else n.add(kw.id);
+                                    return n;
+                                  })
+                                }
+                                className="flex items-center gap-1 text-left hover:text-brand"
+                                title="Ver puja, tendencia y enlaces para competir"
+                              >
+                                <ChevronRight className={cn("h-3.5 w-3.5 shrink-0 text-ink-faint transition-transform", openKw.has(kw.id) && "rotate-90")} />
+                                {kw.keyword}
+                              </button>
+                            ) : (
+                              kw.keyword
+                            )}
+                          </td>
                           <td>
                             {kw.searchVolume === null ? (
                               <span className="text-ink-faint">—</span>
@@ -922,6 +994,14 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                             </button>
                           </td>
                         </tr>
+                        {kw.extras && openKw.has(kw.id) && (
+                          <tr>
+                            <td colSpan={12} className="bg-surface-muted/60">
+                              <KeywordExtrasDetail x={kw.extras} />
+                            </td>
+                          </tr>
+                        )}
+                        </Fragment>
                       ))}
                     </tbody>
                   </table>

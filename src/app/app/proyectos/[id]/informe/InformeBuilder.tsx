@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import GeogridMap from "@/components/app/GeogridMap";
 import PositionDistribution, { type PositionBuckets } from "@/components/app/PositionDistribution";
+import type { DomainMovement as Movement } from "@/lib/competitors/types";
 import SectionOrderList from "@/components/app/SectionOrderList";
 import Pill from "@/components/app/Pill";
 import { cn } from "@/lib/utils";
@@ -93,13 +94,15 @@ export type ReportData = {
   costs: { monthCost: number };
   links: { pages: { url: string; pagerank: number; incoming: number; outgoing: number }[]; orphans: string[]; topHubs: string[]; auditDate: Date | null } | null;
   competitors: {
-    own: { organicTraffic: number | null; organicKeywords: number | null; positionBuckets: PositionBuckets | null; avgPosition: number | null; topKeywords: TopKeyword[] | null; fetchedAt: Date | null } | null;
+    own: { organicTraffic: number | null; organicKeywords: number | null; positionBuckets: PositionBuckets | null; avgPosition: number | null; topKeywords: TopKeyword[] | null; trafficValue: number | null; movement: Movement | null; fetchedAt: Date | null } | null;
     items: {
       domain: string;
       organicTraffic: number | null;
       organicKeywords: number | null;
       positionBuckets: PositionBuckets | null;
       avgPosition: number | null;
+      trafficValue: number | null;
+      movement: Movement | null;
       topKeywords: TopKeyword[] | null;
       contentGap: TopKeyword[] | null;
       contentGapAt: Date | null;
@@ -109,8 +112,8 @@ export type ReportData = {
   // Antes ausente por completo del informe — el módulo entero (autoridad,
   // backlinks totales, rotos) no llegaba pese a existir BacklinkSnapshot.
   backlinks: {
-    own: { rank: number | null; backlinksTotal: number | null; referringDomains: number | null; brokenBacklinks: number | null; fetchedAt: Date | null } | null;
-    competitors: { domain: string; rank: number | null; backlinksTotal: number | null; referringDomains: number | null }[];
+    own: { rank: number | null; backlinksTotal: number | null; referringDomains: number | null; brokenBacklinks: number | null; spamScore: number | null; referringIps: number | null; fetchedAt: Date | null } | null;
+    competitors: { domain: string; rank: number | null; backlinksTotal: number | null; referringDomains: number | null; spamScore: number | null; referringIps: number | null }[];
   } | null;
   // Visibilidad en IA: última comprobación de cada pregunta seguida por asistente.
   ia: {
@@ -672,6 +675,11 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
               value={data.competitors.own.organicKeywords?.toLocaleString("es-ES") ?? "—"}
               sub={`Análisis del ${fmtDate(data.competitors.own.fetchedAt)}`}
             />
+            <Stat
+              label="Valor del tráfico (en anuncios)"
+              value={data.competitors.own.trafficValue != null ? `${Math.round(data.competitors.own.trafficValue).toLocaleString("es-ES")} €` : "—"}
+              sub={data.competitors.own.movement ? `+${data.competitors.own.movement.new} nuevas · ${data.competitors.own.movement.up} suben · ${data.competitors.own.movement.down} bajan · ${data.competitors.own.movement.lost} perdidas` : undefined}
+            />
             {data.competitors.own.positionBuckets ? (
               <div className="space-y-1">
                 <div className="text-xs text-ink-soft">Fuerza del dominio</div>
@@ -700,7 +708,7 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
             <table className="w-full text-sm">
               <thead><tr className="text-left text-ink-faint border-b border-line">
                 <th className="py-2 pr-4 font-medium">Dominio</th><th className="py-2 pr-4 font-medium text-right">Tráfico orgánico</th>
-                <th className="py-2 pr-4 font-medium text-right">Keywords</th><th className="py-2 pr-4 font-medium">Análisis</th>
+                <th className="py-2 pr-4 font-medium text-right">Keywords</th><th className="py-2 pr-4 font-medium text-right">Valor del tráfico</th><th className="py-2 pr-4 font-medium">Movimiento</th><th className="py-2 pr-4 font-medium">Análisis</th>
               </tr></thead>
               <tbody>
                 {data.competitors.items.map((c) => (
@@ -708,6 +716,8 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                     <td className="py-2 pr-4 text-ink">{c.domain}</td>
                     <td className="py-2 pr-4 text-right tabular-nums text-ink">{fmtTraffic(c.organicTraffic)}</td>
                     <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{c.organicKeywords?.toLocaleString("es-ES") ?? "—"}</td>
+                    <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{c.trafficValue != null ? `${Math.round(c.trafficValue).toLocaleString("es-ES")} €` : "—"}</td>
+                    <td className="py-2 pr-4 text-ink-soft">{c.movement ? `↑${c.movement.up} ↓${c.movement.down} +${c.movement.new}` : "—"}</td>
                     <td className="py-2 pr-4 text-ink-faint">{fmtDate(c.fetchedAt)}</td>
                   </tr>
                 ))}
@@ -807,7 +817,9 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
               <th className="py-2 pr-4 font-medium">Dominio</th>
               <th className="py-2 pr-4 font-medium text-right">Autoridad</th>
               <th className="py-2 pr-4 font-medium text-right">Backlinks</th>
-              <th className="py-2 font-medium text-right">Dominios de referencia</th>
+              <th className="py-2 pr-4 font-medium text-right">Dominios de referencia</th>
+              <th className="py-2 pr-4 font-medium text-right">IPs distintas</th>
+              <th className="py-2 font-medium text-right">Spam</th>
             </tr></thead>
             <tbody>
               {data.backlinks.own && (
@@ -817,7 +829,9 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                   </td>
                   <td className="py-2 pr-4 text-right tabular-nums text-ink">{data.backlinks.own.rank ?? "—"}</td>
                   <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{data.backlinks.own.backlinksTotal?.toLocaleString("es-ES") ?? "—"}</td>
-                  <td className="py-2 text-right tabular-nums text-ink-soft">{data.backlinks.own.referringDomains?.toLocaleString("es-ES") ?? "—"}</td>
+                  <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{data.backlinks.own.referringDomains?.toLocaleString("es-ES") ?? "—"}</td>
+                  <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{data.backlinks.own.referringIps ?? "—"}</td>
+                  <td className="py-2 text-right tabular-nums text-ink-soft">{data.backlinks.own.spamScore ?? "—"}</td>
                 </tr>
               )}
               {data.backlinks.competitors.map((c) => (
@@ -825,7 +839,9 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
                   <td className="py-2 pr-4 text-ink">{c.domain}</td>
                   <td className="py-2 pr-4 text-right tabular-nums text-ink">{c.rank ?? "—"}</td>
                   <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{c.backlinksTotal?.toLocaleString("es-ES") ?? "—"}</td>
-                  <td className="py-2 text-right tabular-nums text-ink-soft">{c.referringDomains?.toLocaleString("es-ES") ?? "—"}</td>
+                  <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{c.referringDomains?.toLocaleString("es-ES") ?? "—"}</td>
+                  <td className="py-2 pr-4 text-right tabular-nums text-ink-soft">{c.referringIps ?? "—"}</td>
+                  <td className="py-2 text-right tabular-nums text-ink-soft">{c.spamScore ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
