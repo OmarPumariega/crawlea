@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Check, Info } from "lucide-react";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import { FAQ } from "@/lib/marketing-content";
+import { FEATURES } from "@/lib/marketing-features";
 import SectionHead from "@/components/marketing/SectionHead";
 import CtaBand from "@/components/marketing/CtaBand";
 import Reveal from "@/components/marketing/Reveal";
@@ -12,10 +13,7 @@ import PricingCards from "@/components/marketing/PricingCards";
 import { CrawlGrid, FactTile, RankStrip, AnalyzerChecks, StepAdd, StepCrawl, StepFix } from "@/components/marketing/StepVisuals";
 import LogoMarquee from "@/components/marketing/LogoMarquee";
 import HeroAnalyzer from "@/components/marketing/HeroAnalyzer";
-import {
-  AlertCard, BacklinksMini, CompetitorBars, ContentMini, DashboardMockup, Donut, GeoHeat,
-  KeywordRows, Pill, RankLine,
-} from "@/components/marketing/mockups";
+import { AlertCard, DashboardMockup, GeoHeat, Pill } from "@/components/marketing/mockups";
 
 export const metadata: Metadata = {
   title: "Crawlea · El SEO esencial, a tu alcance",
@@ -90,38 +88,12 @@ export default function HomePage() {
       {/* ============ FUNCIONES (carrusel) ============ */}
       <section data-section="funciones" className="overflow-hidden bg-background py-24">
         <Reveal>
-          <FeatureCarousel count={7} title="Lo esencial del SEO, en un solo sitio">
-            <FeatureCard id="posiciones" text="Comprueba en qué puesto de Google sale tu web para cada palabra clave, por ubicación y con la frecuencia que elijas." points={["Top 10, 30, 50 o 100 resultados", "Comprobación diaria, semanal o mensual", "Histórico y aviso si caes 10 puestos o más"]} kicker="Posiciones" title="Sigue dónde sales en Google">
-              <p className="text-[11px] font-semibold text-ink-faint">Posición media</p>
-              <p className="flex items-center gap-2 text-3xl font-extrabold tracking-[-0.03em] tabular-nums">8,4 <Pill>▲ 1,2 pts</Pill></p>
-              <RankLine className="mt-2 text-ink" />
-            </FeatureCard>
-            <FeatureCard id="auditoria" text="Rastreamos tu web entera, hasta 5.000 páginas, y te decimos qué corregir primero." points={["Enlaces rotos, títulos, H1 e imágenes sin alt", "PageSpeed de tu página principal", "Tareas automáticas con lo que arreglar"]} kicker="Auditoría" title="Encuentra qué corregir primero">
-              <div className="flex items-center gap-5">
-                <Donut value={82} className="w-28 shrink-0" />
-                <ul className="space-y-2 text-[13px] text-ink-soft">
-                  <li className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-alert" />38 enlaces rotos</li>
-                  <li className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand" />4 páginas sin título</li>
-                  <li className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand-200" />9 imágenes sin alt</li>
-                </ul>
-              </div>
-            </FeatureCard>
-            <FeatureCard id="seo-local" text="Un mapa de calor de Google Maps: ves en qué puntos de tu zona aparece tu negocio y en cuáles no." points={["Rejillas de 3×3 a 7×7 puntos", "Radio de cobertura configurable", "Comparación entre dos mediciones"]} kicker="SEO local" title="Tu posición en el mapa, punto a punto">
-              <p className="mb-3 text-[11px] font-bold">Mapa de calor local</p>
-              <GeoHeat className="mx-auto max-w-[190px]" />
-            </FeatureCard>
-            <FeatureCard id="backlinks" text="Mira qué webs te enlazan, con cuánta autoridad, y cuáles enlazan a tu competencia y todavía no a ti." points={["Autoridad de dominio y dominios de referencia", "Dofollow, nofollow y enlaces rotos", "Dominios que te faltan frente a la competencia"]} kicker="Backlinks" title="Quién te enlaza y cuánto pesa">
-              <BacklinksMini />
-            </FeatureCard>
-            <FeatureCard id="palabras-clave" text="Estudia qué busca tu gente antes de escribir: volumen estimado, intención y estacionalidad." points={["Volumen mensual estimado y coste por clic", "Intención informativa, comercial o mixta", "Estructura de URLs propuesta"]} kicker="Palabras clave" title="Descubre qué busca tu gente">
-              <KeywordRows />
-            </FeatureCard>
-            <FeatureCard id="competidores" text="Compara tu visibilidad con la de cualquier dominio y descubre las palabras que ellos posicionan y tú no." points={["Tráfico orgánico estimado", "Distribución en top 3, 10 y 100", "Añade palabras a tu seguimiento con un clic"]} kicker="Competidores" title="Mídete con quien compite contigo">
-              <CompetitorBars />
-            </FeatureCard>
-            <FeatureCard id="contenido" text="Genera títulos, descripciones y textos a partir de tu página real, y optimiza las que ya tienes." points={["Tres variantes de título y descripción", "Analizador de URL: qué falta en cada página", "Lista de cambios para páginas existentes"]} kicker="Contenido con IA" title="Títulos y textos a partir de tu página">
-              <ContentMini />
-            </FeatureCard>
+          <FeatureCarousel count={FEATURES.length} title="Lo esencial del SEO, en un solo sitio">
+            {FEATURES.map((f) => (
+              <FeatureCard key={f.id} id={f.id} kicker={f.kicker} title={f.title} text={f.text} points={f.points} paid={f.paid}>
+                {f.visual}
+              </FeatureCard>
+            ))}
           </FeatureCarousel>
         </Reveal>
         <div className="mx-auto mt-6 max-w-[1360px] px-5 sm:px-8 lg:px-10">
