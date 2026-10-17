@@ -30,7 +30,9 @@ export default function ProjectEditView({ project, summary }: { project: Project
     const res = await fetch(`/api/proyectos/${project.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+      // Solo nombre y dominio: la ficha de Google (y lo que aporta) se guarda por
+      // su cuenta al elegirla o quitarla, y un PATCH parcial no toca el resto.
+      body: JSON.stringify({ name: values.name, domain: values.domain }),
     });
     const data = await res.json();
     if (!res.ok) return data.error ?? "Error al guardar el proyecto";
@@ -52,7 +54,7 @@ export default function ProjectEditView({ project, summary }: { project: Project
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Proyecto · Perfil"
+        eyebrow="Ficha · Datos"
         title={project.name}
         description={project.domain || "Sin dominio configurado"}
         actions={
@@ -87,18 +89,17 @@ export default function ProjectEditView({ project, summary }: { project: Project
         </Link>
       </div>
 
-      <div className="grid items-start gap-4 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          <ProjectForm
-            initial={project}
-            showSlug={false}
-            projectId={project.id}
-            submitLabel="Guardar cambios"
-            onSubmit={handleSubmit}
-          />
-        </div>
-        <BootstrapPanel projectId={project.id} />
-      </div>
+      {/* Solo aparece cuando hay algo por poner en marcha (keywords por importar o
+          competidores sin analizar); si todo está al día, no ocupa sitio. */}
+      <BootstrapPanel projectId={project.id} />
+
+      <ProjectForm
+        initial={project}
+        showSlug={false}
+        projectId={project.id}
+        submitLabel="Guardar cambios"
+        onSubmit={handleSubmit}
+      />
 
       {confirmingDelete && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">

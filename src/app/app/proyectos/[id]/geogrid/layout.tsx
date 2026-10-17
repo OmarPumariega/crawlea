@@ -5,7 +5,7 @@ import ModuleTabs from "@/components/app/ModuleTabs";
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="space-y-4">
-      <ModuleTabs title="Geogrid" hint="Mapa de calor en Google Maps" />
+      <ModuleTabs title="SEO local" hint="Mapa de calor en Google Maps" />
       {children}
     </div>
   );

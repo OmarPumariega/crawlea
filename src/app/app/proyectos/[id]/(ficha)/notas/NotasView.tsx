@@ -373,7 +373,7 @@ export default function NotasView({ projectId }: { projectId: string }) {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Proyecto · Notas"
+        eyebrow="Ficha · Notas"
         title="Notas"
         description="Apuntes internos del negocio del cliente — acuerdos, contactos, cosas a recordar. No son tareas ni aparecen en el Informe."
       />

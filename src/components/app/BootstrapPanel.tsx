@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { fmtCredits } from "@/lib/credits";
 import { Loader2, RefreshCw, Rocket, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 
-// Panel "Lanzar / re-procesar proyecto": encola el mismo flujo que el wizard
+// Panel "Poner en marcha el proyecto" (antes "Lanzar / re-procesar análisis"): encola el mismo flujo que el wizard
 // de alta (importar keywords del estudio → chequear posición → TF-IDF gratis;
 // analizar competidores → content gap) como un BootstrapRun en background —
 // mismo patrón pending/running/completed/failed que Auditoría/Geogrid, con
@@ -141,18 +141,32 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
 
   const result = run?.status === "completed" ? run.result : null;
 
+  // Si no queda nada por poner en marcha y no hay un resultado o error que
+  // enseñar, el panel no ocupa sitio.
+  if (!running && !loadingEstimate && nothingToDo && !result && run?.status !== "failed" && !error) return null;
+
   return (
-    <div className="bg-surface border border-line rounded-xl p-5 space-y-3">
+    <div className="space-y-3 rounded-[20px] border border-line bg-surface p-6 shadow-card">
       <div className="flex items-start gap-3">
         <div className="h-9 w-9 rounded-lg bg-brand text-white flex items-center justify-center shrink-0">
           <Rocket className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-ink">Lanzar / re-procesar análisis</h3>
-          <p className="text-xs text-ink-soft mt-0.5">
-            Importa las keywords del estudio al Rank Tracking (con chequeo de posición y TF-IDF
-            gratis) y analiza todos los competidores (visibilidad + content gap). Se ejecuta en
-            segundo plano — puedes navegar a otras secciones mientras tanto.
+          <h3 className="text-base font-bold tracking-tight text-ink">Poner en marcha el proyecto</h3>
+          <p className="mt-0.5 text-sm text-ink-soft">
+            Un solo clic para dejar el proyecto preparado en vez de hacerlo módulo a módulo. Hace dos cosas:
+          </p>
+          <ul className="mt-2 list-disc space-y-0.5 pl-5 text-sm text-ink-soft">
+            <li>
+              Añade a <strong className="text-ink">Rank Tracking</strong> las keywords de tu estudio «General» y comprueba
+              en qué posición estás (el TF-IDF de esas keywords sale gratis).
+            </li>
+            <li>
+              Analiza a <strong className="text-ink">todos tus competidores</strong>: tráfico, keywords y content gap.
+            </li>
+          </ul>
+          <p className="mt-2 text-xs text-ink-faint">
+            Gasta créditos (se muestra el coste antes de confirmar), va en segundo plano y puedes seguir navegando.
           </p>
         </div>
       </div>
@@ -256,7 +270,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white text-xs font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
         >
           {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-          Lanzar análisis
+          Poner en marcha
         </button>
       </div>
 
@@ -268,7 +282,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
                 <Rocket className="h-5 w-5 text-ink-soft" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-ink">Lanzar análisis completo</h3>
+                <h3 className="font-semibold text-ink">Poner en marcha el proyecto</h3>
                 <p className="text-sm text-ink-soft mt-1">
                   Se procesarán{" "}
                   <strong className="text-ink">{estimate?.keywordsToCheck ?? 0}</strong> keywords
@@ -278,7 +292,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
                 </p>
                 <p className="text-xs text-ink-soft mt-1.5">
                   Coste estimado:{" "}
-                  <strong className="text-ink-soft">${estimate?.estimatedCostUsd.toFixed(2) ?? "0.00"}</strong>. Se
+                  <strong className="text-ink-soft">{fmtCredits(estimate?.estimatedCostUsd ?? 0)}</strong>. Se
                   ejecuta en segundo plano — puedes cerrar o navegar a otra sección mientras dura. Si
                   se alcanza el tope de gasto, se detendrá y lo procesado quedará guardado.
                 </p>
@@ -298,7 +312,7 @@ export default function BootstrapPanel({ projectId }: { projectId: string }) {
                 className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-brand rounded-full hover:bg-brand-strong disabled:opacity-50"
               >
                 {launching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
-                Lanzar
+                Poner en marcha
               </button>
             </div>
           </div>

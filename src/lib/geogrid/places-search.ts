@@ -22,9 +22,48 @@ export type GbpCandidate = {
   rating: number | null;
   reviewsCount: number | null;
   category: string | null;
+  // Datos de contacto de la ficha: se guardan en el proyecto al elegirla, para
+  // que nadie tenga que teclearlos. Google Maps no ofrece email.
+  phone: string | null;
+  website: string | null;
+  hoursText: string | null;
 };
 
 const MAX_CANDIDATES = 8;
+
+type DayHours = { open?: { hour?: number; minute?: number }; close?: { hour?: number; minute?: number } }[] | null;
+type Timetable = Partial<Record<"monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday", DayHours>>;
+
+const DAYS: [keyof Timetable, string][] = [
+  ["monday", "Lun"], ["tuesday", "Mar"], ["wednesday", "Mié"], ["thursday", "Jue"],
+  ["friday", "Vie"], ["saturday", "Sáb"], ["sunday", "Dom"],
+];
+
+function hm(t?: { hour?: number; minute?: number }): string | null {
+  if (!t || typeof t.hour !== "number") return null;
+  return `${t.hour}:${String(t.minute ?? 0).padStart(2, "0")}`;
+}
+
+// Convierte el horario estructurado de la ficha en un texto corto agrupando los
+// días con el mismo horario: «Lun-Vie 9:00-14:00 y 16:00-19:00 · Sáb-Dom cerrado».
+// null si la ficha no trae horario (no se inventa).
+export function formatWorkHours(timetable: Timetable | null | undefined): string | null {
+  if (!timetable) return null;
+  const perDay = DAYS.map(([key, label]) => {
+    const slots = (timetable[key] ?? [])
+      .map((x) => (hm(x.open) && hm(x.close) ? `${hm(x.open)}-${hm(x.close)}` : null))
+      .filter((x): x is string => Boolean(x));
+    return { label, text: slots.length > 0 ? slots.join(" y ") : "cerrado" };
+  });
+  if (perDay.every((d) => d.text === "cerrado") && DAYS.every(([k]) => timetable[k] == null)) return null;
+  const groups: { from: string; to: string; text: string }[] = [];
+  for (const d of perDay) {
+    const last = groups[groups.length - 1];
+    if (last && last.text === d.text) last.to = d.label;
+    else groups.push({ from: d.label, to: d.label, text: d.text });
+  }
+  return groups.map((g) => `${g.from === g.to ? g.from : `${g.from}-${g.to}`} ${g.text}`).join(" · ");
+}
 
 type RawMapsItem = {
   type?: string;
@@ -35,6 +74,10 @@ type RawMapsItem = {
   longitude?: number;
   rating?: { value?: number; votes_count?: number } | null;
   category?: string | null;
+  phone?: string | null;
+  url?: string | null;
+  domain?: string | null;
+  work_hours?: { timetable?: Timetable | null } | null;
 };
 
 export async function searchGbpCandidates(
@@ -62,6 +105,9 @@ export async function searchGbpCandidates(
       rating: typeof item.rating?.value === "number" ? item.rating.value : null,
       reviewsCount: typeof item.rating?.votes_count === "number" ? item.rating.votes_count : null,
       category: typeof item.category === "string" ? item.category : null,
+      phone: typeof item.phone === "string" && item.phone ? item.phone : null,
+      website: typeof item.url === "string" && item.url ? item.url : typeof item.domain === "string" ? item.domain : null,
+      hoursText: formatWorkHours(item.work_hours?.timetable),
     });
     if (candidates.length >= MAX_CANDIDATES) break;
   }

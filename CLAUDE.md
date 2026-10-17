@@ -217,7 +217,7 @@ Proyectos. Tres bloques:
 
 ### Ficha de proyecto (`/admin/proyectos/[id]/...`)
 Módulos anidados por ruta, con el nav en el sidebar global (no pestañas locales), en
-este orden: Perfil, Tareas, Notas, Keywords (con la pestaña Arquitectura), Analizador de URL, Título y Meta,
+este orden: Ficha (pestañas Datos y Notas), Tareas, Keywords (con la pestaña Arquitectura), Analizador de URL, Título y Meta,
 Schema, Contenido (con la pestaña TF-IDF), Auditoría (con las pestañas Enlaces y
 Canibalizaciones), Rank Tracking, Google, Competidores (con la pestaña Backlinks), Geogrid (solo si el
 proyecto es negocio local con coordenadas), Informe. Las sub-herramientas fusionadas son
@@ -235,7 +235,17 @@ sitio; ver el apartado "Copilot" más abajo.
   identificadas por el prefijo `🔍 [Auditoría <fecha>]`. La siguiente auditoría marca
   `done` las automáticas anteriores antes de crear las nuevas — no se acumulan tareas
   obsoletas. Las tareas manuales nunca se tocan.
-- **Notas**: cuaderno de apuntes internos del negocio del cliente (acuerdos,
+- **Ficha** (antes Perfil + Notas; grupo de rutas `(ficha)`, las URLs no cambian): pestaña
+  **Datos** (un único formulario con nombre/dominio y el bloque **Negocio local**, siempre
+  visible y sin interruptor: elegir la ficha de Google lo activa —`isLocalBusiness`, aparece
+  "SEO local" en el menú— y rellena solo nombre, dirección, teléfono y horario desde la propia
+  ficha, nunca a mano; Google Maps no da email. Con ficha elegida se ve su tarjeta con
+  «Cambiar ficha» y «Quitar» (DELETE de `/geogrid/ficha`, que borra los datos derivados), sin
+  buscador duplicado; resumen de estado del proyecto; panel **Poner en marcha el
+  proyecto** —importa las keywords del estudio "General" a Rank Tracking con chequeo de
+  posición y TF-IDF gratis, y analiza a todos los competidores—, que solo aparece cuando hay
+  algo pendiente) y pestaña **Notas**.
+- **Notas** (pestaña de la Ficha): cuaderno de apuntes internos del negocio del cliente (acuerdos,
   contactos, cosas a recordar) — modelo `ProjectNote`, cada apunte con
   **título opcional**, contenido en HTML enriquecido (negrita/cursiva/
   subrayado/color vía `RichTextEditor.tsx`, componente genérico basado en

@@ -19,16 +19,14 @@ import {
   LineChart,
   ListChecks,
   LogOut,
-  Map,
   MapPin,
-  NotebookPen,
+  Building2,
   PenLine,
   Search,
   Settings,
   ShieldCheck,
   TrendingUp,
   Type,
-  User,
   Users,
   Wallet,
   Wrench,
@@ -59,10 +57,9 @@ type NavGroup = { id: string; label: string; icon: LucideIcon; modules: NavModul
 type ProjectNav = { top: NavModule[]; groups: NavGroup[]; bottom: NavModule[] };
 
 // Navegación de un proyecto agrupada por tipo de herramienta. Los módulos
-// transversales (Perfil, Tareas, Notas, Visibilidad IA, Informe) van sueltos; el resto se agrupa en
-// carpetas plegables: Investigación · On-Page · Técnico · Seguimiento. Geogrid
-// solo aparece en proyectos locales (negocio con coordenadas) y cuelga del
-// grupo Seguimiento. Copilot ya NO es una entrada de nav — es un widget
+// transversales (Ficha, Tareas, Visibilidad IA, Informe) van sueltos; el resto se agrupa en
+// carpetas plegables: Investigación · On-Page · Técnico · Seguimiento. SEO local
+// (Geogrid) solo aparece en proyectos locales y es una entrada suelta. Copilot ya NO es una entrada de nav — es un widget
 // flotante (CopilotWidget.tsx, montado en AdminShell), disponible
 // en cualquier página de un proyecto sin navegar a ningún sitio.
 function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
@@ -105,24 +102,19 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
       ],
     },
   ];
-  // SEO local: todo lo de SEO local en su propio grupo (de momento, el mapa de
-  // calor de Google Maps). Solo en proyectos de negocio local.
-  if (isLocalBusiness) {
-    groups.push({
-      id: "geolocal",
-      label: "SEO local",
-      icon: MapPin,
-      modules: [{ href: `${base}/geogrid`, label: "Geogrid", icon: Map }],
-    });
-  }
+  // SEO local: entrada suelta (un solo clic abre la herramienta, sin carpeta con
+  // un único hijo). Solo en proyectos de negocio local; hoy es el mapa de calor
+  // de Google Maps (Geogrid). Si crece con más herramientas, volverá a ser grupo.
+  const localEntry: NavModule[] = isLocalBusiness ? [{ href: `${base}/geogrid`, label: "SEO local", icon: MapPin }] : [];
   return {
     top: [
-      { href: base, label: "Perfil", icon: User },
+      // Ficha = Datos del proyecto + Notas (dos pestañas de un mismo módulo).
+      { href: base, label: "Ficha", icon: Building2 },
       { href: `${base}/tareas`, label: "Tareas", icon: ListChecks },
-      { href: `${base}/notas`, label: "Notas", icon: NotebookPen },
     ],
     groups,
     bottom: [
+      ...localEntry,
       // Módulo propio, no cuelga de ningún grupo: no es seguimiento de posiciones.
       { href: `${base}/ia`, label: "Visibilidad IA", icon: MessageSquareText },
       { href: `${base}/informe`, label: "Informe", icon: FileBarChart2 },
@@ -133,7 +125,8 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
 // ¿Es esta la ruta activa? Para Perfil (== base) exige coincidencia exacta;
 // para el resto acepta rutas anidadas (p. ej. .../keywords/estudios/123).
 function isModuleActive(href: string, base: string, pathname: string): boolean {
-  if (href === base) return pathname === href;
+  // La Ficha (== base) incluye su pestaña Notas.
+  if (href === base) return pathname === href || pathname === `${base}/notas`;
   return pathname === href || pathname.startsWith(href + "/");
 }
 
@@ -176,6 +169,14 @@ export default function AdminSidebar({
   // sidebar vive en el shell y no recibe el proyecto del layout — lo deduce de
   // la URL. Se recarga al entrar/salir de la sección de proyectos por si se
   // creó o borró alguno.
+  const [projectsVersion, setProjectsVersion] = useState(0);
+  // La Ficha avisa cuando elegir/quitar la ficha de Google cambia si el
+  // proyecto es de SEO local (aparece o desaparece "SEO local" del menú).
+  useEffect(() => {
+    const bump = () => setProjectsVersion((v) => v + 1);
+    window.addEventListener("crawlea:projects-changed", bump);
+    return () => window.removeEventListener("crawlea:projects-changed", bump);
+  }, []);
   useEffect(() => {
     let cancelled = false;
     fetch("/api/proyectos")
@@ -190,7 +191,7 @@ export default function AdminSidebar({
     return () => {
       cancelled = true;
     };
-  }, [inProjects]);
+  }, [inProjects, projectsVersion]);
 
   useEffect(() => {
     if (!projectId) return;
@@ -564,7 +565,7 @@ function ModuleLink({
   onClick: () => void;
   forceOpen?: boolean;
   // true solo para los hijos de una carpeta desplegada; los módulos sueltos
-  // (Perfil, Tareas, Notas, Informe) van alineados con las cabeceras de carpeta.
+  // (Ficha, Tareas, Informe) van alineados con las cabeceras de carpeta.
   nested?: boolean;
 }) {
   const active = isModuleActive(m.href, base, pathname);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { Globe, Loader2, MapPin } from "lucide-react";
 import { slugify, cn } from "@/lib/utils";
 import GbpPicker, { type GbpCandidate } from "@/components/app/GbpPicker";
 
@@ -57,21 +57,39 @@ export default function ProjectForm({
   // Marca si el usuario ha editado el slug a mano. Mientras no, el slug se
   // deriva automáticamente del nombre (autorelleno que sigue al nombre).
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
-  // "Avanzado" oculto por defecto: dirección/coordenadas manuales, solo para
-  // el caso de un negocio que no aparece en Google Maps — el buscador de
-  // ficha es el mecanismo principal de relleno.
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
+  // La ficha se guarda en su propio endpoint nada más elegirla o quitarla; aquí
+  // solo se refleja en pantalla lo que la ficha aporta y se avisa al menú
+  // (aparece o desaparece "SEO local").
   function applyGbpCandidate(c: GbpCandidate) {
     setForm((prev) => ({
       ...prev,
+      isLocalBusiness: true,
       businessName: c.title,
       gbpName: c.title,
       gbpPlaceId: c.placeId,
-      lat: c.lat != null ? String(c.lat) : prev.lat,
-      lng: c.lng != null ? String(c.lng) : prev.lng,
-      address: c.address ?? prev.address,
+      lat: c.lat != null ? String(c.lat) : "",
+      lng: c.lng != null ? String(c.lng) : "",
+      address: c.address ?? "",
+      phone: c.phone ?? "",
+      hours: c.hoursText ?? "",
     }));
+    window.dispatchEvent(new Event("crawlea:projects-changed"));
+  }
+
+  function clearGbp() {
+    setForm((prev) => ({
+      ...prev,
+      isLocalBusiness: false,
+      businessName: "",
+      gbpName: "",
+      gbpPlaceId: "",
+      lat: "",
+      lng: "",
+      address: "",
+      phone: "",
+      hours: "",
+    }));
+    window.dispatchEvent(new Event("crawlea:projects-changed"));
   }
 
   function set<K extends keyof ProjectFormValues>(key: K, value: ProjectFormValues[K]) {
@@ -87,180 +105,106 @@ export default function ProjectForm({
     if (errorMessage) setError(errorMessage);
   }
 
+  const INPUT =
+    "w-full rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-faint focus:border-brand focus:ring-2 focus:ring-brand/15";
+  const LABEL = "mb-1 block text-[13px] font-semibold text-ink-soft";
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-ink">Datos generales</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-ink-soft">Nombre del proyecto</label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => {
-                const name = e.target.value;
-                setForm((prev) => ({
-                  ...prev,
-                  name,
-                  // Mientras el usuario no haya tocado el slug, se deriva del
-                  // nombre en cada pulsación (autorelleno).
-                  slug: slugTouched ? prev.slug : slugify(name),
-                }));
-              }}
-              placeholder="Autocaravanas Ruta Norte"
-              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-              required
-            />
+    <form onSubmit={handleSubmit} className="overflow-hidden rounded-[20px] border border-line bg-surface shadow-card">
+      <div className="grid xl:grid-cols-2">
+        {/* Datos del proyecto */}
+        <div className="space-y-5 p-6">
+          <div className="flex items-start gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand">
+              <Globe className="h-4 w-4" />
+            </span>
+            <div>
+              <h2 className="text-base font-bold tracking-tight text-ink">Datos del proyecto</h2>
+              <p className="text-sm text-ink-soft">Cómo se llama y en qué web trabajas.</p>
+            </div>
           </div>
-          {showSlug && (
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-ink-soft">Identificador (slug)</label>
+          <div className="space-y-4">
+            <div>
+              <label className={LABEL}>Nombre del proyecto</label>
               <input
                 type="text"
-                value={form.slug}
+                value={form.name}
                 onChange={(e) => {
-                  setSlugTouched(true);
-                  set("slug", e.target.value);
+                  const name = e.target.value;
+                  setForm((prev) => ({
+                    ...prev,
+                    name,
+                    // Mientras el usuario no haya tocado el slug, se deriva del
+                    // nombre en cada pulsación (autorelleno).
+                    slug: slugTouched ? prev.slug : slugify(name),
+                  }));
                 }}
-                placeholder="autocaravanas-ruta-norte"
-                className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors font-mono"
+                placeholder="Autocaravanas Ruta Norte"
+                className={INPUT}
                 required
               />
             </div>
-          )}
-          <div className="space-y-1 sm:col-span-2">
-            <label className="block text-sm font-medium text-ink-soft">Dominio</label>
-            <input
-              type="text"
-              value={form.domain}
-              onChange={(e) => set("domain", e.target.value)}
-              placeholder="www.ejemplo.com"
-              className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-ink">Negocio local (NAP)</h2>
-          <label className="flex items-center gap-2 text-sm text-ink-soft">
-            <input
-              type="checkbox"
-              checked={form.isLocalBusiness}
-              onChange={(e) => set("isLocalBusiness", e.target.checked)}
-              className="h-4 w-4 rounded border-line"
-            />
-            Es un negocio local
-          </label>
-        </div>
-        {form.isLocalBusiness && (
-          <div className="space-y-4">
-            {projectId && (
-              <GbpPicker
-                projectId={projectId}
-                currentGbpName={form.gbpName || null}
-                currentPlaceId={form.gbpPlaceId || null}
-                onApplied={applyGbpCandidate}
-              />
+            {showSlug && (
+              <div>
+                <label className={LABEL}>Identificador (slug)</label>
+                <input
+                  type="text"
+                  value={form.slug}
+                  onChange={(e) => {
+                    setSlugTouched(true);
+                    set("slug", e.target.value);
+                  }}
+                  placeholder="autocaravanas-ruta-norte"
+                  className={cn(INPUT, "font-mono")}
+                  required
+                />
+              </div>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-ink-soft">Teléfono</label>
-                <input
-                  type="text"
-                  value={form.phone}
-                  onChange={(e) => set("phone", e.target.value)}
-                  className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-ink-soft">Horario</label>
-                <input
-                  type="text"
-                  value={form.hours}
-                  onChange={(e) => set("hours", e.target.value)}
-                  placeholder="Lunes a viernes 9:00-14:00 y 16:00-19:00"
-                  className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-                />
-              </div>
+            <div>
+              <label className={LABEL}>Dominio</label>
+              <input type="text" value={form.domain} onChange={(e) => set("domain", e.target.value)} placeholder="www.ejemplo.com" className={INPUT} />
+              <p className="mt-1 text-xs text-ink-faint">Es la web que se rastrea, se audita y de la que se mide la posición.</p>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowAdvanced((v) => !v)}
-              className="flex items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink"
-            >
-              <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showAdvanced && "rotate-180")} />
-              Avanzado: introducir dirección/coordenadas a mano
-            </button>
-            {showAdvanced && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                <div className="space-y-1 sm:col-span-2">
-                  <label className="block text-sm font-medium text-ink-soft">Nombre del negocio</label>
-                  <input
-                    type="text"
-                    value={form.businessName}
-                    onChange={(e) => set("businessName", e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-                  />
-                </div>
-                <div className="space-y-1 sm:col-span-2">
-                  <label className="block text-sm font-medium text-ink-soft">Dirección</label>
-                  <input
-                    type="text"
-                    value={form.address}
-                    onChange={(e) => set("address", e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-ink-soft">
-                    Latitud <span className="text-ink-faint font-normal">(centro del geogrid)</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={form.lat}
-                    onChange={(e) => set("lat", e.target.value)}
-                    placeholder="40.4168"
-                    className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-ink-soft">
-                    Longitud <span className="text-ink-faint font-normal">(centro del geogrid)</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={form.lng}
-                    onChange={(e) => set("lng", e.target.value)}
-                    placeholder="-3.7038"
-                    className="w-full px-3 py-2 border border-line rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
-                  />
-                </div>
-                <p className="text-xs text-ink-faint sm:col-span-2">
-                  Solo necesario si el negocio no aparece en el buscador de arriba (ej. ficha de Google
-                  todavía no creada). Obtén las coordenadas exactas en Google Maps: clic derecho en el
-                  pin → copiar.
-                </p>
-              </div>
-            )}
           </div>
-        )}
+        </div>
+
+        {/* Negocio local: siempre visible; elegir la ficha de Google lo activa */}
+        <div className="space-y-5 border-t border-line p-6 xl:border-l xl:border-t-0">
+          <div className="flex items-start gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand">
+              <MapPin className="h-4 w-4" />
+            </span>
+            <div>
+              <h2 className="text-base font-bold tracking-tight text-ink">Negocio local</h2>
+              <p className="text-sm text-ink-soft">Su ficha de Google Maps: de ahí sale toda la información del negocio.</p>
+            </div>
+          </div>
+          {projectId && (
+            <GbpPicker
+              projectId={projectId}
+              currentGbpName={form.gbpName || null}
+              currentPlaceId={form.gbpPlaceId || null}
+              details={{ address: form.address, phone: form.phone, hours: form.hours }}
+              onApplied={applyGbpCandidate}
+              onRemoved={clearGbp}
+            />
+          )}
+        </div>
       </div>
 
-      {error && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
-
-      <button
-        type="submit"
-        disabled={submitting}
-        className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-medium rounded-full hover:bg-brand-strong disabled:opacity-50"
-      >
-        {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-        {submitLabel}
-      </button>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface-muted/50 px-6 py-4">
+        <div className="min-h-5 text-sm">
+          {error && <span className="rounded-lg bg-alert-tint px-3 py-1.5 text-alert-ink">{error}</span>}
+        </div>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
+        >
+          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          {submitLabel}
+        </button>
+      </div>
     </form>
   );
 }

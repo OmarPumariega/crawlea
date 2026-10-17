@@ -1,6 +1,7 @@
 import { requireSession, projectForSession, moduleGate } from "@/lib/auth-guards";
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { DataForSeoError } from "@/lib/dataforseo/client";
 import { assertWithinSpendLimit, DataForSeoSpendLimitError } from "@/lib/dataforseo/spend";
 import { MAPS_COST_PER_POINT } from "@/lib/dataforseo/pricing";
@@ -84,17 +85,57 @@ export async function PATCH(
     return NextResponse.json({ error: "Ficha inválida — faltan place_id o coordenadas" }, { status: 400 });
   }
 
+  const phone = typeof body.phone === "string" ? body.phone.trim().slice(0, 40) : "";
+  const hoursText = typeof body.hoursText === "string" ? body.hoursText.trim().slice(0, 300) : "";
+
+  // Elegir una ficha activa el SEO local del proyecto (isLocalBusiness) y
+  // rellena TODO lo que la ficha sabe del negocio: nombre, dirección, teléfono y
+  // horario. Lo que la ficha no trae (p. ej. horario) se deja vacío.
   const updated = await prisma.project.update({
     where: { id },
     data: {
+      isLocalBusiness: true,
       gbpPlaceId: placeId,
       gbpName: title,
       lat,
       lng,
       businessName: title,
-      address: address || project.address,
+      address: address || null,
+      phone: phone || null,
+      hours: hoursText ? { text: hoursText } : Prisma.DbNull,
     },
   });
 
   return NextResponse.json(updated);
+}
+
+// DELETE — quita la ficha elegida: el proyecto deja de ser de SEO local y se
+// borran los datos que venían de ella (nombre, dirección, teléfono, horario y
+// coordenadas del centro del geogrid). El histórico de geogrids se conserva.
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await requireSession();
+  if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  const { id } = await params;
+  const project = await projectForSession(session, id, { id: true });
+  if (!project) return NextResponse.json({ error: "Proyecto no encontrado" }, { status: 404 });
+
+  await prisma.project.update({
+    where: { id },
+    data: {
+      isLocalBusiness: false,
+      gbpPlaceId: null,
+      gbpName: null,
+      businessName: null,
+      address: null,
+      phone: null,
+      hours: Prisma.DbNull,
+      lat: null,
+      lng: null,
+    },
+  });
+  return NextResponse.json({ ok: true });
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Search, MapPin, Star, CheckCircle2, X } from "lucide-react";
+import { Loader2, Search, MapPin, Star, CheckCircle2, X, Phone, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Búsqueda y selección de la ficha de Google (Maps) de referencia del
@@ -19,19 +19,33 @@ export type GbpCandidate = {
   rating: number | null;
   reviewsCount: number | null;
   category: string | null;
+  phone: string | null;
+  website: string | null;
+  hoursText: string | null;
 };
+
+// Lo que ya sabemos de la ficha elegida (se muestra en su tarjeta).
+export type GbpDetails = { address?: string | null; phone?: string | null; hours?: string | null };
 
 export default function GbpPicker({
   projectId,
   currentGbpName,
   currentPlaceId,
+  details,
   onApplied,
+  onRemoved,
 }: {
   projectId: string;
   currentGbpName: string | null;
   currentPlaceId: string | null;
+  details?: GbpDetails;
   onApplied: (c: GbpCandidate) => void;
+  // Si se pasa, la tarjeta de la ficha elegida ofrece «Quitar».
+  onRemoved?: () => void;
 }) {
+  // Con una ficha elegida no se enseña el buscador: solo si se pulsa «Cambiar».
+  const [changing, setChanging] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const [query, setQuery] = useState("");
   const [candidates, setCandidates] = useState<GbpCandidate[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -61,7 +75,10 @@ export default function GbpPicker({
     const res = await fetch(`/api/proyectos/${projectId}/geogrid/ficha`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ placeId: c.placeId, title: c.title, lat: c.lat, lng: c.lng, address: c.address }),
+      body: JSON.stringify({
+        placeId: c.placeId, title: c.title, lat: c.lat, lng: c.lng, address: c.address,
+        phone: c.phone, hoursText: c.hoursText,
+      }),
     });
     const data = await res.json();
     setApplyingId(null);
@@ -72,28 +89,87 @@ export default function GbpPicker({
     onApplied(c);
     setCandidates(null);
     setQuery("");
+    setChanging(false);
   }
 
-  return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-ink-soft">Ficha de Google del negocio</label>
+  async function handleRemove() {
+    if (!window.confirm("¿Quitar la ficha? El proyecto dejará de ser de SEO local y se borrarán los datos que venían de ella (dirección, teléfono, horario y centro del mapa).")) return;
+    setRemoving(true);
+    setError("");
+    const res = await fetch(`/api/proyectos/${projectId}/geogrid/ficha`, { method: "DELETE" });
+    setRemoving(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "No se pudo quitar la ficha");
+      return;
+    }
+    setChanging(false);
+    onRemoved?.();
+  }
 
-      {currentPlaceId ? (
-        <div className="flex items-center gap-2 px-3 py-2 border border-brand-100 bg-accent-tint rounded-lg text-sm">
-          <CheckCircle2 className="h-4 w-4 text-accent-ink shrink-0" />
-          <span className="text-accent-ink truncate flex-1">{currentGbpName}</span>
-          <span className="text-[10px] text-accent-ink shrink-0">place_id verificado</span>
+  const hasFicha = Boolean(currentPlaceId);
+  const showSearch = !hasFicha || changing;
+
+  return (
+    <div className="space-y-3">
+      {hasFicha && !changing && (
+        <div className="space-y-3 rounded-2xl border border-brand-100 bg-brand-50/60 p-4">
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-ink">{currentGbpName}</p>
+              <p className="text-xs text-ink-soft">Ficha de Google verificada · SEO local activado</p>
+            </div>
+          </div>
+          <ul className="space-y-1.5 text-sm text-ink-soft">
+            <li className="flex items-start gap-2">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
+              <span>{details?.address || "La ficha no indica dirección"}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Phone className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
+              <span>{details?.phone || "La ficha no indica teléfono"}</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
+              <span>{details?.hours || "La ficha no indica horario"}</span>
+            </li>
+          </ul>
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setChanging(true)}
+              className="rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-semibold text-ink-soft hover:bg-background"
+            >
+              Cambiar ficha
+            </button>
+            {onRemoved && (
+              <button
+                type="button"
+                onClick={handleRemove}
+                disabled={removing}
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-ink-faint hover:bg-alert-tint hover:text-alert-ink disabled:opacity-50"
+              >
+                {removing && <Loader2 className="h-3 w-3 animate-spin" />}
+                Quitar
+              </button>
+            )}
+          </div>
         </div>
-      ) : (
-        <div className="flex items-center gap-2 px-3 py-2 border border-brand-100 bg-accent-tint rounded-lg text-xs text-accent-ink">
-          Sin ficha de Google seleccionada — se usan las coordenadas guardadas del proyecto, sin
-          garantía de que sean las del negocio correcto.
-        </div>
+      )}
+
+      {showSearch && (
+        <p className="text-sm text-ink-soft">
+          {changing
+            ? "Busca la nueva ficha. Al elegirla sustituye a la actual y se actualizan dirección, teléfono y horario."
+            : "Busca tu negocio en Google Maps y elígelo: de la ficha sacamos nombre, dirección, teléfono y horario, y se activa el SEO local. Sin ficha, no hay SEO local."}
+        </p>
       )}
 
       {/* div, no <form>: este componente vive dentro del <form> de "Ejecutar
           geogrid" y HTML no permite formularios anidados — Enter en el
           input dispara la búsqueda a mano en vez de un submit real. */}
+      {showSearch && (
       <div className="flex gap-2">
         <input
           type="text"
@@ -130,7 +206,21 @@ export default function GbpPicker({
             <X className="h-4 w-4" />
           </button>
         )}
+        {changing && (
+          <button
+            type="button"
+            onClick={() => {
+              setChanging(false);
+              setCandidates(null);
+              setError("");
+            }}
+            className="shrink-0 px-2 text-xs font-semibold text-ink-soft hover:text-ink"
+          >
+            Cancelar
+          </button>
+        )}
       </div>
+      )}
 
       {error && <p className="text-xs text-alert-ink bg-alert-tint px-3 py-2 rounded-lg">{error}</p>}
 
