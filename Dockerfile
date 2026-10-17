@@ -66,6 +66,10 @@ COPY --from=builder /app/next.config.ts ./
 # archivo nunca llegaba a la imagen final) mientras funcionaba en local.
 COPY --from=builder /app/docs ./docs
 
+# Ficheros estáticos de /public (capturas de la web pública en /demo). Sin esto
+# el runner no los sirve y devuelven 404, aunque estén en el repositorio.
+COPY --from=builder /app/public ./public
+
 EXPOSE 3000
 
 CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
