@@ -26,7 +26,41 @@
 }
 .mk-tilt { transform: perspective(2000px) rotateX(9deg) rotateY(-4deg) scale(.98); transform-origin: 50% 0; }
 
+/* Maquetas animadas del recorrido y de las bandas oscuras */
+@keyframes mk-up { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+@keyframes mk-bar { from { width: 0 } to { width: var(--to, 100%) } }
+@keyframes mk-type { from { clip-path: inset(0 100% 0 0) } to { clip-path: inset(0 0 0 0) } }
+@keyframes mk-pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(79,92,245,.45) } 100% { box-shadow: 0 0 0 14px rgba(79,92,245,0) } }
+.mk-stagger > * { animation: mk-up .6s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 110ms); }
+.mk-bar { animation: mk-bar 2.4s .2s cubic-bezier(.3,.7,.2,1) both; }
+.mk-type { animation: mk-type 1.1s .2s steps(18, end) both; }
+.mk-ring { animation: mk-pulse-ring 1.8s ease-out infinite; }
+
+/* Foco que sigue al cursor (componente Spotlight) */
+.mk-spot { background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgba(115,129,255,.22), transparent 60%); opacity: 0; transition: opacity .3s; }
+*:hover > .mk-spot { opacity: 1; }
+
+/* «Qué reúne»: las piezas sueltas se ordenan al entrar en pantalla */
+.cs-row .cs-old { transform: translate(var(--x, 0), var(--y, 0)) rotate(var(--r, 0deg)); transition: transform 1s cubic-bezier(.2,.8,.2,1) calc(var(--i, 0) * 90ms); }
+.cs-row .cs-arrow, .cs-row .cs-new { opacity: 0; transform: translateX(-8px); transition: opacity .6s ease calc(.5s + var(--i, 0) * 90ms), transform .6s ease calc(.5s + var(--i, 0) * 90ms); }
+.cs-in .cs-old { transform: none; }
+.cs-in .cs-arrow, .cs-in .cs-new { opacity: 1; transform: none; }
+
+/* Preguntas frecuentes: apertura suave sin medir alturas */
+.faq-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s cubic-bezier(.2,.8,.2,1); }
+.faq-body > div { overflow: hidden; }
+.faq-open .faq-body { grid-template-rows: 1fr; }
+
+/* Deslizador de la calculadora de créditos */
+.mk-range { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 999px; background: rgba(255,255,255,.18); outline: none; }
+.mk-range::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 999px; background: #fff; border: 5px solid #4F5CF5; cursor: grab; }
+.mk-range::-moz-range-thumb { width: 14px; height: 14px; border-radius: 999px; background: #fff; border: 5px solid #4F5CF5; cursor: grab; }
+
 @media (prefers-reduced-motion: reduce) {
+  .mk-stagger > *, .mk-bar, .mk-type, .mk-ring { animation: none; }
+  .mk-bar { width: var(--to, 100%); }
+  .cs-row .cs-old, .cs-row .cs-arrow, .cs-row .cs-new { transition: none; transform: none; opacity: 1; }
+  .faq-body { transition: none; }
   .mk-float-a, .mk-float-b, .mk-glow, .mk-draw, .mk-grow, .mk-fade { animation: none; }
   .mk-draw { stroke-dashoffset: 0; }
   .rv-hide { opacity: 1; transform: none; }
