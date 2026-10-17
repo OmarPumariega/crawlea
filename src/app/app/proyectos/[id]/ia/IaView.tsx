@@ -199,7 +199,7 @@ export default function IaView({ projectId }: { projectId: string }) {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Seguimiento · Visibilidad IA"
+        eyebrow="Módulo · Visibilidad IA"
         title="Visibilidad en IA"
         description="Comprueba si Google muestra una respuesta con IA (AI Overview) para tus keywords y si te cita como fuente. Debajo, a modo de muestra, qué responden ChatGPT y Perplexity a preguntas de cliente."
       />

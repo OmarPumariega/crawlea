@@ -467,7 +467,7 @@ sitio; ver el apartado "Copilot" más abajo.
   logo como data URL ≤150 KB) sustituye a Crawlea en encabezado, pie y emails. La carga de
   datos vive en `load-report.ts` (compartida por la vista del propietario y la pública, que
   NO comprueba permisos: lo hace quien la llama). Panel en `SharePanel.tsx`.
-- **Visibilidad IA** (grupo Seguimiento, módulo `ia`, **de pago**). Lo principal es el
+- **Visibilidad IA** (módulo propio y suelto en el menú, como Informe; módulo `ia`, **de pago**). Lo principal es el
   **AI Overview de Google por keyword**: sobre las keywords de Rank Tracking, una consulta
   al SERP orgánico (`load_async_ai_overview`, ~0,002 $ medidos, estimado a 0,004 $) dice si
   Google muestra respuesta con IA para esa búsqueda, qué fuentes cita y si te cita
