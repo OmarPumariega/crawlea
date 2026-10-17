@@ -1,6 +1,7 @@
 import { postTask } from "@/lib/dataforseo/client";
 import { getCachedSerpEntry, saveSerpCache, parseSerpExtras, type CachedSerpItem } from "@/lib/dataforseo/serp-cache";
 import { madridDayBounds } from "@/lib/rank/day-guard";
+import { parseAiOverview, type AiOverviewResult, type Item as AioItem } from "@/lib/ai-visibility/overview";
 
 // Cliente de SERP de DataForSEO (Módulo 5 — Rank Tracking). Llama al
 // endpoint Live Advanced de orgánicos de Google y localiza en qué posición
@@ -32,6 +33,9 @@ export type SerpResult = {
   // coste marginal cero, antes se descartaba. Clave = dominio competidor tal
   // cual se pidió (normalizado por el caller).
   competitors: Record<string, SerpRank>;
+  // AI Overview del mismo SERP (solo si se pidió `withAiOverview` y la llamada
+  // fue fresca; undefined = no medido, p.ej. SERP servido desde caché).
+  aiOverview?: Omit<AiOverviewResult, "costUsd">;
 };
 
 // Normaliza el dominio de un proyecto a su forma registrable: quita esquema,
@@ -121,6 +125,10 @@ export async function checkSerpRank(params: {
   // Dominios de competidores (Módulo Competidores) a localizar en el mismo
   // SERP — opcional, no cambia el coste de la llamada.
   competitorDomains?: string[];
+  // Pide también el AI Overview de Google (load_async_ai_overview): mismo SERP,
+  // sin una llamada extra; la API puede facturar hasta +0,002$ cuando Google lo
+  // carga de forma asíncrona (y lo reembolsa si no hay AI Overview).
+  withAiOverview?: boolean;
 }): Promise<SerpResult> {
   const { keyword, locationCode, languageCode, device, projectDomain } = params;
   const depth = params.depth ?? DEFAULT_DEPTH;
@@ -161,6 +169,7 @@ export async function checkSerpRank(params: {
       language_code: languageCode,
       device,
       depth,
+      ...(params.withAiOverview ? { load_async_ai_overview: true } : {}),
     },
     "rank"
   );
@@ -218,5 +227,9 @@ export async function checkSerpRank(params: {
   }
 
   const result = buildResultFromMatchable(organicItems, projectDomain, competitorDomains);
-  return { ...result, costUsd: typeof task.cost === "number" ? task.cost : null };
+  return {
+    ...result,
+    costUsd: typeof task.cost === "number" ? task.cost : null,
+    ...(params.withAiOverview ? { aiOverview: parseAiOverview(allItems as AioItem[], projectDomain) } : {}),
+  };
 }

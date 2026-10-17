@@ -473,7 +473,13 @@ sitio; ver el apartado "Copilot" más abajo.
   Google muestra respuesta con IA para esa búsqueda, qué fuentes cita y si te cita
   (`src/lib/ai-visibility/overview.ts`, modelo `AiOverviewCheck` con histórico). Es una
   medición estable y funciona en España; en búsquedas locales Google suele mostrar el
-  mapa en vez del AI Overview, y "No lo muestra" es un dato real, no un fallo. Como apoyo,
+  mapa en vez del AI Overview, y "No lo muestra" es un dato real, no un fallo. **Rank Tracking
+  lo alimenta solo**: si la cuenta tiene el módulo `ia`, cada chequeo de posición pide el AI
+  Overview en el MISMO SERP (`withAiOverview` → `load_async_ai_overview`, sin llamada extra;
+  la API puede facturar hasta +0,002 $ si Google lo carga asíncrono) y lo guarda como
+  `AiOverviewCheck`; las cuentas sin el módulo no pagan ese posible extra, y un SERP servido
+  desde caché no lo trae. El botón "Comprobar" del módulo cubre lo que Rank Tracking aún no
+  ha medido. Como apoyo,
   **preguntas de cliente** (`AiPrompt`, máx. 30) lanzadas a ChatGPT (`gpt-4o-mini` con
   búsqueda web) y Perplexity (`sonar`) vía DataForSEO LLM Responses (`llm.ts`; ~0,027 $
   medidos en ChatGPT). Esto es una **muestra puntual, no una medición**: una respuesta de IA

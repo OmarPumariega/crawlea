@@ -3,6 +3,8 @@ import { assertWithinSpendLimit } from "@/lib/dataforseo/spend";
 import { rankCheckCostUsd } from "@/lib/dataforseo/pricing";
 import { checkSerpRank, normalizeDomain } from "@/lib/rank/serp";
 import { madridDayBounds } from "@/lib/rank/day-guard";
+import { planAllowsModule } from "@/lib/plans";
+import { AI_OVERVIEW_EXTRA_COST_USD } from "@/lib/ai-visibility/overview";
 
 // Comprueba la posición orgánica de una RankKeyword contra DataForSEO SERP y
 // persiste el resultado: una nueva fila en RankPosition (histórico) + la
@@ -67,7 +69,16 @@ export async function checkRankKeyword(rankKeywordId: string): Promise<{
   // Tope de gasto: bloquea ANTES de la llamada (no gastar si ya estamos en el
   // límite mensual). Solo se evalúa para chequeos reales (los cacheados no
   // gastan).
-  await assertWithinSpendLimit(rk.projectId, rankCheckCostUsd(rk.depth));
+  // Si la cuenta tiene Visibilidad IA, el mismo SERP pide también el AI Overview
+  // de Google (sin llamada extra) y se anota en el módulo; las cuentas sin ese
+  // módulo no pagan el posible extra. El admin de la plataforma siempre lo tiene.
+  const owner = await prisma.user.findUnique({
+    where: { id: rk.project.userId },
+    select: { plan: true, role: true },
+  });
+  const withAiOverview = !!owner && (owner.role === "admin" || planAllowsModule(owner.plan, "ia"));
+
+  await assertWithinSpendLimit(rk.projectId, rankCheckCostUsd(rk.depth) + (withAiOverview ? AI_OVERVIEW_EXTRA_COST_USD : 0));
 
   const projectDomain = normalizeDomain(rk.project.domain);
 
@@ -80,7 +91,7 @@ export async function checkRankKeyword(rankKeywordId: string): Promise<{
     select: { domain: true },
   });
 
-  const { rank, costUsd, competitors: competitorRanks } = await checkSerpRank({
+  const { rank, costUsd, competitors: competitorRanks, aiOverview } = await checkSerpRank({
     keyword: rk.keyword,
     locationCode: rk.locationCode,
     languageCode: rk.languageCode,
@@ -88,6 +99,7 @@ export async function checkRankKeyword(rankKeywordId: string): Promise<{
     projectDomain,
     depth: rk.depth,
     competitorDomains: competitors.map((c) => c.domain),
+    withAiOverview,
   });
 
   const now = new Date();
@@ -120,6 +132,23 @@ export async function checkRankKeyword(rankKeywordId: string): Promise<{
             : rk.bestPosition,
       },
     }),
+    ...(aiOverview
+      ? [
+          prisma.aiOverviewCheck.create({
+            data: {
+              rankKeywordId: rk.id,
+              checkedAt: now,
+              hasOverview: aiOverview.hasOverview,
+              cited: aiOverview.cited,
+              citedRank: aiOverview.citedRank,
+              references: aiOverview.references,
+              excerpt: aiOverview.excerpt,
+              // El coste va dentro del chequeo de posición (una sola llamada).
+              costUsd: null,
+            },
+          }),
+        ]
+      : []),
     ...(competitors.length > 0
       ? [
           prisma.rankCompetitorPosition.createMany({

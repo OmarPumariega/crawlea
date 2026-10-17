@@ -131,6 +131,7 @@ export default function AiOverviewSection({ projectId }: { projectId: string }) 
           <p className="mt-0.5 max-w-2xl text-sm text-ink-soft">
             Para cada keyword que sigues: ¿Google muestra una respuesta con IA? ¿Te cita como fuente? En búsquedas locales
             («… en Oviedo») Google suele mostrar el mapa en vez del AI Overview, y eso también es un dato real.
+            Cada vez que Rank Tracking comprueba una keyword, este dato se actualiza solo, sin coste extra de consulta.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
