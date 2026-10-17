@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Check, Info } from "lucide-react";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
-import { FAQ } from "@/lib/marketing-content";
+import { AUDIENCES, FAQ } from "@/lib/marketing-content";
 import { FEATURES } from "@/lib/marketing-features";
 import SectionHead from "@/components/marketing/SectionHead";
 import CtaBand from "@/components/marketing/CtaBand";
 import Reveal from "@/components/marketing/Reveal";
 import FeatureCarousel from "@/components/marketing/FeatureCarousel";
 import FeatureCard from "@/components/marketing/FeatureCard";
+import WorkflowTabs from "@/components/marketing/WorkflowTabs";
 import PricingCards from "@/components/marketing/PricingCards";
-import { CrawlGrid, FactTile, RankStrip, AnalyzerChecks, StepAdd, StepCrawl, StepFix } from "@/components/marketing/StepVisuals";
+import { CrawlGrid, FactTile, RankStrip, AnalyzerChecks } from "@/components/marketing/StepVisuals";
 import LogoMarquee from "@/components/marketing/LogoMarquee";
 import HeroAnalyzer from "@/components/marketing/HeroAnalyzer";
 import { AlertCard, DashboardMockup, GeoHeat, Pill } from "@/components/marketing/mockups";
@@ -103,6 +104,22 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ============ CÓMO SE CONECTA ============ */}
+      <section data-section="como-se-conecta" className="border-b border-line bg-background">
+        <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
+          <Reveal><SectionHead n="01" label="Cómo se conecta" title="Cada herramienta alimenta a la siguiente" text="Lo que descubres en una pasa a la otra con un clic. Así pasas de un dominio a un plan de mejora sin copiar y pegar." /></Reveal>
+          <Reveal><WorkflowTabs /></Reveal>
+
+          {/* Qué cubre: límites reales del producto */}
+          <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Reveal><FactTile big="5.000" label="páginas por rastreo: el sitio entero, no una muestra"><CrawlGrid /></FactTile></Reveal>
+            <Reveal delay={70}><FactTile big="Top 100" label="profundidad del seguimiento de posiciones"><RankStrip /></FactTile></Reveal>
+            <Reveal delay={140}><FactTile big="7×7" label="puntos de mapa de calor en Google Maps"><GeoHeat className="mx-auto max-w-[130px] gap-1" /></FactTile></Reveal>
+            <Reveal delay={210}><FactTile big="0–100" label="puntuación on-page de cualquier URL, con cómo arreglarla"><AnalyzerChecks /></FactTile></Reveal>
+          </div>
+        </div>
+      </section>
+
       {/* ============ DATOS REALES (oscura) ============ */}
       <section data-section="datos-reales" className="relative overflow-hidden bg-[#0E1033] py-24 text-white">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true" style={{ background: "radial-gradient(ellipse 60% 60% at 15% 50%, rgba(79,92,245,0.4), transparent 70%)" }} />
@@ -135,47 +152,36 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ============ CÓMO FUNCIONA ============ */}
-      <section data-section="como-funciona" className="border-b border-line bg-background">
+      {/* ============ PARA QUIÉN ============ */}
+      <section data-section="para-quien" className="bg-background">
         <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
-          <Reveal><SectionHead n="01" label="Cómo funciona" title="Del dominio al plan de mejora" text="Sin instalar nada: entras con tu cuenta de Google y en unos minutos sabes qué corregir primero." /></Reveal>
-
-          {/* Qué cubre: límites reales del producto */}
-          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Reveal><FactTile big="5.000" label="páginas por rastreo: el sitio entero, no una muestra"><CrawlGrid /></FactTile></Reveal>
-            <Reveal delay={70}><FactTile big="Top 100" label="profundidad del seguimiento de posiciones"><RankStrip /></FactTile></Reveal>
-            <Reveal delay={140}><FactTile big="7×7" label="puntos de mapa de calor en Google Maps"><GeoHeat className="mx-auto max-w-[130px] gap-1" /></FactTile></Reveal>
-            <Reveal delay={210}><FactTile big="0–100" label="puntuación on-page de cualquier URL, con cómo arreglarla"><AnalyzerChecks /></FactTile></Reveal>
-          </div>
-
-          {/* Pasos */}
-          <ol className="relative mt-16 grid gap-5 md:grid-cols-3">
-            <div className="pointer-events-none absolute left-[16%] right-[16%] top-[19px] hidden border-t-2 border-dashed border-brand/30 md:block" aria-hidden="true" />
-            {[
-              { n: "1", title: "Añade tu web", text: "Crea un proyecto con el dominio que quieres seguir.", visual: <StepAdd /> },
-              { n: "2", title: "Lanza el primer rastreo", text: "Tarda unos minutos y detecta los problemas de tu web.", visual: <StepCrawl /> },
-              { n: "3", title: "Mejora lo primero", text: "Cada dato viene con una pista de qué hacer a continuación.", visual: <StepFix /> },
-            ].map((st, i) => (
-              <Reveal key={st.n} delay={i * 90}>
-                <li className="relative h-full">
-                  <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-brand text-sm font-extrabold text-white ring-8 ring-background">{st.n}</span>
-                  <div className="mt-5 rounded-[22px] border border-line bg-surface p-6">
-                    <div className="rounded-2xl bg-surface-muted p-4">{st.visual}</div>
-                    <h3 className="mt-5 text-xl font-extrabold tracking-[-0.02em] text-ink">{st.title}</h3>
-                    <p className="mt-1.5 leading-relaxed text-ink-soft">{st.text}</p>
-                  </div>
-                </li>
+          <Reveal><SectionHead n="02" label="Para quién" title="Hecho para quien hace SEO a diario" text="Tres formas de usarlo. Cada una con las herramientas que de verdad necesita." /></Reveal>
+          <div className="mt-14 grid gap-4 lg:grid-cols-3">
+            {AUDIENCES.map((a, i) => (
+              <Reveal key={a.title} delay={i * 80} className="h-full">
+                <article className="flex h-full flex-col rounded-[22px] border border-line bg-surface p-7">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand">{a.kicker}</p>
+                  <h3 className="mt-3 text-2xl font-extrabold leading-[1.1] tracking-[-0.025em] text-ink">{a.title}</h3>
+                  <p className="mt-3 leading-relaxed text-ink-soft">{a.text}</p>
+                  <ul className="mt-5 space-y-2.5">
+                    {a.points.map((pt) => (
+                      <li key={pt} className="flex items-start gap-2.5 text-[14px] leading-snug text-ink-soft"><Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" />{pt}</li>
+                    ))}
+                  </ul>
+                  <Link href={a.href} data-track="audience_cta_click" data-track-audience={a.kicker} className="mt-auto inline-flex items-center gap-2 pt-7 text-[15px] font-bold text-brand hover:text-brand-strong">
+                    {a.cta} <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </article>
               </Reveal>
             ))}
-          </ol>
-          <p className="mt-4 text-xs text-ink-faint">Las pantallas de los pasos son una maqueta con datos de ejemplo.</p>
+          </div>
         </div>
       </section>
 
       {/* ============ PRECIOS ============ */}
       <section data-section="precios-home" className="border-y border-line bg-surface">
         <div className="mx-auto max-w-[1360px] px-5 py-24 sm:px-8 lg:px-10">
-          <Reveal><SectionHead n="02" label="Precios" title="SEO claro, a un precio justo" text="Empieza gratis y sube de plan cuando lo necesites." /></Reveal>
+          <Reveal><SectionHead n="03" label="Precios" title="SEO claro, a un precio justo" text="Empieza gratis y sube de plan cuando lo necesites." /></Reveal>
           <Reveal className="mt-14"><PricingCards /></Reveal>
           <div className="mt-8">
             <Link href="/precios" className="inline-flex items-center gap-2 text-[15px] font-bold text-brand hover:text-brand-strong">Compara los planes <ArrowRight className="h-4 w-4" /></Link>
@@ -187,7 +193,7 @@ export default function HomePage() {
       <section className="bg-background">
         <div className="mx-auto grid max-w-[1360px] gap-12 px-5 py-24 sm:px-8 lg:px-10 lg:grid-cols-[1fr_1.6fr]">
           <Reveal>
-            <p className="text-sm font-bold text-ink"><span className="text-brand">03</span><span className="mx-2 text-ink-faint">/</span>Preguntas</p>
+            <p className="text-sm font-bold text-ink"><span className="text-brand">04</span><span className="mx-2 text-ink-faint">/</span>Preguntas</p>
             <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl">Preguntas frecuentes</h2>
             <p className="mt-4 max-w-xs text-ink-soft">¿Te queda alguna duda? <Link href="/contacto" className="font-bold text-brand hover:text-brand-strong">Escríbenos</Link>.</p>
           </Reveal>
