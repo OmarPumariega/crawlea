@@ -67,7 +67,7 @@ Extra (fuera del spec de 9 módulos, mismo principio de datos reales): análisis
 Auditoría), detección de contenido fino,
 Copilot de IA de solo lectura, Competidores (visibilidad + content gap), Backlinks,
 control de gasto con tope por proyecto, avisos por email, generación automática de
-tareas desde hallazgos de auditoría, Notas internas de proyecto, Informe imprimible, compartible por enlace público de solo lectura y con marca blanca (envío mensual por email), sugerencias de enlazado interno y Visibilidad IA (ChatGPT/Perplexity vía DataForSEO, módulo de pago `ia`).
+tareas desde hallazgos de auditoría, Notas internas de proyecto, Informe imprimible, compartible por enlace público de solo lectura y con marca blanca (envío mensual por email), sugerencias de enlazado interno, Analizador de URL (on-page determinista, gratis, con descarga protegida contra SSRF) y Visibilidad IA (ChatGPT/Perplexity vía DataForSEO, módulo de pago `ia`).
 
 No hay roadmap pendiente urgente: lo que falta (Google Ads como fuente alternativa,
 Business Profile API, SEO para LLMs) está bloqueado por coste o aprobación de

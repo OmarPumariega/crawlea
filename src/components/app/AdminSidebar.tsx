@@ -6,13 +6,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { PAID_MODULES, planAllowsModule, type ModuleId } from "@/lib/plans";
 import {
-  Anchor,
   Braces,
   ChevronDown,
   CircleUserRound,
   FileBarChart2,
   FileText,
   MessageSquareText,
+  ScanSearch,
   FolderKanban,
   Key,
   LayoutDashboard,
@@ -80,6 +80,7 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
       label: "On-Page",
       icon: FileText,
       modules: [
+        { href: `${base}/analizador`, label: "Analizador URL", icon: ScanSearch },
         { href: `${base}/titulos-meta`, label: "Título y Meta", icon: Type },
         { href: `${base}/schema`, label: "Schema", icon: Braces },
         { href: `${base}/contenido`, label: "Contenido", icon: PenLine },
@@ -101,7 +102,6 @@ function projectNav(base: string, isLocalBusiness: boolean): ProjectNav {
         { href: `${base}/rank`, label: "Rank Tracking", icon: TrendingUp },
         { href: `${base}/google`, label: "Google", icon: Globe },
         { href: `${base}/competidores`, label: "Competidores", icon: Users },
-        { href: `${base}/backlinks`, label: "Backlinks", icon: Anchor },
       ],
     },
   ];
@@ -148,6 +148,7 @@ const LEGACY_MODULE_SEGMENTS: Record<string, string> = {
   tfidf: "contenido/tfidf",
   enlaces: "auditoria/enlaces",
   canibalizaciones: "auditoria/canibalizaciones",
+  backlinks: "competidores/backlinks",
 };
 
 export default function AdminSidebar({

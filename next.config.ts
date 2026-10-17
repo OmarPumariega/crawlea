@@ -76,6 +76,11 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
+        source: "/app/proyectos/:id/backlinks",
+        destination: "/app/proyectos/:id/competidores/backlinks",
+        permanent: false,
+      },
+      {
         source: "/app/proyectos/:id/canibalizaciones",
         destination: "/app/proyectos/:id/auditoria/canibalizaciones",
         permanent: false,

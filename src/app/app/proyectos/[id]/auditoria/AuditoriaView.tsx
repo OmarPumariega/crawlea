@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Loader2, AlertTriangle, XCircle, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import HistoryDropdown from "@/components/app/HistoryDropdown";
 import Section from "@/components/ui/Section";
 import StatTile from "@/components/ui/StatTile";
 import { RadialGauge } from "@/components/ui/charts";
@@ -793,41 +794,41 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
         </>
       )}
 
-      <Section title="Histórico" description="Pulsa una auditoría para ver sus resultados.">
-        {loadingHistory ? (
-          <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
-        ) : history.length === 0 ? (
-          <p className="text-sm text-ink-soft">Todavía no se ha ejecutado ninguna auditoría.</p>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
-            {history.map((run) => {
-              const score = run.status === "completed" && !run.robotsBlocked ? run.overallScore : null;
-              return (
-                <button
-                  key={run.id}
-                  onClick={() => loadDetail(run.id)}
-                  className={cn(
-                    "rounded-2xl border p-3 text-left transition-colors hover:bg-surface-muted",
-                    current?.id === run.id ? "border-brand bg-brand-50/50" : "border-line"
-                  )}
-                >
-                  <p className="text-xs text-ink-faint">
-                    {new Date(run.triggeredAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
-                  </p>
-                  <p className="mt-1 text-lg font-extrabold tabular-nums text-ink">
-                    {run.status === "completed" ? (run.robotsBlocked ? "Bloqueada" : `${run.overallScore}/100`) : run.status === "failed" ? "Error" : "En curso"}
-                  </p>
-                  {score != null && (
-                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-brand-50">
-                      <div className={cn("h-full rounded-full", score >= 80 ? "bg-brand-500" : score >= 50 ? "bg-brand-300" : "bg-alert")} style={{ width: `${score}%` }} />
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </Section>
+      <HistoryDropdown count={history.length} loading={loadingHistory} title="Histórico">
+        {(close) =>
+          history.length === 0 ? (
+            <p className="px-2 py-3 text-sm text-ink-soft">Todavía no se ha ejecutado ninguna auditoría.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {history.map((run) => {
+                const score = run.status === "completed" && !run.robotsBlocked ? run.overallScore : null;
+                return (
+                  <button
+                    key={run.id}
+                    onClick={() => { loadDetail(run.id); close(); }}
+                    className={cn(
+                      "rounded-2xl border p-3 text-left transition-colors hover:bg-surface-muted",
+                      current?.id === run.id ? "border-brand bg-brand-50/50" : "border-line"
+                    )}
+                  >
+                    <p className="text-xs text-ink-faint">
+                      {new Date(run.triggeredAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                    <p className="mt-1 text-lg font-extrabold tabular-nums text-ink">
+                      {run.status === "completed" ? (run.robotsBlocked ? "Bloqueada" : `${run.overallScore}/100`) : run.status === "failed" ? "Error" : "En curso"}
+                    </p>
+                    {score != null && (
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-brand-50">
+                        <div className={cn("h-full rounded-full", score >= 80 ? "bg-brand-500" : score >= 50 ? "bg-brand-300" : "bg-alert")} style={{ width: `${score}%` }} />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )
+        }
+      </HistoryDropdown>
     </div>
   );
 }

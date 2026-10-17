@@ -116,7 +116,7 @@ reutiliza llamadas ya pagadas).
 ## Esquema de base de datos (Prisma)
 
 Ver [`docs/04-modelo-de-datos.md`](./docs/04-modelo-de-datos.md) para el detalle
-completo (30 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
+completo (31 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
 NAP, propiedad de Google seleccionada y tope de gasto opcional),
 `TitleMetaGeneration` y `SchemaGeneration` (historial de los Módulos 3 y 4),
 `ApiUsageLog` (coste por llamada a OpenRouter/DataForSEO, base del control de gasto),
@@ -217,9 +217,9 @@ Proyectos. Tres bloques:
 
 ### Ficha de proyecto (`/admin/proyectos/[id]/...`)
 Módulos anidados por ruta, con el nav en el sidebar global (no pestañas locales), en
-este orden: Perfil, Tareas, Notas, Keywords (con la pestaña Arquitectura), Título y Meta,
+este orden: Perfil, Tareas, Notas, Keywords (con la pestaña Arquitectura), Analizador de URL, Título y Meta,
 Schema, Contenido (con la pestaña TF-IDF), Auditoría (con las pestañas Enlaces y
-Canibalizaciones), Rank Tracking, Google, Competidores, Backlinks, Geogrid (solo si el
+Canibalizaciones), Rank Tracking, Google, Competidores (con la pestaña Backlinks), Geogrid (solo si el
 proyecto es negocio local con coordenadas), Informe. Las sub-herramientas fusionadas son
 pestañas por ruta (`ModuleTabs.tsx` en el `layout.tsx` de cada módulo contenedor); las
 rutas antiguas (`/arquitectura`, `/tfidf`, `/enlaces`, `/canibalizaciones`) redirigen
@@ -294,6 +294,24 @@ sitio; ver el apartado "Copilot" más abajo.
   reclama (cruzado contra `Keyword`, nunca estimado), ordenando cada nivel por ese
   volumen. Sin estructura generada todavía, permite generarla desde aquí (mismo
   endpoint del Módulo 1).
+- **Analizador de URL** (grupo On-Page, módulo `analizador`, **gratis y sin coste de API**):
+  pegas cualquier URL (propia o de la competencia) y, opcionalmente, una keyword objetivo
+  (si no la escribes y la URL ya posiciona en Rank Tracking, se usa esa) y descarga el HTML
+  real y lo analiza con comprobaciones deterministas (`src/lib/url-analyzer/analyze.ts`, sin
+  LLM): URL e indexación (código, redirecciones, HTTPS, noindex, canonical, slug), título y
+  meta, encabezados (un H1, jerarquía sin saltos), keyword (en título, H1, URL, primeras 100
+  palabras, densidad), contenido (mínimo de palabras, legibilidad, dependencia de JS),
+  imágenes (alt, dimensiones, lazy), datos estructurados (JSON-LD válido y tipo adecuado),
+  enlaces (internos, anchors genéricos) y móvil/redes (viewport, lang, Open Graph). Cada
+  comprobación dice qué se ha encontrado, si está bien y **cómo arreglarlo**; hay puntuación
+  0-100 por categoría y total, lista "qué arreglar primero", vista previa de Google y esquema
+  de encabezados. Analiza el HTML INICIAL (lo que pinte JavaScript después no se ve) y no
+  comprueba enlaces rotos (eso es la Auditoría). Historial por proyecto (`UrlAnalysis`) con
+  comparación de puntuación contra el análisis anterior de la misma URL. La descarga pasa
+  por `src/lib/net/safe-fetch.ts` (protección SSRF: solo http/https y puertos web, rechaza
+  hosts privados/loopback/metadatos de nube, revalida cada redirección, tope de tamaño y de
+  tiempo) y se limita a 30 análisis por usuario cada 10 min. `scrapePage` (Título y Meta,
+  Schema, Contenido) usa ahora la misma descarga segura.
 - **Título y Meta** (Módulo 3): URL → scraping real → 3 variantes de título/meta
   descripción vía OpenRouter, siguiendo [`docs/seo-rules.md`](./docs/seo-rules.md).
   Keyword objetivo manual opcional (puede venir del Módulo 1 cuando exista estudio).
@@ -398,7 +416,16 @@ sitio; ver el apartado "Copilot" más abajo.
   consulta directa a Search Console (mismo query posicionando
   varias URLs en 90 días) — requiere GSC conectado para el proyecto, sin coste de
   DataForSEO/OpenRouter.
-- **Competidores** (Tier 2): tabla comparativa de un vistazo arriba del todo
+- **Competidores + Backlinks** (una sola herramienta, ruta `/competidores`, con la pestaña
+  `/competidores/backlinks`; la ruta antigua `/backlinks` redirige desde `next.config.ts`).
+  El competidor es la unidad: la comparativa de arriba reúne, por dominio (el propio y cada
+  competidor), tráfico estimado, keywords, posición media, fuerza del dominio **y autoridad,
+  backlinks y dominios de referencia** (último `BacklinkSnapshot`). El botón **Analizar** de
+  cada competidor hace las dos mitades seguidas —visibilidad (Labs) y perfil de backlinks (50
+  por defecto)— con el coste combinado a la vista; "Analizar todos" solo paga lo que falta de
+  cada uno; el modal de añadir competidor trae marcado "Analizarlo ahora". Nada se analiza
+  sin que el coste se haya mostrado antes. El content gap sigue siendo una acción aparte.
+- **Competidores — detalle** (Tier 2): tabla comparativa de un vistazo arriba del todo
   (proyecto + todos los competidores trackeados, ordenados por tráfico orgánico,
   con "Sin analizar" para los pendientes) — mismo patrón que la comparativa de
   Backlinks, 100% frontend, sin llamada nueva a la API. Trackear dominios
@@ -504,6 +531,15 @@ sitio; ver el apartado "Copilot" más abajo.
   modificar datos del proyecto.
 
 ## Convenciones de UI (guía de estilo)
+
+**Barra superior de módulo y historial:** todos los módulos con subpantallas, historial o
+ambos empiezan con la misma barra blanca (`ModuleTabs.tsx`, en el `layout.tsx` del
+módulo): a la izquierda las pestañas como píldoras con una línea de ayuda (o, si el módulo no
+tiene pestañas, su nombre como única píldora) y a la derecha el **historial** del módulo
+(`HistoryDropdown.tsx`, un desplegable que la vista monta por portal en
+`#module-history-slot`). El historial NUNCA va en una columna lateral ni al final de la
+página: así el contenido ocupa todo el ancho sin huecos. Un módulo nuevo con historial usa
+`<HistoryDropdown count=… >{(close) => …}</HistoryDropdown>` y su layout trae la barra.
 
 **Antes de crear o modificar cualquier componente, lee
 [`Guia de estilo/GUIA-DE-ESTILO.md`](./Guia%20de%20estilo/GUIA-DE-ESTILO.md).**

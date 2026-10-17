@@ -11,6 +11,7 @@ import { creditsToUsd } from "@/lib/credits";
 
 export const MODULE_IDS = [
   "keywords",
+  "analizador",
   "titulos-meta",
   "schema",
   "rank",

@@ -14,6 +14,7 @@ import UrlLink from "@/components/app/UrlLink";
 import GbpPicker, { type GbpCandidate } from "@/components/app/GbpPicker";
 import type { MapsTopItem } from "@/lib/geogrid/maps";
 import PageHeader from "@/components/app/PageHeader";
+import HistoryDropdown from "@/components/app/HistoryDropdown";
 
 // Item devuelto por "Ver keywords" — mismo shape que RankedKeyword de
 // Competidores (mismo endpoint, incluida la dificultad real).
@@ -716,8 +717,7 @@ export default function GeogridView({
         );
       })()}
 
-      <div className="grid items-start gap-4 xl:grid-cols-3">
-        <div className="space-y-4 xl:col-span-2">
+      <div className="space-y-4">
       {/* Mapa real (Leaflet/OSM), siempre visible desde el centro del negocio
           aunque todavía no haya ningún geogrid ejecutado, con un círculo
           numerado por punto (mismo lenguaje visual que LocalFalcon/DinoRank)
@@ -840,11 +840,11 @@ export default function GeogridView({
         </div>
       )}
 
-        </div>
-        <div className="space-y-4">
-      <div className="space-y-3 rounded-[20px] border border-line bg-surface p-5 shadow-card">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-ink">Histórico</h3>
+      </div>
+      <HistoryDropdown count={history.length} loading={loadingHistory} title="Histórico">
+        {(close) => (
+      <div className="space-y-3">
+        <div className="flex items-center justify-end">
           {history.filter((r) => r.status === "completed").length >= 2 && (
             <button
               onClick={() => {
@@ -893,7 +893,7 @@ export default function GeogridView({
                       {selected && <Check className="h-3.5 w-3.5" />}
                     </button>
                   )}
-                  <button onClick={() => !compareMode && loadDetail(run.id)} className="text-left min-w-0 flex-1">
+                  <button onClick={() => { if (!compareMode) { loadDetail(run.id); close(); } }} className="text-left min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-ink truncate">{run.keyword}</span>
                       {delta && (
@@ -951,8 +951,8 @@ export default function GeogridView({
           <p className="text-xs text-ink-faint">Selecciona 2 geogrids de la misma keyword y rejilla para compararlos.</p>
         )}
       </div>
-        </div>
-      </div>
+        )}
+      </HistoryDropdown>
     </div>
   );
 }

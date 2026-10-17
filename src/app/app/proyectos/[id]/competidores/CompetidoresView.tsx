@@ -15,7 +15,9 @@ import {
   competitorAnalysisCostUsd,
   contentGapCostUsd,
   onPageAnalysisCostUsd,
+  backlinkAnalysisCostUsd,
 } from "@/lib/dataforseo/pricing";
+import Link from "next/link";
 import { fmtCredits } from "@/lib/credits";
 import { importKeywordsToDefaultStudy } from "@/lib/keywords/client-import";
 import PageHeader from "@/components/app/PageHeader";
@@ -279,8 +281,23 @@ type Data = {
 };
 
 // Estimaciones orientativas (como en geogrid/rank tracking).
-const analyzeCost = competitorAnalysisCostUsd();
+// "Analizar" de un competidor hace dos cosas: visibilidad (Labs) y perfil de
+// backlinks (API de Backlinks, otro producto de DataForSEO). El segundo se
+// pide con 50 backlinks por defecto; el detalle y más cantidad, en la pestaña Backlinks.
+const BACKLINKS_PER_ANALYSIS = 50;
+const visibilityCost = competitorAnalysisCostUsd();
+const backlinksCost = backlinkAnalysisCostUsd(BACKLINKS_PER_ANALYSIS);
+const analyzeCost = visibilityCost + backlinksCost;
 const gapCost = contentGapCostUsd();
+
+// Autoridad y enlazado externo de un dominio (último BacklinkSnapshot).
+type BlSnap = {
+  rank: number | null;
+  backlinksTotal: number | null;
+  referringDomains: number | null;
+  brokenBacklinks: number | null;
+  fetchedAt: string;
+} | null;
 
 function fmtTraffic(v: number | null | undefined): string {
   if (v == null) return "—";
@@ -622,6 +639,10 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
   // Detalle completo de un dominio: id de competidor o "__own" para el propio.
   const [detailId, setDetailId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  // Al añadir un competidor, analizarlo en el acto (con el coste a la vista).
+  const [analyzeOnAdd, setAnalyzeOnAdd] = useState(true);
+  // Autoridad/backlinks por dominio (propio + competidores), del módulo Backlinks.
+  const [bl, setBl] = useState<Record<string, BlSnap>>({});
   const [removing, setRemoving] = useState(false);
   // Series de tendencia agrupadas por dominio (proyecto + competidores). Una
   // sola llamada a /tendencia (sin ?domain) alimenta TODOS los sparklines en
@@ -634,11 +655,40 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
   const [location, setLocation] = useState<LocationValue>(null);
 
   function load() {
+    // Backlinks va en paralelo y sin bloquear: si falla o no hay plan, la
+    // comparativa sencillamente no muestra esas columnas.
+    fetch(`/api/proyectos/${projectId}/backlinks`)
+      .then((r) => r.json())
+      .then((d: { projectDomain: string | null; projectSnapshot: BlSnap; competitors: { domain: string; snapshot: BlSnap }[] }) => {
+        if (!d || !Array.isArray(d.competitors)) return;
+        const m: Record<string, BlSnap> = {};
+        if (d.projectDomain) m[d.projectDomain] = d.projectSnapshot ?? null;
+        for (const c of d.competitors) m[c.domain] = c.snapshot ?? null;
+        setBl(m);
+      })
+      .catch(() => {});
     return fetch(`/api/proyectos/${projectId}/competidores`)
       .then((r) => r.json())
       .then((d: Data) => {
         if (d && d.competitors) setData(d);
       });
+  }
+
+  // Perfil de backlinks de un dominio. Devuelve el mensaje de error (o null) y
+  // si se frenó por el tope de gasto, para que los bucles masivos paren.
+  async function analyzeBacklinksFor(domain: string): Promise<{ error: string | null; spend: boolean }> {
+    try {
+      const res = await fetch(`/api/proyectos/${projectId}/backlinks/analizar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain, limit: BACKLINKS_PER_ANALYSIS }),
+      });
+      if (res.ok) return { error: null, spend: false };
+      const d = await res.json().catch(() => ({}));
+      return { error: d.error ?? "No se pudieron analizar los backlinks", spend: res.status === 422 };
+    } catch {
+      return { error: "No se pudieron analizar los backlinks", spend: false };
+    }
   }
 
   // Recarga las series de tendencia. Sin `domain` → trae TODOS los dominios
@@ -693,9 +743,13 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       setError(d.error ?? "Error al añadir");
       return;
     }
+    const added: string = d.domain ?? addDomain;
     setAddDomain("");
     setAddOpen(false);
-    load();
+    await load();
+    // Análisis completo en el acto (visibilidad + backlinks), con el coste que
+    // se mostró en el propio modal.
+    if (analyzeOnAdd) await handleAnalyze(added);
   }
 
   async function handleAnalyze(domain: string) {
@@ -707,11 +761,15 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       body: JSON.stringify({ domain, locationCode: location?.code }),
     });
     const d = await res.json();
-    setAnalyzingDomain(null);
     if (!res.ok) {
+      setAnalyzingDomain(null);
       setError(d.error ?? "Error al analizar");
       return;
     }
+    // Mismo botón, segunda mitad: autoridad y backlinks del dominio.
+    const blResult = await analyzeBacklinksFor(domain);
+    setAnalyzingDomain(null);
+    if (blResult.error) setError(`Visibilidad analizada, pero los backlinks no: ${blResult.error}`);
     await load();
     // refresca la tendencia del dominio recién analizado (el propio o un
     // competidor) para que su sparkline se actualice al momento.
@@ -736,7 +794,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
   }
 
   async function handleAnalyzeAll() {
-    const pending = (data?.competitors ?? []).filter((c) => !hasUsefulSnapshot(c.snapshot));
+    const pending = (data?.competitors ?? []).filter((c) => !hasUsefulSnapshot(c.snapshot) || !bl[c.domain]);
     if (pending.length === 0 || bulkAnalyzing) return;
     setError("");
     setBulkAnalyzing(true);
@@ -747,17 +805,30 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
     for (const c of pending) {
       setAnalyzingDomain(c.domain);
       try {
-        const res = await fetch(`/api/proyectos/${projectId}/competidores/analizar`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ domain: c.domain, locationCode: location?.code }),
-        });
-        if (!res.ok) {
-          if (res.status === 422) {
-            stoppedForSpend = true;
-            break; // tope de gasto — seguir repetiría el mismo fallo en los demás
+        // Solo se paga lo que falta de cada competidor: visibilidad y/o backlinks.
+        if (!hasUsefulSnapshot(c.snapshot)) {
+          const res = await fetch(`/api/proyectos/${projectId}/competidores/analizar`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ domain: c.domain, locationCode: location?.code }),
+          });
+          if (!res.ok) {
+            if (res.status === 422) {
+              stoppedForSpend = true;
+              break; // tope de gasto — seguir repetiría el mismo fallo en los demás
+            }
+            failures++;
+            setBulkAnalyzeProgress((p) => (p ? { ...p, done: p.done + 1 } : p));
+            continue;
           }
-          failures++;
+        }
+        if (!bl[c.domain]) {
+          const r = await analyzeBacklinksFor(c.domain);
+          if (r.spend) {
+            stoppedForSpend = true;
+            break;
+          }
+          if (r.error) failures++;
         }
       } catch {
         // Fallo de red: no dejamos el botón bloqueado, se cuenta como error
@@ -951,7 +1022,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       <PageHeader
         eyebrow="Módulo · Competidores"
         title="Competidores"
-        description="Espía el tráfico orgánico estimado y las keywords de cualquier dominio, y descubre el content gap: keywords por las que ranquean y tú no, con CPC, dificultad y el snippet con el que posicionan."
+        description="Todo lo de un competidor en un sitio: tráfico y keywords estimados, autoridad y backlinks, y el content gap con CPC, dificultad y el snippet con el que posicionan."
         actions={
           <button
             onClick={() => setAddOpen(true)}
@@ -969,7 +1040,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
         aside={
           <>
             <span>Cada acción gasta:</span>
-            <span className="inline-flex items-center gap-1.5">Analizar <strong className="text-ink">{fmtCredits(analyzeCost)}</strong></span>
+            <span className="inline-flex items-center gap-1.5" title={`Visibilidad ${fmtCredits(visibilityCost)} + backlinks ${fmtCredits(backlinksCost)}`}>Analizar (visibilidad + backlinks) <strong className="text-ink">{fmtCredits(analyzeCost)}</strong></span>
             <span className="inline-flex items-center gap-1.5"><Target className="h-3.5 w-3.5 text-ink-faint" /> Content gap <strong className="text-ink">{fmtCredits(gapCost)}</strong></span>
           </>
         }
@@ -1026,7 +1097,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
           actions={
             <>
           {data && data.competitors.length > 0 && (() => {
-              const pendingAnalyze = data.competitors.filter((c) => !hasUsefulSnapshot(c.snapshot)).length;
+              const pendingAnalyze = data.competitors.filter((c) => !hasUsefulSnapshot(c.snapshot) || !bl[c.domain]).length;
               const pendingGap = data.competitors.filter((c) => !c.contentGap || c.contentGap.length === 0).length;
               return (
                 <div className="flex flex-wrap gap-2">
@@ -1061,6 +1132,9 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                   <th className="num">Keywords</th>
                   <th className="num">Posición media</th>
                   <th>Fuerza del dominio</th>
+                  <th className="num" title="Autoridad del dominio (0-1000), del análisis de backlinks">Autoridad</th>
+                  <th className="num">Backlinks</th>
+                  <th className="num">Dom. ref.</th>
                 </tr>
               </thead>
               <tbody>
@@ -1100,6 +1174,9 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                           <Pill tone="neutral">Sin analizar</Pill>
                         </td>
                       )}
+                      <td className="num font-semibold">{bl[r.domain]?.rank ?? <span className="font-normal text-ink-faint">—</span>}</td>
+                      <td className="num text-ink-soft">{bl[r.domain]?.backlinksTotal?.toLocaleString("es-ES") ?? "—"}</td>
+                      <td className="num text-ink-soft">{bl[r.domain]?.referringDomains?.toLocaleString("es-ES") ?? "—"}</td>
                     </tr>
                   );
                 })}
@@ -1262,7 +1339,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                   onClick={() => handleAnalyze(c.domain)}
                   disabled={analyzingDomain === c.domain}
                   className="flex items-center gap-1.5 rounded-full bg-brand px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
-                  title={`Analizar visibilidad · ${fmtCredits(analyzeCost)}`}
+                  title={`Visibilidad + backlinks · ${fmtCredits(analyzeCost)}`}
                 >
                   {analyzingDomain === c.domain && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                   Analizar
@@ -1350,6 +1427,32 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
                   <div className="flex items-center justify-center rounded-2xl border border-line p-3">
                     {share !== null ? <RadialGauge value={share} size={76} label="keywords en top 10" /> : <span className="text-xs text-ink-faint">Sin distribución</span>}
                   </div>
+                </div>
+
+                <div className="rounded-2xl border border-line p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-ink">Autoridad y backlinks</p>
+                    <Link href={`/app/proyectos/${projectId}/competidores/backlinks`} className="flex items-center gap-1 text-xs font-semibold text-brand hover:underline">
+                      Ver todos los backlinks <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                  {bl[domain] ? (
+                    <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                      {[
+                        { l: "Autoridad", v: bl[domain]?.rank ?? "—" },
+                        { l: "Backlinks", v: bl[domain]?.backlinksTotal?.toLocaleString("es-ES") ?? "—" },
+                        { l: "Dominios de referencia", v: bl[domain]?.referringDomains?.toLocaleString("es-ES") ?? "—" },
+                        { l: "Backlinks rotos", v: bl[domain]?.brokenBacklinks?.toLocaleString("es-ES") ?? "—" },
+                      ].map((k) => (
+                        <div key={k.l}>
+                          <p className="text-xs text-ink-faint">{k.l}</p>
+                          <p className="text-xl font-extrabold tabular-nums text-ink">{k.v}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-ink-soft">Aún sin backlinks analizados: pulsa <strong>Analizar</strong> en su ficha.</p>
+                  )}
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
@@ -1447,6 +1550,19 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
               <Plus className="h-4 w-4" /> Añadir
             </button>
           </form>
+          <label className="flex items-start gap-2 pt-3 text-sm text-ink-soft">
+            <input
+              type="checkbox"
+              checked={analyzeOnAdd}
+              onChange={(e) => setAnalyzeOnAdd(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              Analizarlo ahora: tráfico, keywords, autoridad y backlinks{" "}
+              <strong className="text-ink">{fmtCredits(analyzeCost)}</strong>
+              <span className="block text-xs text-ink-faint">El content gap se pide aparte, desde su ficha.</span>
+            </span>
+          </label>
         </div>
       </Modal>
 

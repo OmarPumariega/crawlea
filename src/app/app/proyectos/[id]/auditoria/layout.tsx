@@ -17,9 +17,9 @@ export default async function AuditoriaLayout({
     <div className="space-y-4">
       <ModuleTabs
         tabs={[
-          { href: `${base}/auditoria`, label: "Auditoría" },
-          { href: `${base}/auditoria/enlaces`, label: "Enlaces" },
-          { href: `${base}/auditoria/canibalizaciones`, label: "Canibalizaciones" },
+          { href: `${base}/auditoria`, label: "Auditoría", hint: "Salud técnica del sitio" },
+          { href: `${base}/auditoria/enlaces`, label: "Enlaces", hint: "PageRank y enlazado interno" },
+          { href: `${base}/auditoria/canibalizaciones`, label: "Canibalizaciones", hint: "Páginas que compiten entre sí" },
         ]}
       />
       {children}

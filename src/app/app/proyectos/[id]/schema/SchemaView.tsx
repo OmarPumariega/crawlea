@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Copy, Check, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import UrlLink from "@/components/app/UrlLink";
+import HistoryDropdown from "@/components/app/HistoryDropdown";
 import PageHeader from "@/components/app/PageHeader";
 import Pill, { type PillTone } from "@/components/app/Pill";
 import SchemaTypePicker from "@/components/app/SchemaTypePicker";
@@ -222,36 +223,35 @@ export default function SchemaView({ projectId }: { projectId: string }) {
         </div>
       )}
 
-      <div>
-        <h3 className="text-lg font-bold tracking-tight text-ink mb-3">Historial del proyecto</h3>
-        {loadingHistory ? (
-          <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
-        ) : history.length === 0 ? (
-          <p className="text-sm text-ink-soft">Todavía no se ha generado nada para este proyecto.</p>
-        ) : (
-          <div className="space-y-2">
-            {history.map((gen) => (
-              <div
-                key={gen.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => setCurrent(gen)}
-                onKeyDown={(e) => e.key === "Enter" && setCurrent(gen)}
-                className={cn(
-                  "w-full text-left bg-surface rounded-xl border p-3 hover:bg-background transition-colors cursor-pointer shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)]",
-                  current?.id === gen.id ? "border-brand ring-2 ring-brand/15" : "border-line"
-                )}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <UrlLink url={gen.url} className="text-sm" />
-                  <span className="text-xs text-ink-faint shrink-0">{typeLabel(gen.selectedType)}</span>
+      <HistoryDropdown count={history.length} loading={loadingHistory}>
+        {(close) =>
+          history.length === 0 ? (
+            <p className="px-2 py-3 text-sm text-ink-soft">Todavía no se ha generado nada para este proyecto.</p>
+          ) : (
+            <div className="space-y-2">
+              {history.map((gen) => (
+                <div
+                  key={gen.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => { setCurrent(gen); close(); }}
+                  onKeyDown={(e) => { if (e.key === "Enter") { setCurrent(gen); close(); } }}
+                  className={cn(
+                    "w-full cursor-pointer rounded-xl border p-3 text-left transition-colors hover:bg-background",
+                    current?.id === gen.id ? "border-brand ring-2 ring-brand/15" : "border-line"
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <UrlLink url={gen.url} className="text-sm" />
+                    <span className="shrink-0 text-xs text-ink-faint">{typeLabel(gen.selectedType)}</span>
+                  </div>
+                  <p className="mt-0.5 text-xs text-ink-faint">{new Date(gen.createdAt).toLocaleString("es-ES")}</p>
                 </div>
-                <p className="text-xs text-ink-faint mt-0.5">{new Date(gen.createdAt).toLocaleString("es-ES")}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )
+        }
+      </HistoryDropdown>
     </div>
   );
 }

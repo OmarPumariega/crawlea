@@ -253,6 +253,13 @@ queries reales en el system prompt del chat — y queda disponible para que otro
 crujen con datos de tráfico reales sin volver a llamar a la API. Esos datos salen de la
 misma `searchanalytics.query` que el panel, así que no añade conexión ni coste.
 
+## `UrlAnalysis` (Analizador de URL)
+
+Un análisis de una página: `url` (normalizada, tras redirecciones), `keyword` opcional,
+`score` (0-100) y `result` (JSON completo: comprobaciones, categorías y datos como el
+esquema de encabezados). No guarda el HTML. Cascade desde `Project`; índice por
+`(projectId, url, createdAt)` para comparar con el análisis anterior.
+
 ## `AiOverviewCheck` (Visibilidad IA — AI Overview por keyword)
 
 Una fila por comprobación de una `RankKeyword`: `hasOverview` (Google mostró respuesta con

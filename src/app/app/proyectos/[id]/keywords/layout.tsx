@@ -16,8 +16,8 @@ export default async function KeywordsLayout({
     <div className="space-y-4">
       <ModuleTabs
         tabs={[
-          { href: `${base}/keywords`, label: "Estudios" },
-          { href: `${base}/keywords/arquitectura`, label: "Arquitectura" },
+          { href: `${base}/keywords`, label: "Estudios", hint: "Investiga y guarda keywords" },
+          { href: `${base}/keywords/arquitectura`, label: "Arquitectura", hint: "Árbol de URLs propuesto" },
         ]}
       />
       {children}

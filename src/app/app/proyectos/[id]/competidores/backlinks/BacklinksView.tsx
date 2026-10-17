@@ -644,7 +644,7 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Módulo · Backlinks"
+        eyebrow="Competidores · Backlinks"
         title="Backlinks"
         description="Enlazado externo: qué dominios enlazan a tu sitio (y a los de tus competidores ya trackeados en Competidores), cuánta autoridad tienen y desde dónde. Cada análisis gasta créditos; ves cuántos antes de lanzarlo."
       />

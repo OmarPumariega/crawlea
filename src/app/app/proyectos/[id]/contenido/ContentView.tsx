@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import HistoryDropdown from "@/components/app/HistoryDropdown";
 import { lineDiff } from "@/lib/seo/diff";
 import {
   CONTENT_TYPES,
@@ -700,39 +701,39 @@ export default function ContentView({ projectId }: { projectId: string }) {
         </div>
       )}
 
-      <div>
-        <h3 className="text-sm font-semibold text-ink mb-3">Historial del proyecto</h3>
-        {loadingHistory ? (
-          <Loader2 className="h-4 w-4 animate-spin text-ink-faint" />
-        ) : history.length === 0 ? (
-          <p className="text-sm text-ink-soft">Todavía no se ha generado nada para este proyecto.</p>
-        ) : (
-          <div className="space-y-2">
-            {history.map((gen) => (
-              <button
-                key={gen.id}
-                onClick={() => {
-                  setCurrent(gen);
-                  setRestored(false);
-                  setCompareTarget(null);
-                }}
-                className={cn(
-                  "w-full text-left bg-surface rounded-lg border p-3 hover:bg-background transition-colors",
-                  current?.id === gen.id ? "border-brand" : "border-line"
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-ink truncate">{gen.topic}</p>
-                  <span className="text-xs text-ink-faint shrink-0 ml-2">
-                    {CONTENT_TYPE_LABELS[gen.type]} · {gen.wordCount} palabras
-                  </span>
-                </div>
-                <p className="text-xs text-ink-faint">{new Date(gen.createdAt).toLocaleString("es-ES")}</p>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <HistoryDropdown count={history.length} loading={loadingHistory}>
+        {(close) =>
+          history.length === 0 ? (
+            <p className="px-2 py-3 text-sm text-ink-soft">Todavía no se ha generado nada para este proyecto.</p>
+          ) : (
+            <div className="space-y-2">
+              {history.map((gen) => (
+                <button
+                  key={gen.id}
+                  onClick={() => {
+                    setCurrent(gen);
+                    setRestored(false);
+                    setCompareTarget(null);
+                    close();
+                  }}
+                  className={cn(
+                    "w-full rounded-lg border p-3 text-left transition-colors hover:bg-background",
+                    current?.id === gen.id ? "border-brand" : "border-line"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="truncate text-sm text-ink">{gen.topic}</p>
+                    <span className="ml-2 shrink-0 text-xs text-ink-faint">
+                      {CONTENT_TYPE_LABELS[gen.type]} · {gen.wordCount} palabras
+                    </span>
+                  </div>
+                  <p className="text-xs text-ink-faint">{new Date(gen.createdAt).toLocaleString("es-ES")}</p>
+                </button>
+              ))}
+            </div>
+          )
+        }
+      </HistoryDropdown>
         </>
       )}
     </div>

@@ -105,6 +105,7 @@ model Project {
   // enlace) y envío mensual automático del enlace por email al cliente.
   // reportEmailLastMonth ("2026-09") hace de dedupe: un envío por mes.
   aiPrompts AiPrompt[]
+  urlAnalyses UrlAnalysis[]
   reportShareToken     String? @unique
   reportEmailTo        String?
   reportEmailLastMonth String?
@@ -231,6 +232,23 @@ model AiPrompt {
 
   @@unique([projectId, prompt])
   @@index([projectId])
+}
+
+// Analizador de URL: una fila por análisis de una página (propia o ajena), con
+// el resultado completo (comprobaciones, datos y puntuación) para poder
+// reabrirlo y comparar con el siguiente. No guarda el HTML descargado.
+model UrlAnalysis {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url       String
+  keyword   String?
+  score     Int
+  result    Json
+  createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
+  @@index([projectId, url, createdAt])
 }
 
 // AI Overview de Google por keyword: una fila por comprobación de una keyword

@@ -17,8 +17,8 @@ export default async function ContenidoLayout({
     <div className="space-y-4">
       <ModuleTabs
         tabs={[
-          { href: `${base}/contenido`, label: "Contenido" },
-          { href: `${base}/contenido/tfidf`, label: "TF-IDF" },
+          { href: `${base}/contenido`, label: "Contenido", hint: "Genera y optimiza textos" },
+          { href: `${base}/contenido/tfidf`, label: "TF-IDF", hint: "Términos del top 10 de Google" },
         ]}
       />
       {children}

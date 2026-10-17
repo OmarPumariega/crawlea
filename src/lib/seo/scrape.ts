@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import { safeFetchHtml, SafeFetchError } from "@/lib/net/safe-fetch";
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
@@ -27,27 +28,22 @@ export type ScrapedPage = {
 };
 
 export async function scrapePage(url: string, timeoutMs = 10000): Promise<ScrapedPage> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-
+  // Descarga con protección SSRF (src/lib/net/safe-fetch.ts): las URLs las
+  // escribe el usuario, así que no se admiten hosts internos ni redirecciones a ellos.
   let html: string;
   try {
-    const response = await fetch(url, {
-      headers: { "User-Agent": USER_AGENT, "Accept-Language": "es-ES,es;q=0.9" },
-      signal: controller.signal,
-    });
-    if (!response.ok) {
-      throw new ScrapeError("http_error", `La URL respondió con estado ${response.status}`);
+    const page = await safeFetchHtml(url, { timeoutMs, userAgent: USER_AGENT });
+    if (page.status < 200 || page.status >= 300) {
+      throw new ScrapeError("http_error", `La URL respondió con estado ${page.status}`);
     }
-    html = await response.text();
+    html = page.body;
   } catch (error) {
     if (error instanceof ScrapeError) throw error;
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new ScrapeError("timeout", "La URL tardó demasiado en responder");
+    if (error instanceof SafeFetchError) {
+      if (error.code === "timeout") throw new ScrapeError("timeout", "La URL tardó demasiado en responder");
+      if (error.code === "blocked" || error.code === "invalid_url") throw new ScrapeError("fetch_failed", error.message);
     }
     throw new ScrapeError("fetch_failed", "No se ha podido acceder a la URL");
-  } finally {
-    clearTimeout(timer);
   }
 
   const $ = cheerio.load(html);

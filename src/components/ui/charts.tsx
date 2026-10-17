@@ -8,11 +8,17 @@ export function RadialGauge({
   size = 84,
   label,
   className,
+  onBrand = false,
+  unit = "%",
 }: {
   value: number; // 0-100
   size?: number;
   label?: string;
   className?: string;
+  // Sobre una tarjeta de fondo índigo: arco blanco sobre pista blanca translúcida
+  // (índigo sobre índigo no se distingue).
+  onBrand?: boolean;
+  unit?: string;
 }) {
   const v = Math.max(0, Math.min(100, value));
   const stroke = Math.round(size * 0.13);
@@ -22,7 +28,7 @@ export function RadialGauge({
     <div className={cn("relative inline-flex flex-col items-center", className)}>
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="stroke-brand-50" />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className={onBrand ? "stroke-white/25" : "stroke-brand-50"} />
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -32,11 +38,11 @@ export function RadialGauge({
             strokeLinecap="round"
             strokeDasharray={c}
             strokeDashoffset={c * (1 - v / 100)}
-            className="stroke-brand-500 transition-[stroke-dashoffset]"
+            className={cn("transition-[stroke-dashoffset]", onBrand ? "stroke-white" : "stroke-brand-500")}
           />
         </svg>
-        <span className="absolute inset-0 flex items-center justify-center text-lg font-extrabold tabular-nums tracking-tight text-ink">
-          {Math.round(v)}%
+        <span className={cn("absolute inset-0 flex items-center justify-center text-lg font-extrabold tabular-nums tracking-tight", onBrand ? "text-white" : "text-ink")}>
+          {Math.round(v)}{unit}
         </span>
       </div>
       {label && <span className="mt-1 text-[11px] font-medium text-ink-faint">{label}</span>}
