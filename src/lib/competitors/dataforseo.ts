@@ -43,9 +43,6 @@ export async function fetchRankedKeywords(params: {
   locationCode: number;
   languageCode: string;
   limit: number;
-  // Solo keywords en las que el dominio sale como mucho en esta posición (el geogrid
-  // la usa para no mostrar términos en los que el negocio aparece en el puesto 80).
-  maxPosition?: number;
 }): Promise<{ items: RankedKeyword[]; costUsd: number | null }> {
   const task = await postTask(
     "/v3/dataforseo_labs/google/ranked_keywords/live",
@@ -56,10 +53,7 @@ export async function fetchRankedKeywords(params: {
       item_types: ["organic"],
       // Primero las keywords que más tráfico aportan al dominio (antes el orden
       // era arbitrario y con límite podían quedar fuera las importantes).
-      order_by: ["ranked_serp_element.serp_item.etv,desc", "ranked_serp_element.serp_item.rank_group,asc"],
-      ...(params.maxPosition
-        ? { filters: [["ranked_serp_element.serp_item.rank_group", "<=", params.maxPosition]] }
-        : {}),
+      order_by: ["ranked_serp_element.serp_item.etv,desc"],
       limit: params.limit,
     },
     "ranked_keywords"

@@ -1,33 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, XCircle, GitCompareArrows, Check, MapPin, Star, MousePointerClick, Trash2, Search, Send, Trophy } from "lucide-react";
+import { Loader2, XCircle, GitCompareArrows, Check, MapPin, Star, MousePointerClick, Trash2, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StatTile from "@/components/ui/StatTile";
 import Modal from "@/components/app/Modal";
 import { RadialGauge } from "@/components/ui/charts";
-import { geogridCostUsd, geogridBusinessKeywordsCostUsd } from "@/lib/dataforseo/pricing";
+import { geogridCostUsd } from "@/lib/dataforseo/pricing";
 import { fmtCredits } from "@/lib/credits";
-import { importKeywordsToDefaultStudy } from "@/lib/keywords/client-import";
 import GeogridMap from "@/components/app/GeogridMap";
 import UrlLink from "@/components/app/UrlLink";
 import GbpPicker, { type GbpCandidate } from "@/components/app/GbpPicker";
 import type { MapsTopItem } from "@/lib/geogrid/maps";
-import { isOwnSiteDomain } from "@/lib/geogrid/own-site";
 import PageHeader from "@/components/app/PageHeader";
 import HistoryDropdown from "@/components/app/HistoryDropdown";
-
-// Item devuelto por "Ver keywords" — mismo shape que RankedKeyword de
-// Competidores (mismo endpoint, incluida la dificultad real).
-type BusinessKeyword = {
-  keyword: string;
-  position: number | null;
-  volume: number | null;
-  competition: string | null;
-  cpc: number | null;
-  monthlySearches: number[] | null;
-  difficulty: number | null;
-};
 
 type GridPoint = {
   row: number;
@@ -83,129 +69,11 @@ function badgeColor(position: number): string {
   return "bg-alert";
 }
 
-// Tabla de keywords de un negocio (mismo detalle que Competidores: volumen,
-// posición, CPC, dificultad real) + botón para importarlas a un estudio de
-// Keywords, sin coste adicional (los datos ya se pagaron al pedirlas aquí).
-function BusinessKeywordsTable({
-  projectId,
-  domain,
-  items,
-}: {
-  projectId: string;
-  domain: string;
-  items: BusinessKeyword[];
-}) {
-  const [importing, setImporting] = useState(false);
-  const [notice, setNotice] = useState("");
-
-  async function handleImport() {
-    setImporting(true);
-    const result = await importKeywordsToDefaultStudy(projectId, `Geogrid: ${domain}`, items);
-    setImporting(false);
-    setNotice(result.ok ? `${result.added} keywords añadidas al estudio General.` : result.error);
-    setTimeout(() => setNotice(""), 5000);
-  }
-
-  if (items.length === 0) {
-    return <p className="text-xs text-ink-faint py-1">Este dominio no sale entre los 20 primeros resultados de Google por ninguna keyword.</p>;
-  }
-
-  return (
-    <div className="mt-1.5 mb-1 bg-background rounded-lg p-2 space-y-1.5">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] text-ink-soft">{items.length} keywords en las que sale entre los 20 primeros</p>
-        <button
-          onClick={handleImport}
-          disabled={importing}
-          className="flex items-center gap-1 text-[11px] font-medium text-ink-soft hover:text-ink disabled:opacity-50"
-        >
-          {importing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-          Importar a estudio
-        </button>
-      </div>
-      {notice && <p className="text-[11px] text-accent-ink">{notice}</p>}
-      <div className="max-h-40 overflow-y-auto space-y-1">
-        {items.slice(0, 50).map((k, i) => (
-          <div key={i} className="flex items-center justify-between gap-2 text-[11px]">
-            <span className="text-ink-soft truncate">{k.keyword}</span>
-            <span className="text-ink-faint shrink-0 tabular-nums">
-              {k.volume != null ? k.volume.toLocaleString("es-ES") : "—"}
-              {k.position != null && ` · #${k.position}`}
-              {k.difficulty != null && ` · dif. ${k.difficulty}`}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // Panel lateral "quién gana aquí" (estilo LocalFalcon/DinoRank): el pack
 // local real de un punto concreto de la rejilla, con valoración y web —
 // mismos datos que ya trae la llamada pagada de ese punto, no cuesta nada
-// nuevo mostrarlos. "Ver keywords" es la única acción de este panel que
-// gasta (bajo demanda, por negocio con dominio resuelto).
-function PointRankingPanel({
-  point,
-  projectId,
-  runId,
-}: {
-  point: GridPoint | null;
-  projectId: string;
-  runId: string | null;
-}) {
-  const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
-  const [keywordsByDomain, setKeywordsByDomain] = useState<Record<string, BusinessKeyword[]>>({});
-  const [freeDomains, setFreeDomains] = useState<Set<string>>(new Set());
-  const [loadingDomain, setLoadingDomain] = useState<string | null>(null);
-  const [kwError, setKwError] = useState("");
-
-  // Al seleccionar un punto, precarga en segundo plano (sin coste, nunca
-  // paga) las keywords de los negocios del pack que YA tienen un análisis
-  // reciente en Competidores — así se pintan solas al expandir, sin que el
-  // usuario tenga que pulsar "Ver keywords" para descubrir que era gratis.
-  useEffect(() => {
-    const domains = (point?.top ?? [])
-      .map((item) => item.domain)
-      .filter((d): d is string => Boolean(d) && isOwnSiteDomain(d));
-    if (domains.length === 0 || !runId) return;
-    let cancelled = false;
-    fetch(`/api/proyectos/${projectId}/geogrid/${runId}/keywords-negocio?domains=${domains.map(encodeURIComponent).join(",")}`)
-      .then((r) => r.json())
-      .then((data: Record<string, BusinessKeyword[]>) => {
-        if (cancelled || !data || typeof data !== "object") return;
-        setKeywordsByDomain((prev) => ({ ...prev, ...data }));
-        setFreeDomains((prev) => new Set([...prev, ...Object.keys(data)]));
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [point, runId, projectId]);
-
-  async function toggleKeywords(domain: string) {
-    if (expandedDomain === domain) {
-      setExpandedDomain(null);
-      return;
-    }
-    setExpandedDomain(domain);
-    setKwError("");
-    if (keywordsByDomain[domain] || !runId) return; // ya en caché de esta sesión
-    setLoadingDomain(domain);
-    const res = await fetch(`/api/proyectos/${projectId}/geogrid/${runId}/keywords-negocio`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ domain }),
-    });
-    const data = await res.json();
-    setLoadingDomain(null);
-    if (!res.ok) {
-      setKwError(data.error ?? "Error al buscar las keywords");
-      return;
-    }
-    setKeywordsByDomain((prev) => ({ ...prev, [domain]: data.items }));
-  }
-
+// nuevo mostrarlos.
+function PointRankingPanel({ point }: { point: GridPoint | null }) {
   if (!point) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center gap-2 text-ink-faint py-10">
@@ -272,45 +140,7 @@ function PointRankingPanel({
                 {item.localJustifications && <p className="text-[11px] italic text-ink-faint">{item.localJustifications[0]}</p>}
                 <div className="flex items-center gap-2 mt-0.5">
                   {item.url && <UrlLink url={item.url} className="text-xs" />}
-                  {item.domain && !isOwnSiteDomain(item.domain) && (
-                    <span
-                      className="text-[11px] text-ink-faint"
-                      title={`Su ficha enlaza a ${item.domain}, no a una web propia: sus keywords serían las de toda esa plataforma`}
-                    >
-                      Sin web propia
-                    </span>
-                  )}
-                  {item.domain && isOwnSiteDomain(item.domain) && (
-                    <button
-                      onClick={() => toggleKeywords(item.domain as string)}
-                      className={cn(
-                        "flex items-center gap-1 text-[11px] shrink-0",
-                        freeDomains.has(item.domain) ? "text-accent-ink hover:text-accent-ink" : "text-ink-soft hover:text-ink"
-                      )}
-                      title={
-                        freeDomains.has(item.domain)
-                          ? `Ya disponible gratis (analizado antes en Competidores) — ${item.domain}`
-                          : `Ver keywords de ${item.domain} (${fmtCredits(geogridBusinessKeywordsCostUsd())})`
-                      }
-                    >
-                      {loadingDomain === item.domain ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <Search className="h-3 w-3" />
-                      )}
-                      Ver keywords
-                      {freeDomains.has(item.domain) && <span className="text-[10px]">· gratis</span>}
-                    </button>
-                  )}
                 </div>
-                {expandedDomain === item.domain && item.domain && (
-                  <>
-                    {kwError && <p className="text-[11px] text-alert-ink mt-1">{kwError}</p>}
-                    {keywordsByDomain[item.domain] && (
-                      <BusinessKeywordsTable projectId={projectId} domain={item.domain} items={keywordsByDomain[item.domain]} />
-                    )}
-                  </>
-                )}
               </div>
             </li>
           ))}
@@ -826,7 +656,7 @@ export default function GeogridView({
               />
             </div>
             <div className="lg:w-72 shrink-0 lg:border-l lg:border-line lg:pl-4 lg:max-h-[440px] lg:overflow-y-auto">
-              <PointRankingPanel point={selectedPointData} projectId={projectId} runId={current?.id ?? null} />
+              <PointRankingPanel point={selectedPointData} />
             </div>
           </div>
         )}

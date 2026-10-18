@@ -91,15 +91,6 @@ export function contentGapCostUsd(limit = COMPETITORS_GAP_DEFAULT_LIMIT): number
   return Math.round((LABS_TASK_COST_USD + limit * LABS_ITEM_COST_USD) * 1000) / 1000;
 }
 
-// "Ver keywords" de un negocio del geogrid (propio o competidor) — mismo
-// endpoint ranked_keywords que la parte "ranked" de Competidores, pero sin el
-// domain_rank_overview (aquí no hace falta la visibilidad agregada, solo el
-// listado de keywords por las que aparece).
-export const GEOGRID_KEYWORDS_DEFAULT_LIMIT = 50;
-export function geogridBusinessKeywordsCostUsd(limit = GEOGRID_KEYWORDS_DEFAULT_LIMIT): number {
-  return Math.round((LABS_TASK_COST_USD + limit * LABS_ITEM_COST_USD) * 1000) / 1000;
-}
-
 // Backlinks (Tier 3) — API de Backlinks de DataForSEO, producto SEPARADO del
 // resto (Labs/SERP/Keywords Data/Maps): a diferencia de todo lo anterior en
 // este archivo, esto es gasto genuinamente nuevo, no reutiliza ninguna

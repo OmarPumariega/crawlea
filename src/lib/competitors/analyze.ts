@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
 import { assertWithinSpendLimit } from "@/lib/dataforseo/spend";
 import { alertCompetitorGrowth } from "@/lib/notifications/alerts";
-import { competitorAnalysisCostUsd, contentGapCostUsd, geogridBusinessKeywordsCostUsd } from "@/lib/dataforseo/pricing";
+import { competitorAnalysisCostUsd, contentGapCostUsd } from "@/lib/dataforseo/pricing";
 import { fetchDomainOverview, fetchRankedKeywords, fetchContentGap, type RankedKeyword } from "@/lib/competitors/dataforseo";
 
 // Guard de frescura compartido por Competidores/Geogrid/Bootstrap: si ya
@@ -126,52 +126,4 @@ export async function computeCompetitorContentGap(
   }
 
   return { contentGap: items, contentGapAt: updated.contentGapAt as Date, fromCache: false };
-}
-
-// Lectura pura de las ranked keywords ya cacheadas de un dominio (sin pagar
-// nunca) — usada tanto por getRankedKeywordsCached (que paga si no hay nada)
-// como por el GET de precarga de Geogrid (que solo quiere saber "¿ya lo
-// tenemos gratis?" para pintarlo sin que el usuario pulse nada).
-// Geogrid: de un negocio solo interesan las keywords en las que de verdad aparece (primeras
-// posiciones), ordenadas por el tráfico que le aportan. Un negocio local con poco tráfico
-// tiene cientos de keywords en el puesto 60-100 que no significan nada.
-export const BUSINESS_KEYWORDS_MAX_POSITION = 20;
-export function relevantBusinessKeywords(items: RankedKeyword[]): RankedKeyword[] {
-  return items
-    .filter((k) => k.position != null && k.position <= BUSINESS_KEYWORDS_MAX_POSITION)
-    .sort((a, b) => (b.etv ?? 0) - (a.etv ?? 0) || (a.position ?? 99) - (b.position ?? 99));
-}
-
-export async function getFreshRankedKeywords(
-  projectId: string,
-  domain: string
-): Promise<RankedKeyword[] | null> {
-  const existing = await getFreshVisibilitySnapshot(projectId, domain);
-  const cachedTop = existing?.topKeywords as unknown as RankedKeyword[] | null;
-  if (cachedTop && Array.isArray(cachedTop) && cachedTop.length > 0) return cachedTop;
-  return null;
-}
-
-// Solo las ranked keywords de un dominio (sin overview) — usado por Geogrid
-// "Ver keywords". Reutiliza gratis el VisibilitySnapshot.topKeywords si ya lo
-// trajo un análisis reciente de Competidores para el MISMO dominio (caso
-// típico: un negocio local trackeado a la vez como competidor). No crea
-// snapshot nuevo si paga (Geogrid no necesita el overview).
-export async function getRankedKeywordsCached(
-  projectId: string,
-  domain: string,
-  opts: { locationCode: number; languageCode: string; limit: number }
-): Promise<{ items: RankedKeyword[]; costUsd: number | null; fromCache: boolean }> {
-  const cached = await getFreshRankedKeywords(projectId, domain);
-  if (cached) return { items: relevantBusinessKeywords(cached), costUsd: null, fromCache: true };
-
-  await assertWithinSpendLimit(projectId, geogridBusinessKeywordsCostUsd(opts.limit));
-  const { items, costUsd } = await fetchRankedKeywords({
-    domain,
-    locationCode: opts.locationCode,
-    languageCode: opts.languageCode,
-    limit: opts.limit,
-    maxPosition: BUSINESS_KEYWORDS_MAX_POSITION,
-  });
-  return { items, costUsd, fromCache: false };
 }
