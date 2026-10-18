@@ -13,6 +13,7 @@ import GeogridMap from "@/components/app/GeogridMap";
 import UrlLink from "@/components/app/UrlLink";
 import GbpPicker, { type GbpCandidate } from "@/components/app/GbpPicker";
 import type { MapsTopItem } from "@/lib/geogrid/maps";
+import { isOwnSiteDomain } from "@/lib/geogrid/own-site";
 import PageHeader from "@/components/app/PageHeader";
 import HistoryDropdown from "@/components/app/HistoryDropdown";
 
@@ -166,7 +167,7 @@ function PointRankingPanel({
   useEffect(() => {
     const domains = (point?.top ?? [])
       .map((item) => item.domain)
-      .filter((d): d is string => Boolean(d));
+      .filter((d): d is string => Boolean(d) && isOwnSiteDomain(d));
     if (domains.length === 0 || !runId) return;
     let cancelled = false;
     fetch(`/api/proyectos/${projectId}/geogrid/${runId}/keywords-negocio?domains=${domains.map(encodeURIComponent).join(",")}`)
@@ -271,7 +272,15 @@ function PointRankingPanel({
                 {item.localJustifications && <p className="text-[11px] italic text-ink-faint">{item.localJustifications[0]}</p>}
                 <div className="flex items-center gap-2 mt-0.5">
                   {item.url && <UrlLink url={item.url} className="text-xs" />}
-                  {item.domain && (
+                  {item.domain && !isOwnSiteDomain(item.domain) && (
+                    <span
+                      className="text-[11px] text-ink-faint"
+                      title={`Su ficha enlaza a ${item.domain}, no a una web propia: sus keywords serían las de toda esa plataforma`}
+                    >
+                      Sin web propia
+                    </span>
+                  )}
+                  {item.domain && isOwnSiteDomain(item.domain) && (
                     <button
                       onClick={() => toggleKeywords(item.domain as string)}
                       className={cn(

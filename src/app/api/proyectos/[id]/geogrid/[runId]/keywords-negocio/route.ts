@@ -5,6 +5,7 @@ import { DataForSeoError } from "@/lib/dataforseo/client";
 import { DataForSeoSpendLimitError } from "@/lib/dataforseo/spend";
 import { normalizeDomain } from "@/lib/competitors/dataforseo";
 import { GEOGRID_KEYWORDS_DEFAULT_LIMIT } from "@/lib/dataforseo/pricing";
+import { isOwnSiteDomain } from "@/lib/geogrid/own-site";
 import { getRankedKeywordsCached, getFreshRankedKeywords } from "@/lib/competitors/analyze";
 
 // GET ?domains=a.com,b.com,... — precarga de solo lectura, NUNCA paga: para
@@ -36,7 +37,7 @@ export async function GET(
   const domains = rawDomains
     .split(",")
     .map((d) => normalizeDomain(d.trim()))
-    .filter(Boolean);
+    .filter((d) => d && isOwnSiteDomain(d));
 
   const result: Record<string, unknown> = {};
   for (const domain of domains) {
@@ -84,6 +85,13 @@ export async function POST(
   const rawDomain = typeof body.domain === "string" ? body.domain.trim() : "";
   if (!rawDomain) return NextResponse.json({ error: "Falta el dominio del negocio" }, { status: 400 });
   const domain = normalizeDomain(rawDomain);
+  // Instagram, WhatsApp, agendas de reservas...: sus keywords son las de toda la plataforma.
+  if (!isOwnSiteDomain(domain)) {
+    return NextResponse.json(
+      { error: `La ficha de este negocio enlaza a ${domain}, no a una web propia: no hay keywords suyas que mostrar.` },
+      { status: 400 }
+    );
+  }
 
   try {
     const { items, costUsd, fromCache } = await getRankedKeywordsCached(id, domain, {
