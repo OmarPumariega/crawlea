@@ -132,6 +132,16 @@ export async function computeCompetitorContentGap(
 // nunca) — usada tanto por getRankedKeywordsCached (que paga si no hay nada)
 // como por el GET de precarga de Geogrid (que solo quiere saber "¿ya lo
 // tenemos gratis?" para pintarlo sin que el usuario pulse nada).
+// Geogrid: de un negocio solo interesan las keywords en las que de verdad aparece (primeras
+// posiciones), ordenadas por el tráfico que le aportan. Un negocio local con poco tráfico
+// tiene cientos de keywords en el puesto 60-100 que no significan nada.
+export const BUSINESS_KEYWORDS_MAX_POSITION = 20;
+export function relevantBusinessKeywords(items: RankedKeyword[]): RankedKeyword[] {
+  return items
+    .filter((k) => k.position != null && k.position <= BUSINESS_KEYWORDS_MAX_POSITION)
+    .sort((a, b) => (b.etv ?? 0) - (a.etv ?? 0) || (a.position ?? 99) - (b.position ?? 99));
+}
+
 export async function getFreshRankedKeywords(
   projectId: string,
   domain: string
@@ -153,7 +163,7 @@ export async function getRankedKeywordsCached(
   opts: { locationCode: number; languageCode: string; limit: number }
 ): Promise<{ items: RankedKeyword[]; costUsd: number | null; fromCache: boolean }> {
   const cached = await getFreshRankedKeywords(projectId, domain);
-  if (cached) return { items: cached, costUsd: null, fromCache: true };
+  if (cached) return { items: relevantBusinessKeywords(cached), costUsd: null, fromCache: true };
 
   await assertWithinSpendLimit(projectId, geogridBusinessKeywordsCostUsd(opts.limit));
   const { items, costUsd } = await fetchRankedKeywords({
@@ -161,6 +171,7 @@ export async function getRankedKeywordsCached(
     locationCode: opts.locationCode,
     languageCode: opts.languageCode,
     limit: opts.limit,
+    maxPosition: BUSINESS_KEYWORDS_MAX_POSITION,
   });
   return { items, costUsd, fromCache: false };
 }

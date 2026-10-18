@@ -107,13 +107,13 @@ function BusinessKeywordsTable({
   }
 
   if (items.length === 0) {
-    return <p className="text-xs text-ink-faint py-1">Sin keywords orgánicas encontradas para este dominio.</p>;
+    return <p className="text-xs text-ink-faint py-1">Este dominio no sale entre los 20 primeros resultados de Google por ninguna keyword.</p>;
   }
 
   return (
     <div className="mt-1.5 mb-1 bg-background rounded-lg p-2 space-y-1.5">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] text-ink-soft">{items.length} keywords</p>
+        <p className="text-[11px] text-ink-soft">{items.length} keywords en las que sale entre los 20 primeros</p>
         <button
           onClick={handleImport}
           disabled={importing}

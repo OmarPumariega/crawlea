@@ -6,7 +6,7 @@ import { DataForSeoSpendLimitError } from "@/lib/dataforseo/spend";
 import { normalizeDomain } from "@/lib/competitors/dataforseo";
 import { GEOGRID_KEYWORDS_DEFAULT_LIMIT } from "@/lib/dataforseo/pricing";
 import { isOwnSiteDomain } from "@/lib/geogrid/own-site";
-import { getRankedKeywordsCached, getFreshRankedKeywords } from "@/lib/competitors/analyze";
+import { getRankedKeywordsCached, getFreshRankedKeywords, relevantBusinessKeywords } from "@/lib/competitors/analyze";
 
 // GET ?domains=a.com,b.com,... — precarga de solo lectura, NUNCA paga: para
 // cada dominio del pack local del punto seleccionado, devuelve sus ranked
@@ -42,7 +42,7 @@ export async function GET(
   const result: Record<string, unknown> = {};
   for (const domain of domains) {
     const items = await getFreshRankedKeywords(id, domain);
-    if (items) result[domain] = items;
+    if (items) result[domain] = relevantBusinessKeywords(items);
   }
 
   return NextResponse.json(result);
