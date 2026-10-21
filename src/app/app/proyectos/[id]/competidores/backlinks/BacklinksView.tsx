@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { backlinkAnalysisCostUsd, BACKLINK_ANCHORS_COST_USD } from "@/lib/dataforseo/pricing";
 import { fmtCredits } from "@/lib/credits";
 import PageHeader from "@/components/app/PageHeader";
+import SimpleHistory from "@/components/app/SimpleHistory";
 import Pill from "@/components/app/Pill";
 import Modal from "@/components/app/Modal";
 import Section from "@/components/ui/Section";
@@ -811,6 +812,7 @@ export default function BacklinksView({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
+      <SimpleHistory url={`/api/proyectos/${projectId}/backlinks/historial`} refreshKey={data} empty="Aún no has analizado ningún dominio. Cada análisis quedará aquí." />
       <PageHeader
         eyebrow="Competidores · Backlinks"
         title="Backlinks"

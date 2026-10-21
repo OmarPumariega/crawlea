@@ -618,11 +618,13 @@ reales con `node --experimental-strip-types`:
 Cada vez que se ejecuta una búsqueda, análisis o comprobación (de pago o gratis) queda guardada con
 su fecha y resultado, y el módulo la enseña en su **Historial** (`HistoryDropdown` en la barra
 superior, ver «Convenciones de UI»). Un módulo nuevo no se da por terminado sin su historial. Con
-historial hoy: Analizador de URL, Título y Meta, Contenido, Auditoría, Geogrid y Visibilidad IA
-(cada medición de AI Overview y cada pregunta a ChatGPT/Perplexity, `ia/historial`). Datos que se
-guardan pero aún no tienen desplegable de historial: Competidores y Backlinks (snapshots),
-Evolución de tráfico, Velocidad, Keywords (los estudios son su historial). Sin persistencia:
-Oportunidades (se calcula en vivo desde Search Console).
+historial hoy: Analizador de URL, Título y Meta, Contenido, Auditoría, Geogrid, Visibilidad IA
+(cada medición de AI Overview y cada pregunta a ChatGPT/Perplexity, `ia/historial`), Competidores
+(análisis de visibilidad y curvas de evolución, `competidores/historial`), Backlinks
+(`backlinks/historial`) y Velocidad (`velocidad/historial`); estos tres usan el componente genérico
+`SimpleHistory` + una ruta `…/historial` que devuelve `{ items }` con la variación frente al análisis
+anterior. Keywords tiene sus estudios como historial. Sin persistencia: Oportunidades (se calcula en
+vivo desde Search Console), sin historial propio.
 
 ## Convenciones de UI (guía de estilo)
 

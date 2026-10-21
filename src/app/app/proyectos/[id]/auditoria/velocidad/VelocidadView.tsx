@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Gauge, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PageHeader from "@/components/app/PageHeader";
+import SimpleHistory from "@/components/app/SimpleHistory";
 import Section from "@/components/ui/Section";
 import Pill from "@/components/app/Pill";
 
@@ -69,6 +70,7 @@ export default function VelocidadView({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
+      <SimpleHistory url={`/api/proyectos/${projectId}/velocidad/historial`} refreshKey={data} empty="Aún no has medido ninguna página. Cada medición quedará aquí." />
       <PageHeader
         eyebrow="Auditoría · Velocidad"
         title="Velocidad por página"

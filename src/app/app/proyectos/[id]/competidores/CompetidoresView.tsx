@@ -23,6 +23,7 @@ import Link from "next/link";
 import { fmtCredits } from "@/lib/credits";
 import { importKeywordsToDefaultStudy } from "@/lib/keywords/client-import";
 import PageHeader from "@/components/app/PageHeader";
+import SimpleHistory from "@/components/app/SimpleHistory";
 import Pill from "@/components/app/Pill";
 import Section from "@/components/ui/Section";
 import StatTile from "@/components/ui/StatTile";
@@ -1208,6 +1209,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
+      <SimpleHistory url={`/api/proyectos/${projectId}/competidores/historial`} refreshKey={data} empty="Aún no has analizado ningún dominio. Cada análisis quedará aquí." />
       <PageHeader
         eyebrow="Módulo · Competidores"
         title="Competidores"
