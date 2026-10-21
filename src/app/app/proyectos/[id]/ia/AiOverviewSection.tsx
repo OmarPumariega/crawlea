@@ -17,7 +17,7 @@ type Data = { domain: string | null; competitors: string[]; estCostUsd: number; 
 
 const BATCH = 25;
 
-export default function AiOverviewSection({ projectId }: { projectId: string }) {
+export default function AiOverviewSection({ projectId, onChanged }: { projectId: string; onChanged?: () => void }) {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [checking, setChecking] = useState<string | null>(null); // "all" | "pending" | id
@@ -80,6 +80,7 @@ export default function AiOverviewSection({ projectId }: { projectId: string }) 
         for (const e of body.errors ?? []) errors.add(e);
       }
       await load();
+      onChanged?.();
       if (stopped) setNotice({ tone: "danger", text: `${done > 0 ? `Hecho en parte (${done} keywords). ` : ""}${stopped}` });
       else if (errors.size > 0) setNotice({ tone: "danger", text: `${done} keywords comprobadas. ${[...errors].join(" ")}` });
       else setNotice({ tone: "success", text: `${done} keywords comprobadas` });

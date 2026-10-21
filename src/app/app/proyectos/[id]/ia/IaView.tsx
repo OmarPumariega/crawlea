@@ -8,6 +8,7 @@ import Pill from "@/components/app/Pill";
 import Section from "@/components/ui/Section";
 import { BarList } from "@/components/ui/charts";
 import AiOverviewSection from "./AiOverviewSection";
+import IaHistory from "./IaHistory";
 import { fmtCredits } from "@/lib/credits";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +57,7 @@ export default function IaView({ projectId }: { projectId: string }) {
   const [checking, setChecking] = useState<string | null>(null); // "all" | promptId
   const [notice, setNotice] = useState<{ tone: "success" | "danger"; text: string } | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [histKey, setHistKey] = useState(0); // se incrementa tras cada comprobación para refrescar el historial
 
   const load = useCallback(async () => {
     try {
@@ -130,6 +132,7 @@ export default function IaView({ projectId }: { projectId: string }) {
         for (const e of body.errors ?? []) errors.add(e);
       }
       await load();
+      setHistKey((k) => k + 1);
       if (stopped) setNotice({ tone: "danger", text: `${done > 0 ? `Hecho en parte (${done} consultas). ` : ""}${stopped}` });
       else if (errors.size > 0) setNotice({ tone: "danger", text: `${done} consultas hechas. ${[...errors].join(" ")}` });
       else setNotice({ tone: "success", text: `${done} consultas hechas` });
@@ -209,7 +212,9 @@ export default function IaView({ projectId }: { projectId: string }) {
         <Pill tone="danger">Añade el dominio del proyecto en Perfil para poder medir si apareces.</Pill>
       )}
 
-      <AiOverviewSection projectId={projectId} />
+      <IaHistory projectId={projectId} refreshKey={histKey} />
+
+      <AiOverviewSection projectId={projectId} onChanged={() => setHistKey((k) => k + 1)} />
 
       <div className="flex flex-wrap items-end justify-between gap-3 pt-2">
         <div>

@@ -261,3 +261,14 @@ el Geogrid guarda la ficha completa de cada negocio del pack. Detalle en CLAUDE.
 - **Pendiente**: reseñas de Google (Business Data) y Google Trends (sin probar su endpoint), portal de
   cliente con login, anchors también en las tarjetas de competidor (hoy solo el dominio propio).
 
+## Regla: toda herramienta guarda y muestra su historial
+
+Cada vez que se ejecuta una búsqueda, análisis o comprobación (de pago o gratis) queda guardada con
+su fecha y resultado, y el módulo la enseña en su **Historial** (`HistoryDropdown` en la barra
+superior, ver «Convenciones de UI»). Un módulo nuevo no se da por terminado sin su historial. Con
+historial hoy: Analizador de URL, Título y Meta, Contenido, Auditoría, Geogrid y Visibilidad IA
+(cada medición de AI Overview y cada pregunta a ChatGPT/Perplexity, `ia/historial`). Datos que se
+guardan pero aún no tienen desplegable de historial: Competidores y Backlinks (snapshots),
+Evolución de tráfico, Velocidad, Keywords (los estudios son su historial). Sin persistencia:
+Oportunidades (se calcula en vivo desde Search Console).
+
