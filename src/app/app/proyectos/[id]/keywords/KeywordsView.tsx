@@ -16,11 +16,12 @@ import {
   Upload,
   Pencil,
   FileSearch,
+  Radar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PageHeader from "@/components/app/PageHeader";
 import Pill, { type PillTone } from "@/components/app/Pill";
-import { suggestionsCostForLocation } from "@/lib/dataforseo/pricing";
+import { suggestionsCostForLocation, rankCheckCostUsd } from "@/lib/dataforseo/pricing";
 import { KEYWORD_COUNTRIES, isCountryCode } from "@/lib/keywords/countries";
 import { downloadCsv } from "@/lib/csv";
 import LocationPicker from "@/components/app/LocationPicker";
@@ -51,6 +52,8 @@ type Keyword = {
   // módulo) — se pinta solo, sin que el usuario tenga que ir a buscarlo.
   tfidfAvailable?: boolean;
   rankPosition?: number | null;
+  // Ya está en Rank Tracking (aunque aún no tenga posición comprobada).
+  tracked?: boolean;
 };
 
 // Resto de métricas de Labs que llegan con el volumen (puja, tendencia, enlaces
@@ -257,6 +260,9 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
   const [current, setCurrent] = useState<Study | null>(null);
   // Tabla del estudio: búsqueda y paginación (los estudios importados tienen cientos de filas).
   const [kwSearch, setKwSearch] = useState("");
+  const [selectedKw, setSelectedKw] = useState<Set<string>>(new Set());
+  const [trackNotice, setTrackNotice] = useState("");
+  const [tracking, setTracking] = useState(false);
   const [kwShown, setKwShown] = useState(50);
   const [openKw, setOpenKw] = useState<Set<string>>(new Set());
   const [newOpen, setNewOpen] = useState(false);
@@ -450,6 +456,40 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
     setCurrent(data);
     setSuggestions([]);
     loadStudies();
+  }
+
+  // Añade keywords del estudio a Rank Tracking con seguimiento manual (sin comprobaciones
+  // programadas). Al añadir se comprueba la posición una vez y eso gasta créditos.
+  async function addToTracking(keywords: string[]) {
+    if (!current || keywords.length === 0) return;
+    setTracking(true);
+    setTrackNotice("");
+    const loc = current.locationCode;
+    const res = await fetch(`/api/proyectos/${projectId}/rank/keywords`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keywords: keywords.join("\n"),
+        device: "desktop",
+        frequency: "manual",
+        depth: 10,
+        locationCode: loc,
+        languageCode: current.languageCode,
+        locationName: loc !== 2724 ? resolveLocationName(loc) ?? KEYWORD_COUNTRIES.find((c) => c.code === loc)?.name : undefined,
+        group: `Estudio: ${current.name}`.slice(0, 60),
+      }),
+    });
+    const d = await res.json();
+    setTracking(false);
+    if (!res.ok) {
+      setTrackNotice(d.error ?? "No se pudo añadir a Rank Tracking");
+      return;
+    }
+    setTrackNotice(
+      `${d.added ?? 0} añadidas a Rank Tracking y comprobadas${d.skipped ? ` · ${d.skipped} ya estaban` : ""}. Es seguimiento manual: después solo gasta si pulsas «Comprobar».`
+    );
+    setSelectedKw(new Set());
+    reloadCurrent();
   }
 
   async function handleSearch() {
@@ -920,10 +960,38 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                     className="w-full rounded-full border border-line bg-surface py-2 pl-10 pr-4 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15"
                   />
                 </div>
+                {(selectedKw.size > 0 || trackNotice) && (
+                  <div className="flex flex-wrap items-center gap-3 text-xs">
+                    {selectedKw.size > 0 && (
+                      <button
+                        onClick={() => addToTracking([...selectedKw])}
+                        disabled={tracking}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1.5 font-medium text-white hover:bg-brand-strong disabled:opacity-50"
+                      >
+                        {tracking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Radar className="h-3.5 w-3.5" />}
+                        Añadir {selectedKw.size} a Rank Tracking · {fmtCredits(rankCheckCostUsd(10) * selectedKw.size)}
+                      </button>
+                    )}
+                    {selectedKw.size > 0 && (
+                      <button onClick={() => setSelectedKw(new Set())} className="text-ink-soft hover:text-ink">Quitar selección</button>
+                    )}
+                    {trackNotice && <span className="text-accent-ink">{trackNotice}</span>}
+                  </div>
+                )}
                 <div className="max-h-[640px] overflow-auto rounded-xl border border-line">
                   <table className="data-table">
                     <thead className="sticky top-0 z-10">
                       <tr>
+                        <th className="w-8">
+                          <input
+                            type="checkbox"
+                            aria-label="Seleccionar las keywords visibles que no están en Rank Tracking"
+                            checked={shown.filter((k) => !k.tracked).length > 0 && shown.filter((k) => !k.tracked).every((k) => selectedKw.has(k.keyword))}
+                            onChange={(e) =>
+                              setSelectedKw(e.target.checked ? new Set(shown.filter((k) => !k.tracked).map((k) => k.keyword)) : new Set())
+                            }
+                          />
+                        </th>
                         <th>Keyword</th>
                         <th className="w-[22%]">Volumen</th>
                         {has.trend && <th>Tend.</th>}
@@ -941,6 +1009,23 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                       {shown.map((kw) => (
                         <Fragment key={kw.id}>
                         <tr>
+                          <td>
+                            {kw.tracked ? null : (
+                              <input
+                                type="checkbox"
+                                aria-label={`Seleccionar ${kw.keyword}`}
+                                checked={selectedKw.has(kw.keyword)}
+                                onChange={(e) =>
+                                  setSelectedKw((prev) => {
+                                    const n = new Set(prev);
+                                    if (e.target.checked) n.add(kw.keyword);
+                                    else n.delete(kw.keyword);
+                                    return n;
+                                  })
+                                }
+                              />
+                            )}
+                          </td>
                           <td className="font-medium">
                             {kw.extras ? (
                               <button
@@ -1016,7 +1101,19 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                             </td>
                           )}
                           <td className="num text-ink-soft">{kw.priority}</td>
-                          <td className="text-right">
+                          <td className="text-right whitespace-nowrap">
+                            {kw.tracked ? (
+                              <span className="mr-1 text-[11px] text-ink-faint" title="Ya está en Rank Tracking">En seguimiento</span>
+                            ) : (
+                              <button
+                                onClick={() => addToTracking([kw.keyword])}
+                                disabled={tracking}
+                                className="mr-1 rounded-md p-1 text-ink-faint transition-colors hover:bg-brand/10 hover:text-brand disabled:opacity-50"
+                                title={`Añadir a Rank Tracking y comprobar su posición ahora (${fmtCredits(rankCheckCostUsd(10))})`}
+                              >
+                                <Radar className="h-4 w-4" />
+                              </button>
+                            )}
                             <button
                               onClick={() => handleRemove(kw.id)}
                               className="rounded-md p-1 text-ink-faint transition-colors hover:bg-alert-tint hover:text-alert-ink"

@@ -1187,7 +1187,7 @@ export default function CompetidoresView({ projectId }: { projectId: string }) {
       showNotice(d.error ?? "Error al añadir a seguimiento");
       return;
     }
-    showNotice(`${d.added ?? 0} añadidas a seguimiento${d.skipped ? ` · ${d.skipped} ya seguidas` : ""} (manual — pulsa «Comprobar» para ver posición).`);
+    showNotice(`${d.added ?? 0} añadidas a seguimiento${d.skipped ? ` · ${d.skipped} ya seguidas` : ""} (seguimiento manual; la posición se comprueba al añadirlas).`);
   }
 
   if (loading) return <Loader2 className="h-5 w-5 animate-spin text-ink-faint" />;

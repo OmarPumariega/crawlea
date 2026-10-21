@@ -22,7 +22,7 @@ async function enrichStudy(projectId: string, study: StudyWithKeywords) {
         prisma.rankKeyword.findMany({
           where: { projectId, keyword: { in: keywordList } },
           orderBy: { lastCheckedAt: "desc" },
-          select: { keyword: true, lastPosition: true },
+          select: { keyword: true, lastPosition: true, locationCode: true },
         }),
       ])
     : [[], []];
@@ -34,10 +34,12 @@ async function enrichStudy(projectId: string, study: StudyWithKeywords) {
   for (const rk of rankRows) {
     if (!positionByKeyword.has(rk.keyword)) positionByKeyword.set(rk.keyword, rk.lastPosition);
   }
+  const trackedSet = new Set(rankRows.map((rk) => rk.keyword));
   return {
     ...study,
     keywords: study.keywords.map((k) => ({
       ...k,
+      tracked: trackedSet.has(k.keyword),
       tfidfAvailable: tfidfSet.has(k.keyword),
       rankPosition: positionByKeyword.get(k.keyword) ?? null,
     })),
