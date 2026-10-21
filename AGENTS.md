@@ -261,6 +261,21 @@ el Geogrid guarda la ficha completa de cada negocio del pack. Detalle en CLAUDE.
 - **Pendiente**: reseñas de Google (Business Data) y Google Trends (sin probar su endpoint), portal de
   cliente con login, anchors también en las tarjetas de competidor (hoy solo el dominio propio).
 
+## Mediciones programadas (pestaña Mediciones de la Ficha)
+
+Un solo sitio para decidir qué se vuelve a medir solo y cada cuánto (semanal, mensual o trimestral):
+Rank Tracking, SEO local, Auditoría, Velocidad, Competidores y Backlinks. Modelo `MeasurementSchedule`
+(una fila por proyecto y medición: `enabled`, `frequency`, `nextRunAt`, `lastRunAt`, `lastStatus`,
+`lastMessage`). `src/lib/measurements/`: `modules.ts` (definiciones puras), `runners.ts` (un runner por
+medición, que reutiliza la lógica y guarda en el histórico del propio módulo) y `job.ts`
+(`runMeasurementsJob` en el cron, fire-and-forget con su guard, hasta 3 por tick; `executeMeasurement`
+también sirve al botón «Medir ahora»). API `/api/proyectos/[id]/mediciones` (GET/PUT/POST). Al activar una
+medición no se gasta nada: la primera automática llega una frecuencia después. Los costes salen a la vista
+(por vez y al mes) y los runners respetan el tope de gasto; una medición que falla queda anotada sin parar
+las demás. Un módulo nuevo que se pueda repetir debe añadirse aquí (`MEASUREMENT_MODULES` + su runner).
+Los programadores anteriores (frecuencia por keyword de Rank Tracking, auditoría mensual) siguen
+funcionando; el guard de «un chequeo por día» de Rank y el de «auditoría en curso» evitan duplicados.
+
 ## Regla: toda herramienta guarda y muestra su historial
 
 Cada vez que se ejecuta una búsqueda, análisis o comprobación (de pago o gratis) queda guardada con

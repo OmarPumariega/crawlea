@@ -147,6 +147,7 @@ model Project {
   keywordStudies       KeywordStudy[]
   rankKeywords         RankKeyword[]
   geogridRuns          GeogridRun[]
+  measurementSchedules MeasurementSchedule[]
   bootstrapRuns        BootstrapRun[]
   todos                TodoItem[]
   notes                ProjectNote[]
@@ -1017,4 +1018,25 @@ model TrafficHistory {
   fetchedAt DateTime @default(now())
 
   @@index([projectId, domain, fetchedAt])
+}
+
+// Mediciones programadas de un proyecto (pestaña Mediciones de la Ficha): por cada módulo, si se repite
+// sola y cada cuánto. El cron (`runMeasurementsJob`) ejecuta las vencidas y guarda el resultado de cada
+// medición en el histórico del propio módulo; aquí solo vive la programación y el estado de la última vez.
+model MeasurementSchedule {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  module      String // rank | geogrid | audit | velocidad | competidores | backlinks
+  enabled     Boolean   @default(false)
+  frequency   String    @default("monthly") // weekly | monthly | quarterly
+  nextRunAt   DateTime?
+  lastRunAt   DateTime?
+  lastStatus  String? // ok | error | skipped
+  lastMessage String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([projectId, module])
+  @@index([enabled, nextRunAt])
 }

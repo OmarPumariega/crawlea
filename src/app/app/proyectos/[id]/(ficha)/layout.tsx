@@ -19,6 +19,7 @@ export default async function FichaLayout({
           { href: base, label: "Datos", hint: "Nombre, dominio y negocio local" },
           { href: `${base}/notas`, label: "Notas", hint: "Apuntes internos del cliente" },
           { href: `${base}/google`, label: "Google", hint: "Search Console y Analytics" },
+          { href: `${base}/mediciones`, label: "Mediciones", hint: "Qué se vuelve a medir solo" },
         ]}
       />
       {children}

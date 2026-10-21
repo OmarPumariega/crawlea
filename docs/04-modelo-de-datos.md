@@ -318,3 +318,6 @@ Columnas añadidas para no descartar nada de lo ya pagado (todas opcionales; fil
 - `TfidfResult.pageWordCounts`: palabras de cada página del top-10 (brief y editor de contenido).
 - Migraciones recientes: `…backlinks_perfil`, `…onpage_extras`, `…keywords_extras`, `…ia_fan_out`,
   `…pagespeed_checks`, `…historico_anchors` (aplicadas en producción al arrancar el contenedor).
+- `MeasurementSchedule`: programación de una medición repetida por proyecto (módulo, activa, frecuencia,
+  próxima y última ejecución, estado y mensaje). Única por `projectId`+`module`. Migración
+  `20261022120000_mediciones_programadas`. Los resultados no viven aquí: se guardan en el histórico de cada módulo.

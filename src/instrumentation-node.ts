@@ -62,6 +62,7 @@ export async function register() {
     { runBootstrapJob },
     { checkSpendNotifications },
     { runReportEmailJob },
+    { runMeasurementsJob },
   ] = await Promise.all([
     import("@/lib/audit/job"),
     import("@/lib/rank/job"),
@@ -69,6 +70,7 @@ export async function register() {
     import("@/lib/projects/bootstrap-job"),
     import("@/lib/notifications/notify"),
     import("@/lib/informe/share"),
+    import("@/lib/measurements/job"),
   ]);
 
   // Guard anti-solapamiento: si un crawl largo sigue en marcha cuando llega
@@ -76,6 +78,9 @@ export async function register() {
   // pending→running en BD ya evita reprocesar el mismo run, pero sin este
   // guard se desperdiciarían conexiones/CPU intentándolo cada tick).
   let auditJobInFlight = false;
+  // Las mediciones programadas (rank con muchas keywords, PageSpeed...) pueden tardar más que un tick:
+  // van fire-and-forget con su propio guard para no bloquear a los demás proyectos.
+  let measurementsInFlight = false;
 
   const run = async () => {
     if (!auditJobInFlight) {
@@ -90,6 +95,17 @@ export async function register() {
         });
     } else {
       console.log("[audit] tick omitido: la auditoría anterior sigue en curso");
+    }
+    if (!measurementsInFlight) {
+      measurementsInFlight = true;
+      runMeasurementsJob()
+        .then((m) => {
+          if (m.processed > 0) console.log(`[mediciones] ejecutadas=${m.processed}`);
+        })
+        .catch((e) => console.error("[mediciones] error en run:", e))
+        .finally(() => {
+          measurementsInFlight = false;
+        });
     }
     try {
       const rank = await runRankJob();
