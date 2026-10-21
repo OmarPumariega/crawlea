@@ -62,6 +62,14 @@ const LABS_ITEM_COST_USD = 0.00012;
 export function suggestionsCostUsd(limit: number): number {
   return Math.round((LABS_TASK_COST_USD + limit * LABS_ITEM_COST_USD) * 1000) / 1000;
 }
+// Ubicaciones locales (comunidad, provincia, ciudad): Labs no las admite, así que el volumen sale
+// de Google Ads. Tarifa por petición, no por resultado: keywords_for_keywords ≈0,075 $ (precio
+// de la documentación de DataForSEO) y search_volume 0,09 $ (medido).
+export const LOCAL_SUGGESTIONS_COST_USD = 0.075;
+export const LOCAL_VOLUME_COST_USD = 0.09;
+export function suggestionsCostForLocation(isCountry: boolean, limit: number): number {
+  return isCountry ? suggestionsCostUsd(limit) : LOCAL_SUGGESTIONS_COST_USD;
+}
 // Coste de resolver N keywords (volumen, intención, dificultad y estacionalidad
 // en una sola llamada de Keyword Overview).
 export function keywordOverviewCostUsd(count: number): number {

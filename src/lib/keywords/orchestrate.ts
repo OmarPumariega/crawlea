@@ -1,8 +1,9 @@
-import { fetchKeywordOverview, type IntentValue } from "@/lib/keywords/dataforseo";
+import { fetchKeywordOverview, fetchSearchVolume, type IntentValue } from "@/lib/keywords/dataforseo";
 import type { KeywordExtras } from "@/lib/keywords/parse-labs";
 import { getFreshCache, upsertCache } from "@/lib/keywords/cache";
 import { assertWithinSpendLimit } from "@/lib/dataforseo/spend";
-import { keywordOverviewCostUsd } from "@/lib/dataforseo/pricing";
+import { keywordOverviewCostUsd, LOCAL_VOLUME_COST_USD } from "@/lib/dataforseo/pricing";
+import { isCountryCode } from "@/lib/keywords/countries";
 
 // Orquesta la resolución de datos de keyword combinando caché (primera
 // fuente, 30 días) y DataForSEO (solo para lo no cacheado).
@@ -69,6 +70,28 @@ export async function fetchKeywordData(params: {
   // real esperado de ESTA llamada (no una tarifa plana). Las cacheadas ya se
   // sirvieron arriba sin coste, así que un estudio 100% cacheado nunca tropieza
   // con el tope (el dato ya se pagó antes).
+  // Ubicación local (comunidad, provincia, ciudad): Labs no la admite, el volumen sale de
+  // Google Ads (sin dificultad ni intención) a tarifa plana por petición.
+  if (!isCountryCode(locationCode)) {
+    await assertWithinSpendLimit(projectId, LOCAL_VOLUME_COST_USD);
+    const vol = await fetchSearchVolume(pending, locationCode, languageCode);
+    for (const kw of pending) {
+      const v = vol.byKeyword.get(kw);
+      data.set(kw, {
+        searchVolume: v?.searchVolume ?? null,
+        competition: v?.competition ?? null,
+        cpc: v?.cpc ?? null,
+        intent: null,
+        monthlySearches: v?.monthlySearches ?? null,
+        difficulty: null,
+        extras: null,
+      });
+    }
+    if (vol.costUsd !== null) usageLogs.push({ endpoint: "modulo1.keywords.volumen-local", costUsd: vol.costUsd });
+    await upsertCache(pending, data, languageCode, locationCode);
+    return { data, usageLogs };
+  }
+
   await assertWithinSpendLimit(projectId, keywordOverviewCostUsd(pending.length));
 
   const overview = await fetchKeywordOverview(pending, locationCode, languageCode);

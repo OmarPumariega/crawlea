@@ -20,9 +20,10 @@ import {
 import { cn } from "@/lib/utils";
 import PageHeader from "@/components/app/PageHeader";
 import Pill, { type PillTone } from "@/components/app/Pill";
-import { suggestionsCostUsd } from "@/lib/dataforseo/pricing";
+import { suggestionsCostForLocation } from "@/lib/dataforseo/pricing";
+import { KEYWORD_COUNTRIES, isCountryCode } from "@/lib/keywords/countries";
 import { downloadCsv } from "@/lib/csv";
-import LocationPicker, { type LocationValue } from "@/components/app/LocationPicker";
+import LocationPicker from "@/components/app/LocationPicker";
 import { resolveLocationName } from "@/lib/rank/locations";
 import { fmtCredits } from "@/lib/credits";
 import StatTile from "@/components/ui/StatTile";
@@ -297,7 +298,6 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editNotes, setEditNotes] = useState("");
-  const [editLocation, setEditLocation] = useState<LocationValue>(null);
   const [savingStudy, setSavingStudy] = useState(false);
   const [deletingStudy, setDeletingStudy] = useState(false);
 
@@ -349,14 +349,6 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
     if (!current) return;
     setEditName(current.name);
     setEditNotes(current.notes ?? "");
-    // Cargamos la ubicación actual del estudio en el picker. Como el estudio
-    // solo guarda el locationCode (no el nombre), lo resolvemos desde el
-    // mismo JSON estático que usa el LocationPicker.
-    setEditLocation(
-      current.locationCode && current.locationCode !== 2724
-        ? { code: current.locationCode, name: resolveLocationName(current.locationCode) ?? `Código ${current.locationCode}` }
-        : null
-    );
     setEditing(true);
   }
 
@@ -369,7 +361,6 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
       body: JSON.stringify({
         name: editName.trim() ? editName : current.name,
         notes: editNotes.trim() ? editNotes : null,
-        locationCode: editLocation?.code ?? 2724,
       }),
     });
     const data = await res.json();
@@ -439,6 +430,25 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
     }
     setCurrent(data);
     setNewOpen(false);
+    loadStudies();
+  }
+
+  // La ubicación es del estudio y se guarda al cambiarla. Ni esto ni «Añadir» tocan Rank Tracking.
+  async function changeLocation(code: number, languageCode: string) {
+    if (!current) return;
+    setSuggError("");
+    const res = await fetch(`/api/proyectos/${projectId}/keywords/estudios/${current.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locationCode: code, languageCode }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setSuggError(data.error ?? "No se pudo cambiar la ubicación");
+      return;
+    }
+    setCurrent(data);
+    setSuggestions([]);
     loadStudies();
   }
 
@@ -646,17 +656,6 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                 className="w-full border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-ink-faint">Ubicación de la búsqueda</label>
-              <div className="max-w-sm">
-                <LocationPicker value={editLocation} onChange={setEditLocation} />
-              </div>
-              <p className="text-xs text-ink-faint">
-                Cambiarla aquí NO recalcula en bloque las keywords ya cacheadas, pero el siguiente
-                “Lanzar / re-procesar análisis” propagará la nueva ubicación al Rank Tracking
-                (reemplazando las keywords viejas sin histórico).
-              </p>
-            </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSaveStudy}
@@ -693,6 +692,35 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               />
             </div>
             <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-ink-faint">País</label>
+              <select
+                value={isCountryCode(current.locationCode) ? current.locationCode : 2724}
+                onChange={(e) => {
+                  const c = KEYWORD_COUNTRIES.find((k) => k.code === Number(e.target.value));
+                  if (c) changeLocation(c.code, c.language);
+                }}
+                className="border border-line rounded-xl px-3 py-2 text-sm bg-surface outline-none focus:border-brand focus:ring-2 focus:ring-brand/15"
+              >
+                {KEYWORD_COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            {(isCountryCode(current.locationCode) ? current.locationCode === 2724 : true) && (
+              <div className="space-y-1.5 min-w-[260px]">
+                <label className="block text-xs font-semibold text-ink-faint">Comunidad, provincia o ciudad</label>
+                <LocationPicker
+                  value={
+                    isCountryCode(current.locationCode)
+                      ? null
+                      : { code: current.locationCode, name: resolveLocationName(current.locationCode) ?? `Código ${current.locationCode}` }
+                  }
+                  onChange={(v) => changeLocation(v?.code ?? 2724, "es")}
+                  placeholder="Toda España — busca Gijón, Asturias..."
+                />
+              </div>
+            )}
+            <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-ink-faint">Nº resultados</label>
               <div className="inline-flex items-center gap-1 bg-black/[0.05] rounded-xl p-1">
                 {LIMITS.map((n) => (
@@ -722,7 +750,11 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
             </button>
           </div>
           <p className="text-xs text-ink-faint">
-            Coste estimado de la búsqueda: {fmtCredits(suggestionsCostUsd(limit))} (las que añadas después son gratis, ya cacheadas).
+            Coste estimado de la búsqueda: {fmtCredits(suggestionsCostForLocation(isCountryCode(current.locationCode), limit))} (las que añadas después son gratis, ya cacheadas).
+            {!isCountryCode(current.locationCode) && " Con una ubicación local el volumen sale de Google Ads: sin dificultad ni intención, y la búsqueda cuesta lo mismo pidas 50 o 500."}
+          </p>
+          <p className="text-xs text-ink-faint">
+            «Añadir» guarda las keywords en este estudio para usarlas en estructura, contenido y competencia. No se ponen en Rank Tracking: eso lo decides tú aparte.
           </p>
 
           {suggError && <p className="text-sm text-alert-ink bg-alert-tint px-3 py-2 rounded-xl">{suggError}</p>}

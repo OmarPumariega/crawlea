@@ -119,10 +119,8 @@ export async function PATCH(
   if (body.notes === null) {
     data.notes = null;
   }
-  // Ubicación e idioma: si el usuario se equivocó al crear el estudio (p.ej.
-  // no seleccionó Oviedo en el wizard), puede cambiarlo aquí y el siguiente
-  // "Lanzar / re-procesar análisis" propagará la nueva ubicación al Rank
-  // Tracking (reemplazando las keywords viejas sin histórico).
+  // Ubicación e idioma del estudio (país, comunidad, provincia o ciudad). Cambiarlos no recalcula
+  // las keywords ya añadidas y no toca Rank Tracking.
   if (body.locationCode !== undefined) {
     const raw = Number(body.locationCode);
     data.locationCode = Number.isInteger(raw) && raw > 0 ? raw : 2724;
