@@ -40,10 +40,10 @@ export async function scrapePage(url: string, timeoutMs = 10000): Promise<Scrape
   } catch (error) {
     if (error instanceof ScrapeError) throw error;
     if (error instanceof SafeFetchError) {
-      if (error.code === "timeout") throw new ScrapeError("timeout", "La URL tardó demasiado en responder");
+      if (error.code === "timeout") throw new ScrapeError("timeout", "Esa web no responde desde los servidores de Crawlea (tarda más de 10 segundos). Si se abre bien en tu navegador, puede que su cortafuegos esté bloqueando las conexiones de Crawlea: pide a quien la aloja que las permita.");
       if (error.code === "blocked" || error.code === "invalid_url") throw new ScrapeError("fetch_failed", error.message);
     }
-    throw new ScrapeError("fetch_failed", "No se ha podido acceder a la URL");
+    throw new ScrapeError("fetch_failed", "No se ha podido acceder a esa URL desde los servidores de Crawlea. Comprueba que está bien escrita y que la web no bloquea las conexiones de Crawlea.");
   }
 
   const $ = cheerio.load(html);

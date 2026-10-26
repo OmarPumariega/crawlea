@@ -6,11 +6,24 @@ import { getSetting } from "@/lib/settings";
 // construir el cliente es barato (no abre conexión hasta la primera
 // llamada) — cachear habría servido una clave vieja hasta reiniciar el
 // proceso.
+// La clave falta o es un valor de ejemplo (copiado de .env.example): no hay IA configurada.
+export class LlmNotConfiguredError extends Error {
+  constructor() {
+    super("La IA no está disponible ahora mismo. Inténtalo de nuevo más tarde.");
+    this.name = "LlmNotConfiguredError";
+  }
+}
+
+// Mensaje para quien administra la plataforma: dice la causa real y dónde arreglarla. Los clientes ven
+// el genérico (no tienen por qué saber de claves ni de Configuración).
+export const LLM_NOT_CONFIGURED_ADMIN_MESSAGE =
+  "La clave de OpenRouter no está configurada (o es un valor de ejemplo). Pégala en Configuración → Claves de API para activar la IA.";
+
 export async function getOpenRouterClient(): Promise<OpenAI> {
   const apiKey = await getSetting("OPENROUTER_API_KEY");
-  if (!apiKey) {
+  if (!apiKey || /^placehold/i.test(apiKey.trim())) {
     console.error("[llm] falta la clave de OpenRouter (Configuración u OPENROUTER_API_KEY)");
-    throw new Error("La IA no está disponible ahora mismo. Inténtalo de nuevo más tarde.");
+    throw new LlmNotConfiguredError();
   }
   // timeout explícito: el default del SDK son 10 min (con hasta 2 reintentos
   // sobre timeouts, hasta 30 min reales) — eso es lo que hacía que Título/Meta
@@ -47,12 +60,14 @@ export async function getCopilotSystemPrompt(): Promise<string> {
 // técnico pueda entender y actuar — antes se devolvía error.message tal cual
 // (p.ej. "401 Missing Authentication header"), que parecía "la función está
 // rota" en vez de "falta configurar la clave de OpenRouter".
-export function friendlyLlmErrorMessage(error: unknown): string {
+export function friendlyLlmErrorMessage(error: unknown, isAdmin = false): string {
+  if (error instanceof LlmNotConfiguredError) return isAdmin ? LLM_NOT_CONFIGURED_ADMIN_MESSAGE : error.message;
   if (error instanceof OpenAI.APIConnectionTimeoutError) {
     return "La IA está tardando más de lo normal en responder (más de 90s). Puede que el servicio esté saturado — inténtalo de nuevo en unos minutos.";
   }
   if (error instanceof OpenAI.APIError) {
     if (error.status === 401) {
+      if (isAdmin) return "OpenRouter ha rechazado la clave (no es válida o ha caducado). Revísala en Configuración → Claves de API.";
       return "La IA no está disponible ahora mismo. Inténtalo de nuevo más tarde.";
     }
     if (error.status === 429) {

@@ -5,7 +5,7 @@ import { normalizeText } from "@/lib/validation";
 import { scrapePage, ScrapeError } from "@/lib/seo/scrape";
 import { loadSeoRules } from "@/lib/seo/seo-rules";
 import { buildSystemPrompt, buildUserMessage, parseVariants } from "@/lib/seo/title-meta";
-import { getOpenRouterClient, getDefaultOpenRouterModel, friendlyLlmErrorMessage } from "@/lib/seo/llm";
+import { getOpenRouterClient, getDefaultOpenRouterModel, friendlyLlmErrorMessage, LlmNotConfiguredError } from "@/lib/seo/llm";
 import { logApiUsage } from "@/lib/seo/usage-log";
 
 export async function GET(
@@ -70,6 +70,7 @@ export async function POST(
     }
 
     const seoRules = await loadSeoRules();
+    const isAdmin = session.user.role === "admin";
     const client = await getOpenRouterClient();
     const model = await getDefaultOpenRouterModel();
 
@@ -85,7 +86,7 @@ export async function POST(
       });
     } catch (error) {
       console.error("[titulos-meta] error del LLM:", error);
-      return NextResponse.json({ error: friendlyLlmErrorMessage(error) }, { status: 502 });
+      return NextResponse.json({ error: friendlyLlmErrorMessage(error, isAdmin) }, { status: 502 });
     }
 
     const raw = completion.choices[0]?.message?.content;
@@ -122,7 +123,12 @@ export async function POST(
     return NextResponse.json(generation, { status: 201 });
   } catch (error) {
     console.error("[titulos-meta] error inesperado:", error);
-    const message = error instanceof Error ? error.message : "Error inesperado al generar";
+    const message =
+      error instanceof LlmNotConfiguredError
+        ? friendlyLlmErrorMessage(error, session.user.role === "admin")
+        : error instanceof Error
+          ? error.message
+          : "Error inesperado al generar";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
