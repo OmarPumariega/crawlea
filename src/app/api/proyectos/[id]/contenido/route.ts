@@ -21,6 +21,8 @@ export async function GET(
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const { id } = await params;
+  if (!(await projectForSession(session, id, { id: true })))
+    return NextResponse.json({ error: "Proyecto no encontrado" }, { status: 404 });
 
   // Se traen TODAS las generaciones (no solo 20) para poder agrupar por tema:
   // el campo `topic` es la clave de versionado — regenerar el mismo tema

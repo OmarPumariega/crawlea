@@ -24,6 +24,9 @@ Romper cualquiera de estas es un bug grave, no un detalle de estilo:
    Las rutas de recursos hijos (notas, keywords, runs...) verifican el proyecto padre.
    Una query nueva sobre `Project` o sus hijos SIN filtro por propietario es un bug de
    seguridad. El admin de la plataforma (role `admin`) es la única excepción intencional.
+   **Vale también para los GET de listado** (filtrar solo por `projectId: id` deja leer
+   proyectos ajenos con solo conocer el id) y para PATCH/DELETE del propio proyecto.
+   `npm run audit:guards` lo comprueba en todos los handlers de `/api/proyectos/[id]/**`.
 3. **Guard de gasto antes de pagar.** Toda llamada nueva a DataForSEO llama antes a
    `assertWithinSpendLimit(projectId)` (`src/lib/dataforseo/spend.ts`) y registra el
    coste real devuelto por la API en `ApiUsageLog`. La UI muestra estimación antes de
@@ -93,6 +96,7 @@ OTRO usuario por métricas globales (como hacía el dashboard), filtra por
 ## Checklist antes de dar por terminada una tarea
 
 - [ ] `npx tsc --noEmit` limpio.
+- [ ] `npm run audit:guards` pasa (todo handler bajo `/api/proyectos/[id]/**` comprueba propietario).
 - [ ] `npm run build` pasa (si tocaste rutas/redirects/middleware, es imprescindible).
 - [ ] Smoke test mínimo con el dev server de lo que tocaste (login incluido si tocaste auth).
 - [ ] Si tocaste aislamiento o auth: prueba con un usuario de prueba que NO ve datos

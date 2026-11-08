@@ -14,6 +14,8 @@ export async function GET(
   if (gate) return gate;
 
   const { id } = await params;
+  if (!(await projectForSession(session, id, { id: true })))
+    return NextResponse.json({ error: "Proyecto no encontrado" }, { status: 404 });
   const runs = await prisma.geogridRun.findMany({
     where: { projectId: id },
     orderBy: { triggeredAt: "desc" },
