@@ -116,7 +116,7 @@ reutiliza llamadas ya pagadas).
 ## Esquema de base de datos (Prisma)
 
 Ver [`docs/04-modelo-de-datos.md`](./docs/04-modelo-de-datos.md) para el detalle
-completo (31 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
+completo (32 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
 NAP, propiedad de Google seleccionada y tope de gasto opcional),
 `TitleMetaGeneration` (historial del Módulo 3; `SchemaGeneration` quedó sin uso al retirar Schema),
 `ApiUsageLog` (coste por llamada a OpenRouter/DataForSEO, base del control de gasto),
@@ -612,6 +612,18 @@ reales con `node --experimental-strip-types`:
   documentación de DataForSEO, sin muestra real).
 - **Pendiente**: reseñas de Google (Business Data) y Google Trends (sin probar su endpoint), portal de
   cliente con login, anchors también en las tarjetas de competidor (hoy solo el dominio propio).
+
+## MCP de Crawlea (Claude Code)
+
+`POST /api/mcp` es un servidor MCP propio (Streamable HTTP, JSON-RPC a mano en
+`src/app/api/mcp/route.ts`) para trabajar los proyectos desde Claude Code: ~46 herramientas
+(`src/lib/mcp/tools.ts`) que envuelven los handlers de `/api/proyectos/[id]/**` sin red
+(`invoke.ts`), así que heredan aislamiento, gating por plan y guard de gasto. Auth con token
+personal `crw_…` (`ApiToken`, solo el hash SHA-256 en BD; se crea en Mi perfil) que vale únicamente
+en `/api/mcp`: la identidad se inyecta con AsyncLocalStorage (`src/lib/mcp/context.ts`) y
+`requireSession()` la respeta. Hoy solo el admin (`MCP_ADMIN_ONLY` en `src/lib/mcp/access.ts`).
+Una herramienta que gasta dice su coste en la descripción. Detalle e instalación en
+[`docs/08-mcp.md`](./docs/08-mcp.md).
 
 ## Mediciones programadas (pestaña Mediciones de la Ficha)
 

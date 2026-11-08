@@ -321,3 +321,6 @@ Columnas añadidas para no descartar nada de lo ya pagado (todas opcionales; fil
 - `MeasurementSchedule`: programación de una medición repetida por proyecto (módulo, activa, frecuencia,
   próxima y última ejecución, estado y mensaje). Única por `projectId`+`module`. Migración
   `20261022120000_mediciones_programadas`. Los resultados no viven aquí: se guardan en el histórico de cada módulo.
+- `ApiToken`: token personal del MCP (`/api/mcp`) por usuario: nombre, prefijo visible, **hash SHA-256**
+  (único; el valor real solo se muestra al crearlo), último uso y `revokedAt`. Migración
+  `20261108120000_api_tokens_mcp`. Ver [`08-mcp.md`](./08-mcp.md).

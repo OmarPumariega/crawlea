@@ -8,6 +8,8 @@ import PageHeader from "@/components/app/PageHeader";
 import GoogleConnectionCard from "@/components/app/GoogleConnectionCard";
 import DeleteAccountButton from "@/app/app/perfil/DeleteAccountButton";
 import SubscriptionActions from "@/app/app/perfil/SubscriptionActions";
+import McpTokensCard from "@/app/app/perfil/McpTokensCard";
+import { MCP_ADMIN_ONLY } from "@/lib/mcp/access";
 
 const ERROR_MESSAGES: Record<string, string> = {
   cancelado: "Has cancelado la conexión con Google.",
@@ -33,7 +35,8 @@ export default async function PerfilPage({
   if (!session) return null;
   const params = await searchParams;
 
-  const [user, connection, spentUsd] = await Promise.all([
+  const showMcp = !MCP_ADMIN_ONLY || isAdmin(session);
+  const [user, connection, spentUsd, mcpTokens] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -55,6 +58,13 @@ export default async function PerfilPage({
       select: { googleEmail: true, scope: true, connectedAt: true },
     }),
     getUserMonthSpendUsd(session.user.id),
+    showMcp
+      ? prisma.apiToken.findMany({
+          where: { userId: session.user.id, revokedAt: null },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, name: true, prefix: true, lastUsedAt: true, createdAt: true },
+        })
+      : Promise.resolve([]),
   ]);
   if (!user) return null;
 
@@ -176,6 +186,17 @@ export default async function PerfilPage({
         justConnected={params.connected === "1"}
         errorMessage={errorMessage}
       />
+
+      {/* MCP: conexión con Claude Code */}
+      {showMcp && (
+        <McpTokensCard
+          initial={mcpTokens.map((t) => ({
+            ...t,
+            lastUsedAt: t.lastUsedAt?.toISOString() ?? null,
+            createdAt: t.createdAt.toISOString(),
+          }))}
+        />
+      )}
 
       {/* Zona de peligro */}
       <section className="rounded-2xl border border-alert-tint bg-alert-tint/40 p-6 space-y-3">

@@ -1,0 +1,97 @@
+# 08 — MCP de Crawlea
+
+Servidor MCP propio para trabajar los proyectos desde Claude Code (o cualquier cliente
+MCP): leer el estado de un proyecto, lanzar estudios de keywords, rank tracking, geogrid,
+auditorías, competidores o backlinks, y gestionar tareas y notas.
+
+Estado: **uso propio (solo admin de la plataforma)**. Abrirlo a los clientes es una
+decisión de producto pendiente — ver «Salir a clientes» abajo.
+
+## Conectarlo (Claude Code)
+
+1. En Crawlea: **Mi perfil → Conectar con Claude Code (MCP) → Crear token**. Copia el comando
+   que aparece (el token solo se ve una vez).
+2. En una terminal, pega el comando:
+
+```bash
+claude mcp add --transport http crawlea https://crawlea.com/api/mcp --header "Authorization: Bearer crw_TU_TOKEN"
+```
+
+3. Comprueba con `claude mcp list` (debe salir `crawlea` conectado) o `/mcp` dentro de Claude Code.
+4. Úsalo hablando normal: «lista mis proyectos», «haz un estudio de keywords para X», «lanza un
+   geogrid de “dentista gijón” 5×5».
+
+Para probarlo contra el entorno local: `http://localhost:3000/api/mcp` (con `npm run dev`).
+Añade `--scope user` si quieres el MCP disponible en todos tus proyectos de Claude Code y no
+solo en la carpeta actual.
+
+## Cómo funciona
+
+- **Endpoint:** `POST /api/mcp` (`src/app/api/mcp/route.ts`). Transporte Streamable HTTP en
+  modo sin estado y con respuestas JSON (JSON-RPC 2.0 a mano, sin SDK: `initialize`, `ping`,
+  `tools/list`, `tools/call`). `GET`/`DELETE` → 405.
+- **Autenticación:** token personal `crw_…` (256 bits) en `Authorization: Bearer`. Modelo
+  `ApiToken`: solo se guarda el **hash SHA-256**; revocar = `revokedAt`. Un token solo vale en
+  `/api/mcp`, no abre ninguna otra ruta. Si la cuenta se suspende, el token deja de valer.
+- **Identidad:** `src/lib/mcp/context.ts` (AsyncLocalStorage). Mientras corre una herramienta,
+  `requireSession()` devuelve la sesión del dueño del token en vez de mirar la cookie.
+- **Herramientas = los handlers de la web:** `src/lib/mcp/tools.ts` envuelve los `route.ts` de
+  `/api/proyectos/[id]/**` (`invoke.ts` los llama sin red). Así el MCP hereda todo lo que ya
+  hacen: aislamiento por propietario, gating por plan, **guard de gasto y créditos**,
+  registro en `ApiUsageLog`. No hay una segunda vía a los datos.
+- **Aislamiento extra:** el dispatcher comprueba `projectForSession()` antes de ejecutar
+  cualquier herramienta con `projectId`, además de lo que haga el handler.
+- **Rate limit:** 120 llamadas/min por token. Resultados recortados a ~60.000 caracteres.
+
+## Herramientas
+
+| Grupo | Herramientas | Coste |
+|---|---|---|
+| Proyectos | `list_projects`, `get_project_overview`, `create_project`, `update_project` | gratis |
+| Tareas y notas | `list_tasks`, `create_task`, `update_task`, `list_notes`, `create_note` | gratis |
+| Keywords | `list_keyword_studies`, `get_keyword_study`, `add_keywords_to_study` | gratis |
+| | `create_keyword_study` (con keywords), `suggest_keywords` | DataForSEO Labs, ≈0,012 $ + 0,00012 $/resultado |
+| | `generate_url_structure` | OpenRouter (céntimos) |
+| Rank Tracking | `list_rank_keywords`, `get_rank_history`, `get_rank_visibility` | gratis |
+| | `add_rank_keywords`, `import_study_to_rank_tracking`, `check_rank_keyword` | SERP, ≈0,002 $ (depth 10) por keyword |
+| SEO local | `list_geogrid_runs`, `get_geogrid_run` | gratis |
+| | `run_geogrid` (asíncrono: devuelve el run `pending`) | Maps SERP, ≈0,0035 $ × puntos |
+| Auditoría | `list_audits`, `get_audit`, `run_audit` | gratis |
+| Google | `get_opportunities`, `get_search_console`, `get_analytics` | gratis (cuota de Google) |
+| Competidores | `list_competitors`, `add_competitor` | gratis |
+| | `analyze_competitor`, `get_competitor_content_gap` | Labs, ≈0,012 $ + 0,00012 $/keyword |
+| Backlinks | `get_backlinks` | gratis |
+| | `analyze_backlinks` | API de Backlinks (gasto aparte); `limit: "all"` puede salir caro |
+| On-page | `get_tfidf_results`, `analyze_url`, `run_pagespeed` | gratis |
+| | `run_tfidf` | gratis si Rank Tracking ya lo consultó; si no ≈0,002 $ |
+| | `generate_title_meta`, `generate_content` | OpenRouter (céntimos) |
+| Visibilidad IA | `check_ai_overview` (módulo de pago) | ≈0,004 $ por keyword |
+| Mediciones | `get_scheduled_measurements`, `set_scheduled_measurement`, `run_measurement_now` | `run_measurement_now` gasta lo que cueste esa medición |
+
+No expuesto a propósito: borrar proyectos, cuenta/plan/Stripe, ajustes de plataforma, claves de
+API y Google OAuth.
+
+## Añadir una herramienta nueva
+
+1. Si la lógica solo vive en un `route.ts`, no hace falta tocarla: añade su loader a `R` en
+   `src/lib/mcp/tools.ts` y una entrada `tool(...)` que llame a `callRoute(R.x, "GET"|"POST"…)`.
+2. Si gasta, **la descripción debe decir cuánto** (es lo que lee el modelo antes de lanzarla), y
+   el handler debe seguir llamando a `assertWithinSpendLimit` (invariante 3 del protocolo).
+3. Pruébala con un token real (ver abajo) y con un usuario NO admin para comprobar el aislamiento.
+
+## Probar en local sin Claude Code
+
+```bash
+curl -s -X POST http://localhost:3000/api/mcp \
+  -H "Authorization: Bearer crw_TU_TOKEN" -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+## Salir a clientes (pendiente de decidir)
+
+Hoy `MCP_ADMIN_ONLY = true` en `src/lib/mcp/access.ts`: solo el admin ve la tarjeta de tokens en
+su perfil y puede crearlos. Para abrirlo hay que decidir: ¿solo planes de pago (añadir un
+`moduleGate`/ModuleId `mcp` en `plans.ts`)?, ¿cómo se presenta el gasto (ya sale de la bolsa de
+créditos de la cuenta)?, y si hace falta **OAuth** para el conector de Claude.ai (los tokens a mano
+sirven para Claude Code pero no para el flujo «Añadir conector» de Claude.ai). También conviene
+una sección de ayuda en la web pública con estos pasos.

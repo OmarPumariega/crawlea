@@ -42,3 +42,4 @@ APIs reales.
 - **El roadmap manda:** el estado de las fases vive en `06-roadmap-saas.md` y se
   actualiza en el mismo commit que el cambio
 - [`07-analitica-y-legal.md`](./07-analitica-y-legal.md) — GTM/GA4, consentimiento de cookies, verificaciones y textos legales.
+- [`08-mcp.md`](./08-mcp.md) — MCP de Crawlea para Claude Code: instalación, herramientas, autenticación y cómo añadir más.

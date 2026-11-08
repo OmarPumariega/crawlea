@@ -5,6 +5,7 @@ import type { Prisma, Project } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { planAllowsModule, type ModuleId } from "@/lib/plans";
+import { mcpContext } from "@/lib/mcp/context";
 
 // Barrera de aislamiento multi-tenant de las rutas API. Todo handler llama a
 // requireSession() en vez de getServerSession(), y todo acceso a un proyecto
@@ -13,6 +14,22 @@ import { planAllowsModule, type ModuleId } from "@/lib/plans";
 // para soporte e inspección desde el panel de administración).
 
 export async function requireSession(): Promise<Session | null> {
+  // Petición que llega por el MCP (/api/mcp): el token ya se validó y la
+  // identidad viene del contexto, no de la cookie. Mismo criterio de estado
+  // fresco desde BD que abajo.
+  const mcp = mcpContext.getStore();
+  if (mcp) {
+    const u = await prisma.user.findUnique({
+      where: { id: mcp.userId },
+      select: { id: true, email: true, name: true, role: true, plan: true, status: true },
+    });
+    if (!u || u.status !== "active") return null;
+    return {
+      user: { id: u.id, email: u.email, name: u.name, role: u.role, plan: u.plan, status: u.status },
+      expires: new Date(Date.now() + 60_000).toISOString(),
+    };
+  }
+
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
 

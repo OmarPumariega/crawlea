@@ -51,6 +51,24 @@ model User {
   projects  Project[]
   googleConnection GoogleConnection?
   notifications NotificationLog[]
+  apiTokens ApiToken[]
+}
+
+// Token personal para el servidor MCP (/api/mcp). Solo se guarda el hash
+// SHA-256: el valor real se muestra una vez al crearlo y no se puede recuperar.
+// Revocar = poner revokedAt (el token deja de valer al instante).
+model ApiToken {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  prefix     String // primeros caracteres, para reconocerlo en la lista
+  tokenHash  String    @unique
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
 }
 
 // Un cliente/dominio gestionado por un usuario de la plataforma. Es la
