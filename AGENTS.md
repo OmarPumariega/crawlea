@@ -270,7 +270,9 @@ el Geogrid guarda la ficha completa de cada negocio del pack. Detalle en CLAUDE.
 personal `crw_…` (`ApiToken`, solo el hash SHA-256 en BD; se crea en Mi perfil) que vale únicamente
 en `/api/mcp`: la identidad se inyecta con AsyncLocalStorage (`src/lib/mcp/context.ts`) y
 `requireSession()` la respeta. Disponible para todas las cuentas (`MCP_ADMIN_ONLY = false` en `src/lib/mcp/access.ts`; el gasto sale de los créditos de cada cuenta).
-Una herramienta que gasta dice su coste en la descripción. Detalle e instalación en
+Una herramienta que gasta dice su coste en la descripción. No es solo para Claude: cualquier cliente MCP
+con URL remota sirve (Codex, Cursor, Gemini CLI, VS Code…); el perfil genera la configuración de cada uno.
+Esquemas de herramientas simples (sin `anyOf`/`additionalProperties`) para que los acepten todos. Detalle e instalación en
 [`docs/08-mcp.md`](./docs/08-mcp.md).
 
 ## Mediciones programadas (pestaña Mediciones de la Ficha)

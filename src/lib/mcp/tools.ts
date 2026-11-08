@@ -1,5 +1,7 @@
 import { callRoute, McpToolError, type RouteLoader } from "@/lib/mcp/invoke";
 import { buildProjectContext } from "@/lib/copilot/context";
+import { prisma } from "@/lib/db/prisma";
+import { normalizeKeyword } from "@/lib/keywords/normalize";
 
 // Catálogo de herramientas del MCP de Crawlea. Cada una es una envoltura fina
 // sobre un handler de la API de la web (invoke.ts): la lógica, las validaciones
@@ -257,18 +259,47 @@ export const TOOLS: McpTool[] = [
         query: { seed: need(a, "seed"), limit: typeof a.limit === "number" ? a.limit : undefined },
       }),
   }),
-  tool("add_keywords_to_study", "Añade keywords a un estudio (gratis). Pasa los ítems tal cual los devolvió suggest_keywords para conservar sus métricas; las duplicadas se ignoran y las prioridades se recalculan.", {
+  tool("add_keywords_to_study", "Añade keywords a un estudio (gratis). Pasa solo los textos de las keywords que quieras de suggest_keywords: sus métricas (volumen, CPC, dificultad, intención, estacionalidad...) se recuperan solas de la caché que dejó esa búsqueda. Las duplicadas se ignoran y las prioridades se recalculan. Las que no tengan datos en caché se añaden sin métricas.", {
     properties: {
       studyId: str("ID del estudio"),
-      items: {
-        type: "array",
-        description: "Ítems de suggest_keywords (mínimo {keyword}).",
-        items: { type: "object", properties: { keyword: { type: "string" } }, required: ["keyword"], additionalProperties: true },
-      },
+      keywords: strList("Keywords a añadir (los textos tal cual los devolvió suggest_keywords)"),
     },
-    required: ["studyId", "items"],
-    run: async (a, pid) =>
-      callRoute(R.studyKeywords, "POST", { params: { id: pid, studyId: need(a, "studyId") }, body: { items: a.items } }),
+    required: ["studyId", "keywords"],
+    run: async (a, pid) => {
+      const studyId = need(a, "studyId");
+      const wanted = Array.isArray(a.keywords)
+        ? [...new Set((a.keywords as unknown[]).filter((k): k is string => typeof k === "string").map(normalizeKeyword).filter(Boolean))]
+        : [];
+      if (wanted.length === 0) throw new McpToolError("Indica al menos una keyword");
+      if (wanted.length > 500) throw new McpToolError("Máximo 500 keywords por llamada");
+
+      const study = await prisma.keywordStudy.findFirst({
+        where: { id: studyId, projectId: pid },
+        select: { languageCode: true, locationCode: true },
+      });
+      if (!study) throw new McpToolError("Estudio no encontrado");
+
+      const cached = await prisma.keywordDataCache.findMany({
+        where: { keyword: { in: wanted }, languageCode: study.languageCode, locationCode: study.locationCode },
+      });
+      const byKeyword = new Map(cached.map((c) => [c.keyword, c]));
+      const items = wanted.map((keyword) => {
+        const c = byKeyword.get(keyword);
+        return {
+          keyword,
+          searchVolume: c?.searchVolume ?? null,
+          competition: c?.competition ?? null,
+          cpc: c?.cpc != null ? Number(c.cpc) : null,
+          intent: c?.intent ?? null,
+          monthlySearches: (c?.monthlySearches as number[] | null) ?? null,
+          difficulty: c?.difficulty ?? null,
+          extras: (c?.extras as Record<string, unknown> | null) ?? null,
+          source: "MCP",
+        };
+      });
+      const result = (await callRoute(R.studyKeywords, "POST", { params: { id: pid, studyId }, body: { items } })) as Record<string, unknown>;
+      return { ...result, sinMetricas: items.filter((i) => !byKeyword.has(i.keyword)).length };
+    },
   }),
   tool("generate_url_structure", "Genera con IA (OpenRouter, coste mínimo) la estructura de URLs del estudio: jerarquía real de páginas, h1, encabezados y keywords por página. Se guarda en el estudio.", {
     properties: { studyId: str("ID del estudio") },
@@ -397,9 +428,18 @@ export const TOOLS: McpTool[] = [
     run: async (_a, pid) => callRoute(R.backlinks, "GET", { params: { id: pid } }),
   }),
   tool("analyze_backlinks", "Analiza el perfil de backlinks de un dominio (API de Backlinks de DataForSEO, gasto aparte). Con limit 50 ≈ 0,03-0,05 $; «all» pagina hasta el total del dominio y puede salir caro: úsalo solo si se pide.", {
-    properties: { domain: str("Dominio a analizar"), limit: { description: "20, 50, 100, 200, 500 o «all»", anyOf: [{ type: "number" }, { type: "string", enum: ["all"] }] } },
+    properties: { domain: str("Dominio a analizar"), limit: str("Cuántos backlinks traer: 20, 50, 100, 200, 500 o all (por defecto 50)") },
     required: ["domain"],
-    run: async (a, pid) => callRoute(R.backlinksAnalyze, "POST", { params: { id: pid }, body: pick(a, ["domain", "limit"]) }),
+    run: async (a, pid) => {
+      // Acepta número o texto («50», «all»): según el cliente de IA llega de una u otra forma.
+      const raw = a.limit === undefined ? undefined : String(a.limit).trim().toLowerCase();
+      const limit = raw === undefined || raw === "" ? undefined : raw === "all" ? "all" : Number(raw);
+      // Un valor que no entendemos NO cae al límite por defecto: esto gasta dinero.
+      if (limit !== undefined && limit !== "all" && !Number.isFinite(limit)) {
+        throw new McpToolError("limit debe ser un número (20, 50, 100, 200, 500) o «all»");
+      }
+      return callRoute(R.backlinksAnalyze, "POST", { params: { id: pid }, body: { domain: a.domain, limit } });
+    },
   }),
 
   // ───────────── Contenido y on-page ─────────────

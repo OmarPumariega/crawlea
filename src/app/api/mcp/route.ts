@@ -97,12 +97,30 @@ async function handleMessage(userId: string, msg: JsonRpcRequest) {
       return rpcResult(id, {});
     case "tools/list":
       return rpcResult(id, {
-        tools: TOOLS.map((t) => ({
-          name: t.name,
-          description: t.description,
-          inputSchema: { type: "object", properties: t.properties, required: t.required },
-        })),
+        tools: TOOLS.map((t) => {
+          // Los list_/get_ solo leen: los clientes (Codex, Cursor...) pueden
+          // dejarlos pasar sin pedir permiso cada vez. El resto escribe o gasta.
+          const readOnly = /^(list|get)_/.test(t.name);
+          return {
+            name: t.name,
+            title: t.name.replace(/_/g, " "),
+            description: t.description,
+            inputSchema: {
+              type: "object",
+              properties: t.properties,
+              ...(t.required.length ? { required: t.required } : {}),
+            },
+            annotations: { readOnlyHint: readOnly, ...(readOnly ? {} : { destructiveHint: false }), openWorldHint: !readOnly },
+          };
+        }),
       });
+    // Algunos clientes piden estas listas aunque el servidor no las anuncie.
+    case "resources/list":
+      return rpcResult(id, { resources: [] });
+    case "resources/templates/list":
+      return rpcResult(id, { resourceTemplates: [] });
+    case "prompts/list":
+      return rpcResult(id, { prompts: [] });
     case "tools/call": {
       const name = typeof msg.params?.name === "string" ? msg.params.name : "";
       const args =
@@ -117,16 +135,43 @@ async function handleMessage(userId: string, msg: JsonRpcRequest) {
   }
 }
 
+// CORS abierto: el acceso va por token en cabecera (no por cookie), así que no
+// hay credenciales ambientales que proteger. Hace falta para clientes que corren
+// en el navegador (MCP Inspector, conectores web).
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Authorization, Content-Type, Accept, X-API-Key, Mcp-Session-Id, MCP-Protocol-Version, Last-Event-ID",
+  "Access-Control-Expose-Headers": "WWW-Authenticate, Mcp-Session-Id",
+  "Access-Control-Max-Age": "86400",
+};
+
+function json(body: unknown, status = 200, extra: Record<string, string> = {}) {
+  return NextResponse.json(body, { status, headers: { ...CORS, ...extra } });
+}
+function empty(status: number, extra: Record<string, string> = {}) {
+  return new NextResponse(null, { status, headers: { ...CORS, ...extra } });
+}
+
 function unauthorized() {
-  return NextResponse.json(
-    { error: "Token inválido o revocado" },
-    { status: 401, headers: { "WWW-Authenticate": 'Bearer realm="crawlea"' } }
-  );
+  return json({ error: "Token inválido o revocado" }, 401, { "WWW-Authenticate": 'Bearer realm="crawlea"' });
+}
+
+export async function OPTIONS() {
+  return empty(204);
+}
+
+// Token por «Authorization: Bearer crw_…» (lo normal) o por «X-API-Key», para
+// clientes que no dejan fijar Authorization.
+function tokenFrom(req: NextRequest): string {
+  const header = req.headers.get("authorization") ?? "";
+  if (header.toLowerCase().startsWith("bearer ")) return header.slice(7).trim();
+  return (req.headers.get("x-api-key") ?? "").trim();
 }
 
 export async function POST(req: NextRequest) {
-  const header = req.headers.get("authorization") ?? "";
-  const raw = header.toLowerCase().startsWith("bearer ") ? header.slice(7).trim() : "";
+  const raw = tokenFrom(req);
   const verified = raw ? await verifyToken(raw) : null;
   if (!verified) return unauthorized();
 
@@ -137,31 +182,36 @@ export async function POST(req: NextRequest) {
   try {
     await callLimiter.consume(verified.tokenId, 1);
   } catch {
-    return NextResponse.json(rpcError(null, -32000, "Demasiadas peticiones, espera un momento."), { status: 429 });
+    return json(rpcError(null, -32000, "Demasiadas peticiones, espera un momento."), 429);
   }
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json(rpcError(null, -32700, "JSON inválido"), { status: 400 });
+    return json(rpcError(null, -32700, "JSON inválido"), 400);
   }
+
+  const isMessage = (m: unknown): m is JsonRpcRequest => !!m && typeof m === "object" && !Array.isArray(m);
 
   if (Array.isArray(body)) {
-    const out = (await Promise.all(body.map((m) => handleMessage(verified.userId, m as JsonRpcRequest)))).filter(
-      (r) => r !== null
-    );
-    return out.length ? NextResponse.json(out) : new NextResponse(null, { status: 202 });
+    const out = (
+      await Promise.all(
+        body.map((m) => (isMessage(m) ? handleMessage(verified.userId, m) : rpcError(null, -32600, "Petición inválida")))
+      )
+    ).filter((r) => r !== null);
+    return out.length ? json(out) : empty(202);
   }
+  if (!isMessage(body)) return json(rpcError(null, -32600, "Petición inválida"), 400);
 
-  const response = await handleMessage(verified.userId, body as JsonRpcRequest);
-  return response ? NextResponse.json(response) : new NextResponse(null, { status: 202 });
+  const response = await handleMessage(verified.userId, body);
+  return response ? json(response) : empty(202);
 }
 
 // Sin stream de servidor ni sesiones: el cliente lo sabe por el 405.
 export async function GET() {
-  return new NextResponse(null, { status: 405, headers: { Allow: "POST" } });
+  return empty(405, { Allow: "POST, OPTIONS" });
 }
 export async function DELETE() {
-  return new NextResponse(null, { status: 405, headers: { Allow: "POST" } });
+  return empty(405, { Allow: "POST, OPTIONS" });
 }

@@ -25,6 +25,32 @@ Para probarlo contra el entorno local: `http://localhost:3000/api/mcp` (con `npm
 Añade `--scope user` si quieres el MCP disponible en todos tus proyectos de Claude Code y no
 solo en la carpeta actual.
 
+## Otros clientes (Codex, Cursor, Gemini CLI, VS Code…)
+
+El servidor habla MCP estándar por HTTP con token en cabecera, así que no depende de Claude: cualquier
+cliente MCP con URL remota sirve. La tarjeta de **Mi perfil** genera la configuración exacta de cada
+uno tras crear el token. Resumen (`URL` = `https://crawlea.com/api/mcp`):
+
+| Cliente | Dónde / cómo |
+|---|---|
+| Claude Code | `claude mcp add --transport http crawlea URL --header "Authorization: Bearer TOKEN"` |
+| Codex | `~/.codex/config.toml`: `[mcp_servers.crawlea]` con `url = "URL"` y `bearer_token_env_var = "CRAWLEA_TOKEN"` (exportando la variable) |
+| Cursor | `~/.cursor/mcp.json`: `{"mcpServers":{"crawlea":{"url":"URL","headers":{"Authorization":"Bearer TOKEN"}}}}` |
+| Gemini CLI | `gemini mcp add --transport http --header "Authorization: Bearer TOKEN" crawlea URL` |
+| VS Code | `.vscode/mcp.json`: `{"servers":{"crawlea":{"type":"http","url":"URL","headers":{"Authorization":"Bearer TOKEN"}}}}` |
+| Solo stdio | `npx -y mcp-remote URL --header "Authorization: Bearer TOKEN"` |
+
+Compatibilidad pensada a propósito: respuestas JSON (sin necesidad de SSE), sin sesión, token también
+por `X-API-Key`, CORS abierto (clientes en navegador), esquemas de herramientas simples (sin `anyOf` ni
+`additionalProperties`, que algunos clientes rechazan), anotaciones `readOnlyHint` en las `list_`/`get_`
+(los clientes pueden dejarlas pasar sin pedir permiso) y listas vacías de `resources`/`prompts`.
+
+**Verificado:** conexión, listado y llamadas con el cliente oficial del SDK de MCP (TypeScript 1.32).
+**Sin verificar en vivo:** las sintaxis de Codex, Cursor, Gemini CLI y VS Code están escritas según su
+documentación pública, pero no se han probado con esas herramientas; si alguna cambia su formato de
+configuración, se corrige en `CLIENTS` de `src/app/app/perfil/McpTokensCard.tsx`.
+**No soportado aún:** clientes que SOLO admiten OAuth (p. ej. el conector web de Claude.ai o de ChatGPT).
+
 ## Cómo funciona
 
 - **Endpoint:** `POST /api/mcp` (`src/app/api/mcp/route.ts`). Transporte Streamable HTTP en

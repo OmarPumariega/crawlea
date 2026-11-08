@@ -5,6 +5,51 @@ import { Check, Copy, Loader2, Plug, Trash2 } from "lucide-react";
 
 type TokenRow = { id: string; name: string; prefix: string; lastUsedAt: string | null; createdAt: string };
 
+// Cómo conectar el MCP en cada herramienta. Todas hablan el mismo protocolo
+// (MCP por HTTP con token en cabecera); solo cambia dónde se escribe.
+const CLIENTS: { id: string; label: string; where: string; build: (url: string, token: string) => string }[] = [
+  {
+    id: "claude",
+    label: "Claude Code",
+    where: "Pégalo en una terminal.",
+    build: (url, t) => `claude mcp add --transport http crawlea ${url} --header "Authorization: Bearer ${t}"`,
+  },
+  {
+    id: "codex",
+    label: "Codex",
+    where: "Añade esto a ~/.codex/config.toml y exporta la variable en tu terminal.",
+    build: (url, t) =>
+      `export CRAWLEA_TOKEN="${t}"\n\n# ~/.codex/config.toml\n[mcp_servers.crawlea]\nurl = "${url}"\nbearer_token_env_var = "CRAWLEA_TOKEN"`,
+  },
+  {
+    id: "cursor",
+    label: "Cursor",
+    where: "Guárdalo en ~/.cursor/mcp.json (o en .cursor/mcp.json del proyecto).",
+    build: (url, t) =>
+      JSON.stringify({ mcpServers: { crawlea: { url, headers: { Authorization: `Bearer ${t}` } } } }, null, 2),
+  },
+  {
+    id: "gemini",
+    label: "Gemini CLI",
+    where: "Pégalo en una terminal.",
+    build: (url, t) => `gemini mcp add --transport http --header "Authorization: Bearer ${t}" crawlea ${url}`,
+  },
+  {
+    id: "vscode",
+    label: "VS Code",
+    where: "Guárdalo en .vscode/mcp.json (Copilot Chat → modo Agente).",
+    build: (url, t) =>
+      JSON.stringify({ servers: { crawlea: { type: "http", url, headers: { Authorization: `Bearer ${t}` } } } }, null, 2),
+  },
+  {
+    id: "otros",
+    label: "Otras",
+    where:
+      "Para cualquier cliente MCP con URL remota usa la URL y la cabecera Authorization. Si solo admite programas locales (stdio), usa este puente:",
+    build: (url, t) => `URL:     ${url}\nCabecera: Authorization: Bearer ${t}\n\n# Cliente solo local (stdio):\nnpx -y mcp-remote ${url} --header "Authorization: Bearer ${t}"`,
+  },
+];
+
 function fmt(iso: string | null) {
   return iso ? new Date(iso).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "nunca";
 }
@@ -21,7 +66,9 @@ export default function McpTokensCard({ initial }: { initial: TokenRow[] }) {
   const [copied, setCopied] = useState(false);
 
   const endpoint = typeof window !== "undefined" ? `${window.location.origin}/api/mcp` : "https://crawlea.com/api/mcp";
-  const command = `claude mcp add --transport http crawlea ${endpoint} --header "Authorization: Bearer ${fresh ?? "TU_TOKEN"}"`;
+  const [clientId, setClientId] = useState("claude");
+  const client = CLIENTS.find((c) => c.id === clientId) ?? CLIENTS[0];
+  const command = client.build(endpoint, fresh ?? "TU_TOKEN");
 
   async function create() {
     setError("");
@@ -66,9 +113,9 @@ export default function McpTokensCard({ initial }: { initial: TokenRow[] }) {
       <div className="flex items-start gap-3">
         <Plug className="h-5 w-5 text-brand mt-0.5" />
         <div>
-          <h2 className="text-base font-semibold text-ink">Conectar con Claude Code (MCP)</h2>
+          <h2 className="text-base font-semibold text-ink">Conectar con tu IA (MCP)</h2>
           <p className="text-sm text-ink-soft">
-            Con un token personal, Claude Code puede leer tus proyectos y lanzar estudios de keywords, rank tracking, geogrid o auditorías.
+            Con un token personal, tu herramienta de IA (Claude Code, Codex, Cursor, Gemini CLI…) puede leer tus proyectos y lanzar estudios de keywords, rank tracking, geogrid o auditorías.
             El gasto sale de tus créditos igual que desde la web.
           </p>
         </div>
@@ -96,12 +143,26 @@ export default function McpTokensCard({ initial }: { initial: TokenRow[] }) {
       {fresh && (
         <div className="space-y-2 rounded-xl bg-accent-tint p-3">
           <p className="text-sm text-accent-ink font-medium">
-            Copia el comando ahora: el token no se volverá a mostrar.
+            Copia la configuración ahora: el token no se volverá a mostrar.
           </p>
+          <div className="flex flex-wrap gap-1.5">
+            {CLIENTS.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setClientId(c.id)}
+                className={`rounded-full px-3 py-1 text-xs font-medium ${
+                  c.id === clientId ? "bg-brand text-white" : "bg-surface text-ink-soft hover:text-ink"
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-ink-soft">{client.where}</p>
           <pre className="whitespace-pre-wrap break-all rounded-lg bg-surface p-3 text-xs text-ink">{command}</pre>
           <button onClick={copy} className="inline-flex items-center gap-2 text-sm text-accent-ink font-medium">
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {copied ? "Copiado" : "Copiar comando"}
+            {copied ? "Copiado" : "Copiar"}
           </button>
         </div>
       )}
