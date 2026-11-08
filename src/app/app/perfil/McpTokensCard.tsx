@@ -57,15 +57,28 @@ function fmt(iso: string | null) {
 // Conexión del MCP de Crawlea con Claude Code: crea y revoca tokens personales
 // y enseña el comando exacto para conectarlos. El token real solo se ve una
 // vez, justo al crearlo (en BD solo queda su hash).
-export default function McpTokensCard({ initial }: { initial: TokenRow[] }) {
+type GrantRow = { id: string; name: string; createdAt: string; lastUsedAt: string | null };
+
+export default function McpTokensCard({
+  initial,
+  grants: initialGrants,
+  origin,
+}: {
+  initial: TokenRow[];
+  grants: GrantRow[];
+  // Origen público de Crawlea (lo calcula el servidor: https://crawlea.com en producción).
+  origin: string;
+}) {
   const [tokens, setTokens] = useState(initial);
+  const [grants, setGrants] = useState(initialGrants);
+  const [urlCopied, setUrlCopied] = useState(false);
   const [name, setName] = useState("Claude Code");
   const [creating, setCreating] = useState(false);
   const [fresh, setFresh] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const endpoint = typeof window !== "undefined" ? `${window.location.origin}/api/mcp` : "https://crawlea.com/api/mcp";
+  const endpoint = `${origin}/api/mcp`;
   const [clientId, setClientId] = useState("claude");
   const client = CLIENTS.find((c) => c.id === clientId) ?? CLIENTS[0];
   const command = client.build(endpoint, fresh ?? "TU_TOKEN");
@@ -93,6 +106,21 @@ export default function McpTokensCard({ initial }: { initial: TokenRow[] }) {
     }
   }
 
+  async function copyUrl() {
+    try {
+      await navigator.clipboard.writeText(endpoint);
+      setUrlCopied(true);
+      setTimeout(() => setUrlCopied(false), 2000);
+    } catch {
+      /* el usuario puede seleccionar la URL a mano */
+    }
+  }
+
+  async function revokeGrant(id: string) {
+    const res = await fetch(`/api/perfil/conexiones?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    if (res.ok) setGrants((g) => g.filter((x) => x.id !== id));
+  }
+
   async function revoke(id: string) {
     const res = await fetch(`/api/perfil/tokens?id=${encodeURIComponent(id)}`, { method: "DELETE" });
     if (res.ok) setTokens((t) => t.filter((x) => x.id !== id));
@@ -115,12 +143,45 @@ export default function McpTokensCard({ initial }: { initial: TokenRow[] }) {
         <div>
           <h2 className="text-base font-semibold text-ink">Conectar con tu IA (MCP)</h2>
           <p className="text-sm text-ink-soft">
-            Con un token personal, tu herramienta de IA (Claude Code, Codex, Cursor, Gemini CLI…) puede leer tus proyectos y lanzar estudios de keywords, rank tracking, geogrid o auditorías.
+            Conecta tu herramienta de IA (Claude, ChatGPT, Claude Code, Codex, Cursor, Gemini CLI…) para que pueda leer tus proyectos y lanzar estudios de keywords, rank tracking, geogrid o auditorías.
             El gasto sale de tus créditos igual que desde la web.
           </p>
         </div>
       </div>
 
+      <div className="space-y-2 rounded-xl border border-line p-3">
+        <p className="text-sm font-semibold text-ink">La forma fácil: conector personalizado</p>
+        <p className="text-sm text-ink-soft">
+          En Claude (Ajustes → Conectores → Añadir conector personalizado), ChatGPT o cualquier herramienta con conectores
+          MCP, pega esta URL e inicia sesión en Crawlea cuando te lo pida. No necesitas token.
+        </p>
+        <div className="flex items-center gap-2">
+          <code className="flex-1 min-w-0 truncate rounded-lg bg-surface-muted px-3 py-2 text-xs text-ink">{endpoint}</code>
+          <button onClick={copyUrl} className="inline-flex items-center gap-1.5 text-sm text-accent-ink font-medium">
+            {urlCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            {urlCopied ? "Copiada" : "Copiar"}
+          </button>
+        </div>
+        {grants.length > 0 && (
+          <ul className="divide-y divide-line pt-1">
+            {grants.map((g) => (
+              <li key={g.id} className="flex items-center justify-between gap-3 py-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-ink truncate">{g.name}</p>
+                  <p className="text-xs text-ink-faint">
+                    conectada {fmt(g.createdAt)} · último uso {fmt(g.lastUsedAt)}
+                  </p>
+                </div>
+                <button onClick={() => revokeGrant(g.id)} aria-label={`Desconectar ${g.name}`} className="text-ink-faint hover:text-alert-ink">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <p className="text-sm font-semibold text-ink pt-1">Con token (terminal, Codex, Gemini CLI…)</p>
       <div className="flex flex-wrap gap-2">
         <input
           value={name}

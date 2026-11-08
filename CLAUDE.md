@@ -116,7 +116,7 @@ reutiliza llamadas ya pagadas).
 ## Esquema de base de datos (Prisma)
 
 Ver [`docs/04-modelo-de-datos.md`](./docs/04-modelo-de-datos.md) para el detalle
-completo (32 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
+completo (45 modelos). Resumen: `User` (cuenta: rol, plan, estado), `Project` (cliente/dominio, con
 NAP, propiedad de Google seleccionada y tope de gasto opcional),
 `TitleMetaGeneration` (historial del Módulo 3; `SchemaGeneration` quedó sin uso al retirar Schema),
 `ApiUsageLog` (coste por llamada a OpenRouter/DataForSEO, base del control de gasto),
@@ -622,7 +622,7 @@ reales con `node --experimental-strip-types`:
 personal `crw_…` (`ApiToken`, solo el hash SHA-256 en BD; se crea en Mi perfil) que vale únicamente
 en `/api/mcp`: la identidad se inyecta con AsyncLocalStorage (`src/lib/mcp/context.ts`) y
 `requireSession()` la respeta. Disponible para todas las cuentas (`MCP_ADMIN_ONLY = false` en `src/lib/mcp/access.ts`; el gasto sale de los créditos de cada cuenta).
-Una herramienta que gasta dice su coste en la descripción. No es solo para Claude: cualquier cliente MCP
+Dos vías de acceso: tokens `crw_…` a mano y **conector OAuth 2.1** (descubrimiento RFC 9728/8414, registro dinámico, PKCE, `/oauth/authorize`, `/api/oauth/*`; tokens `crwo_…` de 1 h con refresh rotatorio en `OAuthGrant`) para pegar solo la URL en Claude, ChatGPT o Cursor. Una herramienta que gasta dice su coste en la descripción. No es solo para Claude: cualquier cliente MCP
 con URL remota sirve (Codex, Cursor, Gemini CLI, VS Code…); el perfil genera la configuración de cada uno.
 Esquemas de herramientas simples (sin `anyOf`/`additionalProperties`) para que los acepten todos. Detalle e instalación en
 [`docs/08-mcp.md`](./docs/08-mcp.md).

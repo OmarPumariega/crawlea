@@ -25,6 +25,36 @@ Para probarlo contra el entorno local: `http://localhost:3000/api/mcp` (con `npm
 Añade `--scope user` si quieres el MCP disponible en todos tus proyectos de Claude Code y no
 solo en la carpeta actual.
 
+## Conector personalizado (OAuth) — la forma fácil
+
+Sin tokens ni terminal: en Claude (**Ajustes → Conectores → Añadir conector personalizado**), ChatGPT,
+Cursor o cualquier herramienta con conectores MCP, se pega solo la URL `https://crawlea.com/api/mcp`.
+La herramienta abre Crawlea, el usuario inicia sesión (Google) y pulsa **Permitir**; ya está conectado.
+Se revoca desde **Mi perfil** (papelera junto a cada aplicación conectada) y corta el acceso al instante.
+
+Cómo funciona (OAuth 2.1, clientes públicos con PKCE S256 obligatorio):
+
+1. `POST /api/mcp` sin token responde `401` con `WWW-Authenticate: Bearer resource_metadata="…"`.
+2. El cliente lee `/.well-known/oauth-protected-resource[/api/mcp]` (RFC 9728) y después
+   `/.well-known/oauth-authorization-server` (RFC 8414).
+3. Se registra solo en `POST /api/oauth/register` (RFC 7591; modelo `OAuthClient`). Redirecciones
+   admitidas: https, http solo en localhost (se ignora el puerto, RFC 8252) y esquemas de app
+   (`cursor://`…); nunca `javascript:`/`data:`/`file:`.
+4. Abre `/oauth/authorize` (pantalla de consentimiento; sin sesión redirige a `/acceso?next=…` y vuelve).
+   El `POST /api/oauth/authorize` exige `Origin` propio (CSRF), re-valida todo y emite un código de un
+   solo uso de 5 min (`OAuthCode`, solo hash). Exige los términos aceptados y `MCP_ADMIN_ONLY` respetado.
+5. `POST /api/oauth/token`: canjea el código (PKCE) por un access token `crwo_…` de **1 hora** y un
+   refresh token `crwr_…` de 90 días que **rota** en cada uso (`OAuthGrant`, solo hashes). Un código
+   que falla la verificación queda quemado; un refresh ya usado no vale.
+6. `/api/mcp` acepta `crwo_…` igual que los tokens `crw_…` a mano (`verifyToken`): misma identidad por
+   `AsyncLocalStorage`, mismos guards, mismo límite de 120 llamadas/min.
+
+Verificado con el cliente OAuth del SDK oficial de MCP (descubrimiento, registro, PKCE, consentimiento,
+token y llamadas) y con `curl` para los casos de ataque (redirección ajena, CSRF, PKCE ausente o `plain`,
+código reutilizado, refresh rotado, revocación, cuenta sin términos). **Sin verificar en vivo** con Claude.ai,
+ChatGPT ni Cursor: los clientes reales pueden pedir algo que el SDK no (p. ej. otra ruta de metadatos).
+Los tokens `crw_…` siguen siendo la vía para Claude Code, Codex y Gemini CLI.
+
 ## Otros clientes (Codex, Cursor, Gemini CLI, VS Code…)
 
 El servidor habla MCP estándar por HTTP con token en cabecera, así que no depende de Claude: cualquier
@@ -49,7 +79,7 @@ por `X-API-Key`, CORS abierto (clientes en navegador), esquemas de herramientas 
 **Sin verificar en vivo:** las sintaxis de Codex, Cursor, Gemini CLI y VS Code están escritas según su
 documentación pública, pero no se han probado con esas herramientas; si alguna cambia su formato de
 configuración, se corrige en `CLIENTS` de `src/app/app/perfil/McpTokensCard.tsx`.
-**No soportado aún:** clientes que SOLO admiten OAuth (p. ej. el conector web de Claude.ai o de ChatGPT).
+Los clientes que SOLO admiten OAuth usan el conector personalizado (sección siguiente).
 
 ## Cómo funciona
 
@@ -117,5 +147,4 @@ curl -s -X POST http://localhost:3000/api/mcp \
 
 `MCP_ADMIN_ONLY = false` en `src/lib/mcp/access.ts`: cualquier cuenta activa ve la tarjeta de tokens
 en su perfil. Para limitarlo (p. ej. solo planes de pago) ponlo a `true` o añade un `moduleGate`.
-Pendiente: **OAuth** para el conector de Claude.ai (los tokens a mano sirven para Claude Code, pero
-no para el flujo «Añadir conector» de Claude.ai) y una sección de ayuda en la web pública.
+Pendiente: una sección de ayuda en la web pública con estos pasos.

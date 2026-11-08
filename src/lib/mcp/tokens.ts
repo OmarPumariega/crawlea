@@ -23,7 +23,23 @@ const TOUCH_EVERY_MS = 60_000;
 export type VerifiedToken = { tokenId: string; userId: string };
 
 export async function verifyToken(raw: string): Promise<VerifiedToken | null> {
-  if (!raw.startsWith(TOKEN_PREFIX) || raw.length > 128) return null;
+  if (raw.length > 128) return null;
+
+  // Token de acceso del conector OAuth (corto, 1 hora; lo emite /api/oauth/token).
+  if (raw.startsWith("crwo_")) {
+    const grant = await prisma.oAuthGrant.findUnique({
+      where: { accessHash: hashToken(raw) },
+      select: { id: true, userId: true, revokedAt: true, accessExpiresAt: true, lastUsedAt: true },
+    });
+    if (!grant || grant.revokedAt || grant.accessExpiresAt < new Date()) return null;
+    if (!grant.lastUsedAt || Date.now() - grant.lastUsedAt.getTime() > TOUCH_EVERY_MS) {
+      await prisma.oAuthGrant.update({ where: { id: grant.id }, data: { lastUsedAt: new Date() } }).catch(() => {});
+    }
+    return { tokenId: grant.id, userId: grant.userId };
+  }
+
+  // Token personal creado a mano en Mi perfil.
+  if (!raw.startsWith(TOKEN_PREFIX)) return null;
   const token = await prisma.apiToken.findUnique({
     where: { tokenHash: hashToken(raw) },
     select: { id: true, userId: true, revokedAt: true, lastUsedAt: true },

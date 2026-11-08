@@ -47,7 +47,9 @@ export default function AuthPanel({ variant, callbackUrl = "/app" }: { variant: 
     if (result?.error) {
       setError("Email o contraseña incorrectos");
     } else {
-      router.push("/app");
+      // Solo se respeta el regreso a la pantalla de consentimiento del MCP;
+      // el resto de accesos siguen yendo al panel como siempre.
+      router.push(callbackUrl.startsWith("/oauth/authorize?") ? callbackUrl : "/app");
       router.refresh();
     }
   }

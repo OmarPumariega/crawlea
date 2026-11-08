@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { prisma } from "@/lib/db/prisma";
 import { requireSession, isAdmin } from "@/lib/auth-guards";
 import { getUserMonthSpendUsd } from "@/lib/dataforseo/spend";
@@ -36,7 +37,11 @@ export default async function PerfilPage({
   const params = await searchParams;
 
   const showMcp = !MCP_ADMIN_ONLY || isAdmin(session);
-  const [user, connection, spentUsd, mcpTokens] = await Promise.all([
+  const h = await headers();
+  const host = (h.get("x-forwarded-host") ?? h.get("host") ?? "crawlea.com").split(",")[0].trim();
+  const proto = (h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")).split(",")[0].trim();
+  const origin = `${proto}://${host}`;
+  const [user, connection, spentUsd, mcpTokens, mcpGrants] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -63,6 +68,13 @@ export default async function PerfilPage({
           where: { userId: session.user.id, revokedAt: null },
           orderBy: { createdAt: "desc" },
           select: { id: true, name: true, prefix: true, lastUsedAt: true, createdAt: true },
+        })
+      : Promise.resolve([]),
+    showMcp
+      ? prisma.oAuthGrant.findMany({
+          where: { userId: session.user.id, revokedAt: null },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, createdAt: true, lastUsedAt: true, client: { select: { name: true } } },
         })
       : Promise.resolve([]),
   ]);
@@ -190,6 +202,13 @@ export default async function PerfilPage({
       {/* MCP: conexión con Claude Code */}
       {showMcp && (
         <McpTokensCard
+          origin={origin}
+          grants={mcpGrants.map((g) => ({
+            id: g.id,
+            name: g.client.name,
+            createdAt: g.createdAt.toISOString(),
+            lastUsedAt: g.lastUsedAt?.toISOString() ?? null,
+          }))}
           initial={mcpTokens.map((t) => ({
             ...t,
             lastUsedAt: t.lastUsedAt?.toISOString() ?? null,

@@ -6,6 +6,7 @@ import { mcpContext } from "@/lib/mcp/context";
 import { McpToolError } from "@/lib/mcp/invoke";
 import { TOOLS, TOOLS_BY_NAME } from "@/lib/mcp/tools";
 import { verifyToken } from "@/lib/mcp/tokens";
+import { publicOrigin } from "@/lib/mcp/oauth";
 
 // Servidor MCP de Crawlea (transporte Streamable HTTP, modo sin estado y
 // respuestas JSON). Se conecta desde Claude Code con un token personal:
@@ -154,8 +155,15 @@ function empty(status: number, extra: Record<string, string> = {}) {
   return new NextResponse(null, { status, headers: { ...CORS, ...extra } });
 }
 
-function unauthorized() {
-  return json({ error: "Token inválido o revocado" }, 401, { "WWW-Authenticate": 'Bearer realm="crawlea"' });
+// El `resource_metadata` es lo que hace que un cliente MCP compatible con OAuth
+// (conector personalizado de Claude, ChatGPT, Cursor...) descubra solo cómo
+// pedir permiso al usuario (RFC 9728). Los clientes con token a mano lo ignoran.
+function unauthorized(req: NextRequest, hadToken: boolean) {
+  const metadata = `${publicOrigin(req)}/.well-known/oauth-protected-resource/api/mcp`;
+  const challenge =
+    `Bearer realm="crawlea", resource_metadata="${metadata}"` +
+    (hadToken ? ', error="invalid_token", error_description="Token inválido, caducado o revocado"' : "");
+  return json({ error: "Token inválido o revocado" }, 401, { "WWW-Authenticate": challenge });
 }
 
 export async function OPTIONS() {
@@ -173,11 +181,11 @@ function tokenFrom(req: NextRequest): string {
 export async function POST(req: NextRequest) {
   const raw = tokenFrom(req);
   const verified = raw ? await verifyToken(raw) : null;
-  if (!verified) return unauthorized();
+  if (!verified) return unauthorized(req, raw !== "");
 
   // La cuenta debe seguir activa (suspendida = el token deja de valer).
   const user = await prisma.user.findUnique({ where: { id: verified.userId }, select: { status: true } });
-  if (!user || user.status !== "active") return unauthorized();
+  if (!user || user.status !== "active") return unauthorized(req, true);
 
   try {
     await callLimiter.consume(verified.tokenId, 1);

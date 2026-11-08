@@ -52,6 +52,8 @@ model User {
   googleConnection GoogleConnection?
   notifications NotificationLog[]
   apiTokens ApiToken[]
+  oauthGrants OAuthGrant[]
+  oauthCodes OAuthCode[]
 }
 
 // Token personal para el servidor MCP (/api/mcp). Solo se guarda el hash
@@ -67,6 +69,52 @@ model ApiToken {
   lastUsedAt DateTime?
   revokedAt  DateTime?
   createdAt  DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// OAuth 2.1 del MCP (conector personalizado de Claude, ChatGPT, Cursor...).
+// Clientes públicos con PKCE obligatorio, registrados solos (RFC 7591).
+model OAuthClient {
+  id           String       @id @default(cuid()) // es el client_id
+  name         String
+  redirectUris String[]
+  createdAt    DateTime     @default(now())
+  grants       OAuthGrant[]
+  codes        OAuthCode[]
+}
+
+// Código de autorización de un solo uso (se borra al canjearlo). Solo el hash.
+model OAuthCode {
+  id            String      @id @default(cuid())
+  codeHash      String      @unique
+  clientId      String
+  client        OAuthClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  redirectUri   String
+  codeChallenge String
+  expiresAt     DateTime
+  createdAt     DateTime    @default(now())
+
+  @@index([expiresAt])
+}
+
+// Permiso concedido por un usuario a una aplicación: un access token corto y un
+// refresh token que rota. Solo hashes. Revocar = revokedAt.
+model OAuthGrant {
+  id               String      @id @default(cuid())
+  userId           String
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId         String
+  client           OAuthClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  accessHash       String      @unique
+  accessExpiresAt  DateTime
+  refreshHash      String      @unique
+  refreshExpiresAt DateTime
+  lastUsedAt       DateTime?
+  revokedAt        DateTime?
+  createdAt        DateTime    @default(now())
 
   @@index([userId])
 }

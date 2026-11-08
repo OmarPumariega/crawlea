@@ -9,11 +9,23 @@ export const metadata = {
   robots: { index: false },
 };
 
-export default async function AccesoPage({ searchParams }: { searchParams: Promise<{ web?: string; plan?: string }> }) {
-  const { web, plan } = await searchParams;
-  // Ya autenticado: directo al panel.
-  const session = await getServerSession(authOptions);
-  if (session) redirect(signupCallback(web, plan));
+// Único destino `next` aceptado: volver a la pantalla de consentimiento del
+// conector MCP tras iniciar sesión. Se exige la ruta interna exacta para que no
+// sirva de redirección abierta.
+function safeNext(next: string | undefined): string | null {
+  return next && next.startsWith("/oauth/authorize?") && !next.includes("//") ? next : null;
+}
 
-  return <AuthPanel variant="acceso" callbackUrl={signupCallback(web, plan)} />;
+export default async function AccesoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ web?: string; plan?: string; next?: string }>;
+}) {
+  const { web, plan, next } = await searchParams;
+  const destino = safeNext(next) ?? signupCallback(web, plan);
+  // Ya autenticado: directo al panel (o a la pantalla de consentimiento).
+  const session = await getServerSession(authOptions);
+  if (session) redirect(destino);
+
+  return <AuthPanel variant="acceso" callbackUrl={destino} />;
 }

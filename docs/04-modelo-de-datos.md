@@ -324,3 +324,7 @@ Columnas añadidas para no descartar nada de lo ya pagado (todas opcionales; fil
 - `ApiToken`: token personal del MCP (`/api/mcp`) por usuario: nombre, prefijo visible, **hash SHA-256**
   (único; el valor real solo se muestra al crearlo), último uso y `revokedAt`. Migración
   `20261108120000_api_tokens_mcp`. Ver [`08-mcp.md`](./08-mcp.md).
+- `OAuthClient` / `OAuthCode` / `OAuthGrant`: OAuth 2.1 del MCP. Cliente público registrado solo (nombre y
+  redirect URIs), código de autorización de un solo uso (5 min, hash) y permiso concedido por un usuario a una
+  aplicación (access token de 1 h + refresh que rota, solo hashes, `revokedAt`). Migración
+  `20261108180000_oauth_mcp`. Ver [`08-mcp.md`](./08-mcp.md).
