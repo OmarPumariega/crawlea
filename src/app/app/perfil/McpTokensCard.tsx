@@ -64,7 +64,7 @@ export default function McpTokensCard({ initial }: { initial: TokenRow[] }) {
   return (
     <section className="bg-surface rounded-2xl border border-line shadow-[0_1px_2px_rgba(17,20,43,0.05),0_4px_16px_-6px_rgba(17,20,43,0.10)] p-5 space-y-4">
       <div className="flex items-start gap-3">
-        <Plug className="h-5 w-5 text-accent mt-0.5" />
+        <Plug className="h-5 w-5 text-brand mt-0.5" />
         <div>
           <h2 className="text-base font-semibold text-ink">Conectar con Claude Code (MCP)</h2>
           <p className="text-sm text-ink-soft">
@@ -85,7 +85,7 @@ export default function McpTokensCard({ initial }: { initial: TokenRow[] }) {
         <button
           onClick={create}
           disabled={creating || !name.trim()}
-          className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
         >
           {creating && <Loader2 className="h-4 w-4 animate-spin" />}
           Crear token
