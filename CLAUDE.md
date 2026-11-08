@@ -621,7 +621,7 @@ reales con `node --experimental-strip-types`:
 (`invoke.ts`), así que heredan aislamiento, gating por plan y guard de gasto. Auth con token
 personal `crw_…` (`ApiToken`, solo el hash SHA-256 en BD; se crea en Mi perfil) que vale únicamente
 en `/api/mcp`: la identidad se inyecta con AsyncLocalStorage (`src/lib/mcp/context.ts`) y
-`requireSession()` la respeta. Hoy solo el admin (`MCP_ADMIN_ONLY` en `src/lib/mcp/access.ts`).
+`requireSession()` la respeta. Disponible para todas las cuentas (`MCP_ADMIN_ONLY = false` en `src/lib/mcp/access.ts`; el gasto sale de los créditos de cada cuenta).
 Una herramienta que gasta dice su coste en la descripción. Detalle e instalación en
 [`docs/08-mcp.md`](./docs/08-mcp.md).
 

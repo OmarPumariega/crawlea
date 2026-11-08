@@ -4,8 +4,8 @@ Servidor MCP propio para trabajar los proyectos desde Claude Code (o cualquier c
 MCP): leer el estado de un proyecto, lanzar estudios de keywords, rank tracking, geogrid,
 auditorías, competidores o backlinks, y gestionar tareas y notas.
 
-Estado: **uso propio (solo admin de la plataforma)**. Abrirlo a los clientes es una
-decisión de producto pendiente — ver «Salir a clientes» abajo.
+Estado: **disponible para todas las cuentas**; cada una crea sus propios tokens y el gasto sale
+de sus créditos.
 
 ## Conectarlo (Claude Code)
 
@@ -87,11 +87,9 @@ curl -s -X POST http://localhost:3000/api/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-## Salir a clientes (pendiente de decidir)
+## Acceso
 
-Hoy `MCP_ADMIN_ONLY = true` en `src/lib/mcp/access.ts`: solo el admin ve la tarjeta de tokens en
-su perfil y puede crearlos. Para abrirlo hay que decidir: ¿solo planes de pago (añadir un
-`moduleGate`/ModuleId `mcp` en `plans.ts`)?, ¿cómo se presenta el gasto (ya sale de la bolsa de
-créditos de la cuenta)?, y si hace falta **OAuth** para el conector de Claude.ai (los tokens a mano
-sirven para Claude Code pero no para el flujo «Añadir conector» de Claude.ai). También conviene
-una sección de ayuda en la web pública con estos pasos.
+`MCP_ADMIN_ONLY = false` en `src/lib/mcp/access.ts`: cualquier cuenta activa ve la tarjeta de tokens
+en su perfil. Para limitarlo (p. ej. solo planes de pago) ponlo a `true` o añade un `moduleGate`.
+Pendiente: **OAuth** para el conector de Claude.ai (los tokens a mano sirven para Claude Code, pero
+no para el flujo «Añadir conector» de Claude.ai) y una sección de ayuda en la web pública.
