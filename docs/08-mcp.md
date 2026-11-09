@@ -97,7 +97,7 @@ Los clientes que SOLO admiten OAuth usan el conector personalizado (sección sig
   registro en `ApiUsageLog`. No hay una segunda vía a los datos.
 - **Aislamiento extra:** el dispatcher comprueba `projectForSession()` antes de ejecutar
   cualquier herramienta con `projectId`, además de lo que haga el handler.
-- **Rate limit:** 120 llamadas/min por token. Resultados recortados a ~60.000 caracteres.
+- **Rate limit:** 120 llamadas/min por token. Los resultados se devuelven enteros, sin límite de tamaño (el cliente de IA puede tener el suyo).
 
 ## Herramientas
 

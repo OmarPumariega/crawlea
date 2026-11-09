@@ -20,7 +20,6 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 const SUPPORTED_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
-const MAX_RESULT_CHARS = 60_000;
 
 const INSTRUCTIONS =
   "Crawlea es un SaaS SEO con datos reales (DataForSEO, Search Console, GA4, PageSpeed). " +
@@ -44,12 +43,8 @@ function rpcError(id: JsonRpcId, code: number, message: string) {
 }
 
 function textResult(value: unknown, isError = false) {
-  let text = typeof value === "string" ? value : JSON.stringify(value, null, 2);
-  if (text.length > MAX_RESULT_CHARS) {
-    text =
-      text.slice(0, MAX_RESULT_CHARS) +
-      `\n\n[Resultado recortado: ${text.length - MAX_RESULT_CHARS} caracteres más. Pide un subconjunto más concreto.]`;
-  }
+  // Sin límite de tamaño: el resultado se devuelve entero.
+  const text = typeof value === "string" ? value : JSON.stringify(value, null, 2);
   return { content: [{ type: "text", text }], ...(isError ? { isError: true } : {}) };
 }
 
