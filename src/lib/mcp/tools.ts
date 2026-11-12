@@ -48,6 +48,7 @@ const R = {
   geogridRun: () => import("@/app/api/proyectos/[id]/geogrid/[runId]/route"),
   audits: () => import("@/app/api/proyectos/[id]/auditorias/route"),
   audit: () => import("@/app/api/proyectos/[id]/auditorias/[auditId]/route"),
+  auditChecks: () => import("@/app/api/proyectos/[id]/auditorias/[auditId]/checks/route"),
   opportunities: () => import("@/app/api/proyectos/[id]/oportunidades/route"),
   competitors: () => import("@/app/api/proyectos/[id]/competidores/route"),
   competitorAnalyze: () => import("@/app/api/proyectos/[id]/competidores/analizar/route"),
@@ -381,10 +382,18 @@ export const TOOLS: McpTool[] = [
   tool("list_audits", "Lista las últimas auditorías técnicas del proyecto con su puntuación y estado.", {
     run: async (_a, pid) => callRoute(R.audits, "GET", { params: { id: pid } }),
   }),
-  tool("get_audit", "Devuelve una auditoría completa: puntuaciones por categoría, hallazgos y páginas rastreadas.", {
+  tool("get_audit", "Devuelve una auditoría completa: puntuaciones por categoría, hallazgos y páginas rastreadas (incluye también la revisión profunda en deepChecks; para trabajar con ella usa mejor get_audit_checks).", {
     properties: { auditId: str("ID de la auditoría (lo da list_audits)") },
     required: ["auditId"],
     run: async (a, pid) => callRoute(R.audit, "GET", { params: { id: pid, auditId: need(a, "auditId") } }),
+  }),
+  tool("get_audit_checks", "Auditoría profunda de la página de inicio (gratis): unos 85 checks medidos en 10 categorías (rastreo, URL, on-page, contenido, schema, rendimiento, accesibilidad, E-E-A-T, internacional y AI SEO). Cada check trae el dato real encontrado, su estado (fail/improve/ok/na), CÓMO arreglarlo y la documentación oficial: es la lista de trabajo para corregir el sitio. Usa estado=fail,improve para ir solo a lo accionable.", {
+    properties: {
+      auditId: str("ID de la auditoría (list_audits). Por defecto la última completada con revisión profunda."),
+      estado: str("Filtra por estado separados por coma: fail, improve, ok, na. Ej: fail,improve"),
+      categoria: str("Filtra por categoría: crawl, url, onpage, content, schema, perf, a11y, eeat, intl, ai"),
+    },
+    run: async (a, pid) => callRoute(R.auditChecks, "GET", { params: { id: pid, auditId: s(a, "auditId") ?? "ultima" }, query: { estado: s(a, "estado"), categoria: s(a, "categoria") } }),
   }),
   tool("run_audit", "Lanza una auditoría técnica del sitio entero (crawler propio, sin coste de API salvo PageSpeed gratis). Se procesa en segundo plano; consulta list_audits/get_audit después. Genera también las tareas automáticas.", {
     run: async (_a, pid) => callRoute(R.audits, "POST", { params: { id: pid } }),
@@ -451,7 +460,7 @@ export const TOOLS: McpTool[] = [
     required: ["keyword"],
     run: async (a, pid) => callRoute(R.tfidf, "POST", { params: { id: pid }, body: pick(a, ["keyword", "locationCode", "languageCode"]) }),
   }),
-  tool("analyze_url", "Analizador de URL (gratis, sin LLM): descarga la página y la puntúa 0-100 en indexación, título/meta, encabezados, keyword, contenido, imágenes, datos estructurados, enlaces y móvil, con cómo arreglar cada punto. Sirve para páginas propias y de la competencia.", {
+  tool("analyze_url", "Analizador de URL (gratis, sin LLM): descarga la página y la puntúa 0-100 en indexación, título/meta, encabezados, keyword, contenido, imágenes, datos estructurados, enlaces y móvil, con cómo arreglar cada punto. Incluye además en `deep` la revisión profunda de ESA página (≈85 checks con el dato medido, cómo arreglarlo y documentación oficial: schema por tipo, seguridad, accesibilidad, AI SEO...). Sirve para cualquier URL: home, producto, servicio, artículo, propia o de la competencia.", {
     properties: { url: str("URL completa"), keyword: str("Keyword objetivo (opcional)") },
     required: ["url"],
     run: async (a, pid) => callRoute(R.analyzer, "POST", { params: { id: pid }, body: pick(a, ["url", "keyword"]) }),

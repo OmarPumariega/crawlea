@@ -419,6 +419,21 @@ sitio; ver el apartado "Copilot" más abajo.
   de auditorías (incluidas las mensuales programadas) va fire-and-forget desde
   `instrumentation-node.ts`, fuera de la cadena secuencial del cron — un crawl largo
   no bloquea rank tracking ni geogrid de otros proyectos.
+- **Auditoría profunda** (pestaña *Checks* de Auditoría, `src/lib/audit/deep/`, gratis): además del
+  rastreo, cada auditoría analiza la página de inicio con ~85 comprobaciones deterministas en 10
+  categorías (rastreo, URL, on-page, contenido, schema, rendimiento, accesibilidad, E-E-A-T,
+  internacional, AI SEO). `page-checks.ts` es puro (HTML + cabeceras + robots.txt); `site-checks.ts`
+  hace las pruebas de red (TLS/HTTP2, http→https, www, soft 404 real, llms.txt, bots de IA en
+  robots.txt y contra el servidor, hreflang recíproco). Cada check devuelve estado
+  (fail/improve/ok/na), el dato medido, **cómo arreglarlo** y la documentación oficial; lo que no
+  aplica o no se pudo medir es `na` con el motivo, nunca una suposición. Se guarda en
+  `AuditRun.deepChecks/deepScore` (aparte de `overallScore`, para no romper el histórico
+  comparable), genera Tareas automáticas (`issueType` = `deep:<id>`; los avisos `advisory` no) y se
+  lee por MCP (`get_audit_checks`), Copilot e Informe. El **Analizador de URL** ejecuta el mismo motor
+  sobre cualquier URL (`runDeepAudit` con `prefetched`, reutiliza el HTML ya descargado; guarda `deep`
+  dentro de `UrlAnalysis.result`, sin migración) y lo muestra con `AuditDeepChecks`; las pruebas de red
+  usan `safeGet` (protección SSRF en cada salto). Pendiente: capa de IA (originalidad,
+  intención, E-E-A-T, ortografía) — no incluida por coste y fiabilidad.
 - **Enlaces** (pestaña dentro de Auditoría, ruta `/auditoria/enlaces`): PageRank interno
   calculado sobre el grafo de enlaces de la última
   auditoría completada (`AuditRun.linkGraph`), sin coste de API — páginas huérfanas,

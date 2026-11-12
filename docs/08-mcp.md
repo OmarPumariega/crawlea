@@ -113,6 +113,7 @@ Los clientes que SOLO admiten OAuth usan el conector personalizado (sección sig
 | SEO local | `list_geogrid_runs`, `get_geogrid_run` | gratis |
 | | `run_geogrid` (asíncrono: devuelve el run `pending`) | Maps SERP, ≈0,0035 $ × puntos |
 | Auditoría | `list_audits`, `get_audit`, `run_audit` | gratis |
+| | `get_audit_checks` (≈85 checks de la home con cómo arreglarlos y documentación oficial; `estado=fail,improve` para lo accionable) | gratis |
 | Google | `get_opportunities`, `get_search_console`, `get_analytics` | gratis (cuota de Google) |
 | Competidores | `list_competitors`, `add_competitor` | gratis |
 | | `analyze_competitor`, `get_competitor_content_gap` | Labs, ≈0,012 $ + 0,00012 $/keyword |

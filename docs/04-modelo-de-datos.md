@@ -88,6 +88,8 @@ propio para el tono.
 
 ## `AuditRun` / `AuditPage` (Módulo 8)
 
+> **Auditoría profunda:** `AuditRun.deepChecks` (Json, `DeepResult` de `src/lib/audit/deep/types.ts`: checks, notas por categoría) y `deepScore` (Float 0-100) guardan la revisión de la home; independientes de `overallScore` para mantener comparable el histórico.
+
 Primer módulo con datos genuinamente anidados N-por-ejecución (hasta ~50 páginas), a
 diferencia de las generaciones de una sola fila de los módulos 3/4/7 — de ahí una tabla
 hija (`AuditPage`) en vez de un JSON dentro de `AuditRun`: la UI necesita listar/filtrar

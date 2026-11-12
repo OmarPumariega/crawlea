@@ -12,6 +12,8 @@ import AuditTrendChart from "@/components/app/AuditTrendChart";
 import AuditIssuesTrendChart from "@/components/app/AuditIssuesTrendChart";
 import AuditTechnicalDetails from "@/components/app/AuditTechnicalDetails";
 import AuditIssuesList from "@/components/app/AuditIssuesList";
+import AuditDeepChecks from "@/components/app/AuditDeepChecks";
+import type { DeepResult } from "@/lib/audit/deep/types";
 import PositionDistribution, { type PositionBuckets } from "@/components/app/PositionDistribution";
 import { TECNICA_ISSUES, ONPAGE_ISSUES } from "@/lib/audit/issue-meta";
 
@@ -85,14 +87,17 @@ type AuditRun = {
   errorMessage: string | null;
   pages?: AuditPage[];
   psiData?: PsiData | null;
+  deepChecks?: DeepResult | null;
+  deepScore?: number | null;
 };
 
-type Tab = "resumen" | "tecnica" | "onpage";
+type Tab = "resumen" | "tecnica" | "onpage" | "checks";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "resumen", label: "Resumen" },
   { key: "tecnica", label: "Auditoría Técnica" },
   { key: "onpage", label: "Elementos SEO" },
+  { key: "checks", label: "Checks" },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -748,6 +753,15 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
                   })}
                 </ul>
               </Section>
+              {current.deepScore != null && (
+                <p className="text-xs text-accent-ink bg-accent-tint border border-brand-100 rounded-xl px-3 py-2">
+                  Auditoría profunda de la página de inicio: <strong>{current.deepScore}/100</strong> en 10 categorías (schema, seguridad, accesibilidad, AI SEO…) —{" "}
+                  <button type="button" onClick={() => setTab("checks")} className="underline font-medium">
+                    ver los checks y cómo arreglarlos
+                  </button>
+                  .
+                </p>
+              )}
               {!current.categoryScores.rendimiento && (
                 <p className="text-xs text-ink-faint">
                   Rendimiento sin datos (falta configurar PAGESPEED_API_KEY).
@@ -786,6 +800,16 @@ export default function AuditoriaView({ projectId }: { projectId: string }) {
               <AuditIssuesList pages={pages} issueCodes={TECNICA_ISSUES} gscChecked={current.gscChecked} />
               <AuditTechnicalDetails projectId={projectId} auditRunId={current.id} />
             </div>
+          )}
+
+          {tab === "checks" && (
+            current.deepChecks ? (
+              <AuditDeepChecks result={current.deepChecks} />
+            ) : (
+              <p className="text-sm text-ink-soft">
+                Esta auditoría no incluye la revisión profunda (es anterior a su lanzamiento o no pudo completarse). Ejecuta una auditoría nueva para obtenerla.
+              </p>
+            )
           )}
 
           {tab === "onpage" && (

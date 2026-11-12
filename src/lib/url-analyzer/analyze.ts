@@ -67,6 +67,8 @@ export type AnalysisResult = {
   categories: { id: CategoryId; label: string; score: number | null; ok: number; warn: number; fail: number }[];
   checks: Check[];
   facts: Facts;
+  // Revisión profunda (≈85 checks con cómo arreglarlos). Ausente en análisis anteriores a su lanzamiento.
+  deep?: import("@/lib/audit/deep/types").DeepResult | null;
 };
 
 // ── utilidades de texto ───────────────────────────────────────────────────────

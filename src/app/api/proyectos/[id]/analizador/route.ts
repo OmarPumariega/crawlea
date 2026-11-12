@@ -6,6 +6,8 @@ import { safeFetchHtml, SafeFetchError } from "@/lib/net/safe-fetch";
 import { analyzeHtml, type AnalysisResult } from "@/lib/url-analyzer/analyze";
 import { normalizeUrl } from "@/lib/seo/normalize-url";
 import { findTrackedKeywordForUrl } from "@/lib/rank/find-tracked-keyword";
+import { runDeepAudit } from "@/lib/audit/deep";
+import { getPsiMetrics } from "@/lib/audit/psi";
 
 // Sin coste de API (solo descarga la página y la analiza), pero cada análisis
 // hace una petición saliente desde nuestro servidor: se limita por usuario.
@@ -74,6 +76,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
   }
 
+  // PageSpeed arranca ya (tarda varios segundos); solo si hay clave configurada.
+  const psiPromise = getPsiMetrics(page.finalUrl).catch(() => null);
+
   const result: AnalysisResult = analyzeHtml({
     url: rawUrl,
     finalUrl: page.finalUrl,
@@ -83,6 +88,26 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     html: page.body,
     headers: page.headers,
     keyword: keyword || null,
+  });
+
+  // Revisión profunda de ESTA página (cualquier URL, propia o ajena): reutiliza el
+  // HTML ya descargado y añade las pruebas de sitio (TLS, redirecciones, bots de IA...).
+  const headersRec: Record<string, string> = {};
+  page.headers.forEach((v, k) => (headersRec[k.toLowerCase()] = v));
+  result.deep = await runDeepAudit({
+    url: page.finalUrl,
+    psi: psiPromise,
+    prefetched: {
+      finalUrl: page.finalUrl,
+      status: page.status,
+      redirected: page.redirects.length > 0,
+      headers: headersRec,
+      html: page.body,
+      htmlBytes: Buffer.byteLength(page.body, "utf8"),
+    },
+  }).catch((e) => {
+    console.error("[analizador] deep:", e);
+    return null;
   });
 
   const storedUrl = normalizeUrl(page.finalUrl) ?? page.finalUrl;

@@ -12,6 +12,7 @@ import type { PositionBuckets } from "@/components/app/PositionDistribution";
 import type { DomainMovement as Movement } from "@/lib/competitors/types";
 import { buildStructureTree, type StructureTreeNode } from "@/lib/keywords/structure-tree";
 import { normalizeKeyword } from "@/lib/keywords/normalize";
+import { CATEGORY_META, CATEGORY_ORDER, type DeepResult } from "@/lib/audit/deep/types";
 import type { StructurePage } from "@/lib/keywords/structure";
 
 function capitalizeFirst(s: string): string {
@@ -104,7 +105,7 @@ export async function loadInforme(
     prisma.auditRun.findFirst({
       where: { projectId: id, status: "completed", completedAt: { lt: startOfNextMonth } },
       orderBy: { completedAt: "desc" },
-      select: { overallScore: true, categoryScores: true, pagesCrawled: true, completedAt: true },
+      select: { overallScore: true, categoryScores: true, pagesCrawled: true, completedAt: true, deepChecks: true, deepScore: true },
     }),
     prisma.rankKeyword.findMany({
       where: { projectId: id },
@@ -547,6 +548,16 @@ export async function loadInforme(
           categoryScores: cats,
           pagesCrawled: latestAudit.pagesCrawled,
           completedAt: latestAudit.completedAt,
+          deep: (() => {
+            const d = latestAudit.deepChecks as unknown as DeepResult | null;
+            if (!d) return null;
+            return {
+              score: d.score,
+              categories: CATEGORY_ORDER.map((c) => ({ label: CATEGORY_META[c].short, score: d.categoryScores[c]?.score ?? null })),
+              counts: { fail: d.checks.filter((c) => c.status === "fail").length, improve: d.checks.filter((c) => c.status === "improve").length, ok: d.checks.filter((c) => c.status === "ok").length },
+              top: d.checks.filter((c) => c.status === "fail" && c.fix).slice(0, 8).map((c) => ({ title: c.title, summary: c.summary, fix: c.fix as string })),
+            };
+          })(),
         }
       : null,
     authority: gscSnapshot

@@ -7,6 +7,8 @@ import { computeScore } from "@/lib/audit/scoring";
 import { notify } from "@/lib/notifications/notify";
 import { alertAuditRegression } from "@/lib/notifications/alerts";
 import { ISSUE_META } from "@/lib/audit/issue-meta";
+import { runDeepAudit } from "@/lib/audit/deep";
+import type { DeepResult } from "@/lib/audit/deep/types";
 
 // Con MAX_PAGES=5000 (crawler.ts) un sitio grande puede tardar legítimamente
 // 30-60+ min — 30 min mataría auditorías reales a mitad. 180 min sigue
@@ -159,6 +161,19 @@ export async function runAuditJob(): Promise<{ processed: number }> {
 
     const gscChecked = impressedUrls !== null;
 
+    // Auditoría profunda de la home (checks tipo Microaudit). Se aísla: si
+    // falla no tumba la auditoría del sitio, simplemente queda sin ella.
+    const deep = await runDeepAudit({
+      url: run.startUrl,
+      robotsTxt: crawl.robotsContent,
+      sitemapFound: crawl.sitemapFound,
+      sitemapUrls: crawl.sitemapFound ? crawl.sitemapFullUrls : null,
+      psi,
+    }).catch((e) => {
+      console.error("[audit] deep:", e);
+      return null;
+    });
+
     const { overallScore, categoryScores } = computeScore(
       crawl.pages,
       { sitemapFound: crawl.sitemapFound },
@@ -236,6 +251,8 @@ export async function runAuditJob(): Promise<{ processed: number }> {
           psiData: psi ? (psi as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
           gscChecked,
           linkGraph: crawl.linkGraph as unknown as Prisma.InputJsonValue,
+          deepChecks: deep ? (deep as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
+          deepScore: deep?.score ?? null,
           robotsContent: crawl.robotsContent,
           sitemapUrlCount: crawl.sitemapUrlCount,
           sitemapUrls: crawl.sitemapUrls as unknown as Prisma.InputJsonValue,
@@ -247,7 +264,7 @@ export async function runAuditJob(): Promise<{ processed: number }> {
     // Cada tipo de incidencia se convierte en una tarea con las URLs afectadas
     // y un texto de cómo solucionarlo. Las tareas de la auditoría anterior se
     // marcan como hechas (ya superadas por esta nueva).
-    await generateAuditTasks(run.projectId, crawl.pages, gscChecked, impressedUrls, titleCounts, metaCounts);
+    await generateAuditTasks(run.projectId, crawl.pages, gscChecked, impressedUrls, titleCounts, metaCounts, deep);
 
     await notify({
       userId: run.project.userId,
@@ -300,12 +317,43 @@ const ISSUE_PRIORITY: Record<string, "alta" | "media" | "baja"> = {
   meta_long: "baja",
 };
 
+type TaskMeta = { label: string; fix: string | null; deep?: { summary: string; docs: string[]; priority: "alta" | "media" | "baja" } };
+
+// Tareas de la auditoría profunda: un check que falla (o es mejorable y no es
+// solo un aviso) se convierte en tarea con el hallazgo real, cómo arreglarlo y
+// la documentación oficial — lo que luego una IA vía MCP puede ejecutar.
+function deepTaskMeta(deep: DeepResult | null): Map<string, TaskMeta> {
+  const out = new Map<string, TaskMeta>();
+  for (const c of deep?.checks ?? []) {
+    if (c.status === "na" || c.status === "ok" || c.advisory || !c.fix) continue;
+    if (c.status === "improve" && c.weight < 1) continue;
+    out.set(`deep:${c.id}`, {
+      label: c.title,
+      fix: c.fix,
+      deep: {
+        summary: c.summary,
+        docs: c.sources.map((s) => `${s.label}: ${s.url}`),
+        priority: c.status === "fail" ? (c.category === "crawl" ? "alta" : "media") : "baja",
+      },
+    });
+  }
+  return out;
+}
+
 function buildIssueTodoFields(
   issue: string,
   urls: string[],
-  meta: { label: string; fix: string | null },
+  meta: TaskMeta,
   dateStr: string
 ): { title: string; detail: string; text: string; priority: string } {
+  if (meta.deep) {
+    return {
+      title: `🔍 ${meta.label}`,
+      detail: `${meta.deep.summary}\n\nCómo arreglarlo: ${meta.fix}${meta.deep.docs.length ? `\n\nDocumentación oficial:\n${meta.deep.docs.join("\n")}` : ""}\n\nPágina: ${urls[0]}`,
+      text: `🔍 [Auditoría ${dateStr}] ${meta.label}`,
+      priority: meta.deep.priority,
+    };
+  }
   const n = urls.length;
   const label = meta.label.toLowerCase();
   return {
@@ -324,8 +372,11 @@ async function generateAuditTasks(
   gscChecked: boolean,
   impressedUrls: Set<string> | null,
   titleCounts: Map<string, number>,
-  metaCounts: Map<string, number>
+  metaCounts: Map<string, number>,
+  deep: DeepResult | null
 ): Promise<void> {
+  const deepMeta = deepTaskMeta(deep);
+  const metaFor = (issue: string): TaskMeta | undefined => deepMeta.get(issue) ?? ISSUE_META[issue];
   // Agrega incidencias por tipo → lista de URLs completas afectadas (no solo
   // el path: TareasView las renderiza con UrlLink, clicables).
   const issueUrls = new Map<string, string[]>();
@@ -348,6 +399,8 @@ async function generateAuditTasks(
     }
   }
 
+  for (const key of deepMeta.keys()) issueUrls.set(key, [deep!.url]);
+
   // Tareas automáticas pendientes de auditorías anteriores, una por tipo de
   // incidencia (issueType es único entre las pendientes: cada tipo tiene como
   // mucho una tarea abierta a la vez, ver más abajo).
@@ -363,7 +416,8 @@ async function generateAuditTasks(
   //    cuenta arreglos de verdad, nunca una incidencia que sigue ahí solo
   //    porque se regeneró la tarea con datos frescos.
   const resolvedIds = pendingAutoTodos
-    .filter((t) => t.issueType && !stillPresent.has(t.issueType))
+    // Sin auditoría profunda en esta pasada (falló) no se puede afirmar que sus hallazgos se resolvieran.
+    .filter((t) => t.issueType && !stillPresent.has(t.issueType) && !(deep === null && t.issueType.startsWith("deep:")))
     .map((t) => t.id);
   if (resolvedIds.length > 0) {
     await prisma.todoItem.updateMany({
@@ -380,7 +434,7 @@ async function generateAuditTasks(
   for (const t of pendingAutoTodos) {
     if (!t.issueType || !stillPresent.has(t.issueType)) continue;
     const urls = issueUrls.get(t.issueType)!;
-    const meta = ISSUE_META[t.issueType];
+    const meta = metaFor(t.issueType);
     if (!meta) continue;
     const fields = buildIssueTodoFields(t.issueType, urls, meta, dateStr);
     await prisma.todoItem.update({
@@ -399,7 +453,7 @@ async function generateAuditTasks(
   // 3) Lo que queda en issueUrls son tipos de incidencia genuinamente nuevos
   //    (no había tarea pendiente de ese tipo) → se crean.
   for (const [issue, urls] of issueUrls) {
-    const meta = ISSUE_META[issue];
+    const meta = metaFor(issue);
     if (!meta?.fix) continue;
     const fields = buildIssueTodoFields(issue, urls, meta, dateStr);
     await prisma.todoItem.create({

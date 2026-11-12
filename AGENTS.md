@@ -59,7 +59,7 @@ alcance original):
 | 5 | Rank Tracking | Posiciones orgánicas reales (DataForSEO SERP), manual o programado, guard de un chequeo/día |
 | 6 | Google | OAuth2 por usuario, paneles de Search Console y GA4 con snapshots persistidos |
 | 7 | Contenido | Generación de contenido vía LLM + "Optimizar URL existente" con cambios concretos accionables; el análisis TF-IDF es una pestaña de este módulo |
-| 8 | Auditoría | Crawler propio (rastrea el sitio entero, no una muestra) + PageSpeed + cruce con GSC, puntuación explicable; enlazado interno (PageRank/huérfanas) y canibalizaciones son pestañas de este módulo |
+| 8 | Auditoría | Crawler propio (rastrea el sitio entero, no una muestra) + PageSpeed + cruce con GSC, puntuación explicable + pestaña Checks (~85 comprobaciones de la home con cómo arreglarlas y docs oficiales, vía MCP `get_audit_checks`); enlazado interno (PageRank/huérfanas) y canibalizaciones son pestañas de este módulo |
 | 9 | Geogrid | Mapa de calor de posicionamiento local vía DataForSEO Maps SERP |
 
 Extra (fuera del spec de 9 módulos, mismo principio de datos reales): análisis TF-IDF

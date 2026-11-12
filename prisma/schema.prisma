@@ -443,6 +443,8 @@ model AuditRun {
   psiData         Json? // PageSpeed Insights de la home únicamente
   gscChecked      Boolean     @default(false)
   linkGraph       Json? // grafo de enlaces internos { url, links[] } (PageRank/enlazado M interno)
+  deepChecks      Json? // auditoría profunda de la home (DeepResult: ~85 checks con cómo arreglarlos y documentación oficial)
+  deepScore       Float? // nota 0-100 de la auditoría profunda (independiente de overallScore, para no romper la comparación histórica)
   errorMessage    String?
   pages           AuditPage[]
 

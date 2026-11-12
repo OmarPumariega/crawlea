@@ -75,6 +75,8 @@ export type CrawlResult = {
   robotsContent: string | null;
   sitemapUrlCount: number | null;
   sitemapUrls: string[];
+  // Lista COMPLETA de URLs del sitemap (la anterior es solo una muestra de 100): la usa la auditoría profunda para comprobar si la home está incluida.
+  sitemapFullUrls: string[];
   // Grafo de enlaces internos: { url, links: [urls internas] }. Lo usa el
   // módulo de PageRank/enlazado interno. Vacío si robots bloqueó.
   linkGraph: { url: string; links: string[] }[];
@@ -266,7 +268,7 @@ async function checkLinkStatus(url: string): Promise<number | null> {
 
 export async function crawlSite(startUrl: string): Promise<CrawlResult> {
   const start = normalizeUrl(startUrl);
-  if (!start) return { pages: [], robotsBlocked: false, sitemapFound: false, robotsContent: null, sitemapUrlCount: null, sitemapUrls: [], linkGraph: [], truncated: false };
+  if (!start) return { pages: [], robotsBlocked: false, sitemapFound: false, robotsContent: null, sitemapUrlCount: null, sitemapUrls: [], sitemapFullUrls: [], linkGraph: [], truncated: false };
 
   const origin = new URL(start).origin;
   const robots = await loadRobotsRules(origin);
@@ -275,7 +277,7 @@ export async function crawlSite(startUrl: string): Promise<CrawlResult> {
   const robotsContent = await fetchRobotsContent(origin).catch(() => null);
 
   if (!robots.isAllowed(start)) {
-    return { pages: [], robotsBlocked: true, sitemapFound: false, robotsContent, sitemapUrlCount: null, sitemapUrls: [], linkGraph: [], truncated: false };
+    return { pages: [], robotsBlocked: true, sitemapFound: false, robotsContent, sitemapUrlCount: null, sitemapUrls: [], sitemapFullUrls: [], linkGraph: [], truncated: false };
   }
 
   const sitemapFound = await checkSitemap(origin);
@@ -390,6 +392,7 @@ export async function crawlSite(startUrl: string): Promise<CrawlResult> {
     sitemapFound,
     robotsContent,
     sitemapUrlCount: sitemapData.count,
+    sitemapFullUrls: sitemapData.urls,
     sitemapUrls: sitemapData.urls.slice(0, 100), // muestra para la UI — la lista completa ya se usó arriba para sembrar la cola
     linkGraph: pages.map((p) => ({ url: p.url, links: pageLinks.get(p.url) ?? [] })),
     truncated: pages.length >= MAX_PAGES,

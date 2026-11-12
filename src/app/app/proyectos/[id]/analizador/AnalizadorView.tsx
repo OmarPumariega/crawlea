@@ -9,6 +9,7 @@ import Section from "@/components/ui/Section";
 import StatTile from "@/components/ui/StatTile";
 import { RadialGauge } from "@/components/ui/charts";
 import { cn } from "@/lib/utils";
+import AuditDeepChecks from "@/components/app/AuditDeepChecks";
 import type { AnalysisResult, Check, CheckStatus } from "@/lib/url-analyzer/analyze";
 
 type HistoryItem = { id: string; url: string; keyword: string | null; score: number; createdAt: string };
@@ -165,7 +166,7 @@ export default function AnalizadorView({ projectId }: { projectId: string }) {
               Usar la home de {domain}
             </button>
           )}
-          <span>Sin coste: se descarga la página y se analiza al momento. Si no escribes keyword y la URL ya posiciona en Rank Tracking, usamos la tuya.</span>
+          <span>Sin coste: se descarga la página y se analiza (con la revisión profunda tarda unos segundos más). Si no escribes keyword y la URL ya posiciona en Rank Tracking, usamos la tuya.</span>
         </div>
         {error && <p className="mt-3"><Pill tone="danger">{error}</Pill></p>}
       </Section>
@@ -264,6 +265,8 @@ export default function AnalizadorView({ projectId }: { projectId: string }) {
                   </Section>
                 ))}
               </div>
+
+              {r.deep && <AuditDeepChecks result={r.deep} title="Auditoría profunda de esta página" />}
 
               <Section title="Estructura de encabezados" description="Cómo está organizado el contenido, en orden de aparición.">
                 {r.facts.outline.length === 0 ? (

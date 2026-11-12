@@ -59,7 +59,19 @@ export type ReportData = {
   prevHref: string;
   nextHref: string | null;
   tasks: { id: string; text: string; issueType: string | null; affectedUrls: string[]; completedAt: Date | null }[];
-  audit: { overallScore: number | null; categoryScores: CategoryScores | null; pagesCrawled: number; completedAt: Date | null } | null;
+  audit: {
+    overallScore: number | null;
+    categoryScores: CategoryScores | null;
+    pagesCrawled: number;
+    completedAt: Date | null;
+    // Auditoría profunda de la home (checks con cómo arreglarlos); null en auditorías anteriores.
+    deep: {
+      score: number | null;
+      categories: { label: string; score: number | null }[];
+      counts: { fail: number; improve: number; ok: number };
+      top: { title: string; summary: string; fix: string }[];
+    } | null;
+  } | null;
   authority: { impressions: number; clicks: number; queries: number; position: number; month: string } | null;
   rank: {
     keywords: { keyword: string; device: string; lastPosition: number | null; bestPosition: number | null; lastCheckedAt: Date | null; trend: "up" | "down" | "same" | null }[];
@@ -319,6 +331,27 @@ export default function InformeBuilder({ projectId, data, initialConfig, initial
           <p className="text-xs text-ink-faint">
             {data.audit.pagesCrawled} página{data.audit.pagesCrawled === 1 ? "" : "s"} rastreada{data.audit.pagesCrawled === 1 ? "" : "s"} · Auditoría completada el {fmtDate(data.audit.completedAt)}
           </p>
+
+          {/* Auditoría profunda de la home: nota por categoría + lo que falla */}
+          {data.audit.deep && data.audit.deep.score != null && (
+            <div className="space-y-3 pt-3 border-t border-line">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                <Stat label="Auditoría profunda (home)" value={`${data.audit.deep.score}/100`} sub={`${data.audit.deep.counts.fail} fallos · ${data.audit.deep.counts.improve} mejorables`} />
+                {data.audit.deep.categories.filter((c) => c.score != null).map((c) => (
+                  <Stat key={c.label} label={c.label} value={`${c.score}/100`} />
+                ))}
+              </div>
+              {data.audit.deep.top.length > 0 && (
+                <ul className="space-y-1.5 text-sm text-ink-soft">
+                  {data.audit.deep.top.map((t) => (
+                    <li key={t.title} className="break-inside-avoid">
+                      <span className="font-medium text-ink">{t.title}.</span> {t.summary} <span className="text-ink-faint">Cómo arreglarlo: {t.fix}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
           {/* Core Web Vitals (PageSpeed Insights) */}
           {data.audit.categoryScores?.rendimiento?.detail && (() => {

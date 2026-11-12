@@ -1,3 +1,4 @@
+import type { DeepResult } from "@/lib/audit/deep/types";
 import { prisma } from "@/lib/db/prisma";
 import { usdToCredits } from "@/lib/credits";
 
@@ -18,7 +19,7 @@ export async function buildProjectContext(projectId: string): Promise<string> {
     prisma.auditRun.findFirst({
       where: { projectId, status: "completed" },
       orderBy: { completedAt: "desc" },
-      select: { overallScore: true, pagesCrawled: true, completedAt: true },
+      select: { overallScore: true, pagesCrawled: true, completedAt: true, deepChecks: true, deepScore: true },
     }),
     prisma.rankKeyword.findMany({
       where: { projectId },
@@ -118,6 +119,16 @@ export async function buildProjectContext(projectId: string): Promise<string> {
       `Última auditoría: puntuación ${latestAudit.overallScore ?? "—"}/100, ` +
         `${latestAudit.pagesCrawled} páginas rastreadas (${fecha}).`
     );
+    const deep = latestAudit.deepChecks as unknown as DeepResult | null;
+    if (deep) {
+      const bad = deep.checks.filter((c) => c.status === "fail" || (c.status === "improve" && !c.advisory && c.weight >= 1));
+      lines.push(
+        `Auditoría profunda de la home: ${deep.score ?? "—"}/100. ` +
+          (bad.length
+            ? "Qué corregir: " + bad.slice(0, 12).map((c) => `${c.title} [${c.status === "fail" ? "fallo" : "mejorable"}] — ${c.summary} → ${c.fix ?? ""}`).join(" | ")
+            : "Sin fallos accionables.")
+      );
+    }
   }
 
   if (rankKeywords.length > 0) {

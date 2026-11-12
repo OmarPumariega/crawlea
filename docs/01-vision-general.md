@@ -37,6 +37,7 @@ herramienta que se usa a diario — ahora por múltiples cuentas.
   por usuario); Business Profile pendiente de aprobación de acceso de Google
 - ✅ Módulo 7 — Generador de Contenido (Blog/Página/Producto/Novedad GBP vía OpenRouter,
   reutiliza el tono de marca del proyecto) + "Optimizar URL existente"
+- ✅ Auditoría profunda (pestaña Checks): ~85 comprobaciones medidas sobre la home con cómo arreglarlas y documentación oficial, expuestas por MCP (`get_audit_checks`); el Analizador de URL la ejecuta también sobre cualquier URL (`analyze_url` → `deep`). Falta la capa de IA.
 - ✅ Módulo 8 — Auditoría Técnica: crawler propio que rastrea el sitio ENTERO (techo
   de seguridad 5000 páginas/profundidad 20, siembra desde sitemap.xml, URLs
   normalizadas, identidad por URL final tras redirect) + PageSpeed Insights (solo
