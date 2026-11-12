@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Loader2, Layers } from "lucide-react";
 import PageHeader from "@/components/app/PageHeader";
@@ -15,6 +15,7 @@ type Payload = {
   analyzed: number;
   missing: number;
   missingCostUsd: number;
+  missingAllCostUsd: number;
   maxPerRequest: number;
   fetched?: number;
   stopped?: string | null;
@@ -30,6 +31,8 @@ export default function ClustersView({ projectId }: { projectId: string }) {
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const cancelRef = useRef(false);
   const deepLink = useSearchParams().get("estudio");
 
   useEffect(() => {
@@ -57,6 +60,28 @@ export default function ClustersView({ projectId }: { projectId: string }) {
     const res = await fetch(`/api/proyectos/${projectId}/keywords/estudios/${studyId}/clusters`, { method: "POST" });
     setData(await res.json());
     setFetching(false);
+  }
+
+  // «Analizar todas»: encadena tandas del mismo endpoint (cada una con su guard
+  // de gasto y su tope por petición) hasta que no falte ninguna, se alcance el
+  // tope de gasto, haya un error o se cancele. Así ninguna petición dura minutos.
+  async function fetchAll() {
+    if (!data) return;
+    const total = data.missing;
+    setFetching(true);
+    cancelRef.current = false;
+    setProgress({ done: 0, total });
+    let remaining = total;
+    while (remaining > 0 && !cancelRef.current) {
+      const res = await fetch(`/api/proyectos/${projectId}/keywords/estudios/${studyId}/clusters`, { method: "POST" });
+      const body: Payload = await res.json();
+      setData(body);
+      setProgress({ done: total - (body.missing ?? 0), total });
+      if (body.error || body.stopped || !body.fetched || (body.errors && body.errors.length > 0)) break;
+      remaining = body.missing;
+    }
+    setFetching(false);
+    setProgress(null);
   }
 
   const multi = data?.clusters.filter((c) => c.members.length > 1) ?? [];
@@ -92,16 +117,34 @@ export default function ClustersView({ projectId }: { projectId: string }) {
             <Section>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-ink-soft">
-                  {data.missing} keywords todavía no tienen su top-10 de Google guardado. Traerlo cuesta {fmtCredits(data.missingCostUsd)} por tanda de hasta {data.maxPerRequest} keywords.
+                  {data.missing} keywords todavía no tienen su top-10 de Google guardado. Traerlas todas cuesta {fmtCredits(data.missingAllCostUsd)}; por tandas de hasta {data.maxPerRequest}, {fmtCredits(data.missingCostUsd)} cada una.
+                  {progress && <> Analizadas {progress.done.toLocaleString("es-ES")} de {progress.total.toLocaleString("es-ES")}…</>}
                 </p>
-                <button onClick={fetchMissing} disabled={fetching} className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong disabled:opacity-50">
-                  {fetching && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Analizar {Math.min(data.missing, data.maxPerRequest)} ({fmtCredits(data.missingCostUsd)})
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  {fetching ? (
+                    <button onClick={() => { cancelRef.current = true; }} className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-sm font-medium text-ink-soft hover:text-ink hover:bg-background">
+                      Parar tras esta tanda
+                    </button>
+                  ) : data.missing > data.maxPerRequest ? (
+                    <button onClick={fetchMissing} className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-sm font-medium text-ink-soft hover:text-ink hover:bg-background">
+                      Solo {data.maxPerRequest} ({fmtCredits(data.missingCostUsd)})
+                    </button>
+                  ) : null}
+                  <button onClick={data.missing > data.maxPerRequest ? fetchAll : fetchMissing} disabled={fetching} className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong disabled:opacity-50">
+                    {fetching && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Analizar {data.missing > data.maxPerRequest ? "todas" : data.missing} ({fmtCredits(data.missingAllCostUsd)})
+                  </button>
+                </div>
               </div>
               {data.stopped && <p className="mt-2 text-xs text-alert-ink">{data.stopped}</p>}
               {data.errors && data.errors.length > 0 && <p className="mt-2 text-xs text-alert-ink">{data.errors.join(" · ")}</p>}
             </Section>
+          )}
+
+          {data.missing > 0 && data.analyzed > 0 && (
+            <p className="rounded-xl border border-brand-100 bg-accent-tint px-3 py-2 text-xs text-accent-ink">
+              Resultado parcial: solo {data.analyzed.toLocaleString("es-ES")} de {(data.analyzed + data.missing).toLocaleString("es-ES")} keywords tienen su top-10. Los grupos se forman entre las analizadas, así que habrá muchos menos de los reales hasta analizar el resto.
+            </p>
           )}
 
           {data.analyzed === 0 ? (
@@ -127,7 +170,7 @@ export default function ClustersView({ projectId }: { projectId: string }) {
                 ))}
               </div>
               {single.length > 0 && (
-                <Section title="Keywords con página propia" description="Su top-10 no coincide con el de ninguna otra: cada una pide su propio contenido." flush>
+                <Section title="Keywords con página propia" description={data.missing > 0 ? "Su top-10 no coincide con el de ninguna otra de las ya analizadas (faltan keywords por analizar, así que algunas podrían agruparse luego)." : "Su top-10 no coincide con el de ninguna otra: cada una pide su propio contenido."} flush>
                   <table className="data-table data-table-compact w-full">
                     <thead><tr><th>Keyword</th><th className="num">Volumen</th></tr></thead>
                     <tbody>{single.map((c) => (<tr key={c.head}><td className="font-medium">{c.head}</td><td className="num tabular-nums text-ink-soft">{num(c.headVolume)}</td></tr>))}</tbody>

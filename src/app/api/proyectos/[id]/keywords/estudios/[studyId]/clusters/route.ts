@@ -45,6 +45,8 @@ function payload(data: NonNullable<Awaited<ReturnType<typeof load>>>, extra: Rec
     missing: data.missing.length,
     missingCostUsd: Math.round(Math.min(data.missing.length, MAX_FETCH_PER_REQUEST) * rankCheckCostUsd(10) * 1000) / 1000,
     maxPerRequest: MAX_FETCH_PER_REQUEST,
+    // Coste de traer TODAS las que faltan (la vista las pide por tandas de maxPerRequest).
+    missingAllCostUsd: Math.round(data.missing.length * rankCheckCostUsd(10) * 1000) / 1000,
     ...extra,
   };
 }

@@ -161,6 +161,17 @@ const INTENT_TONES: Record<string, PillTone> = {
   transaccional: "brand",
   navegacional: "neutral",
 };
+// Filtros y orden de la tabla del estudio (todo en el navegador: el estudio ya
+// está cargado, así que filtrar no cuesta nada ni llama a ninguna API).
+type KwFilters = { intent: string; volMin: string; volMax: string; comp: string; difMin: string; difMax: string; cpcMin: string; pos: string; sort: string };
+const EMPTY_KW_FILTERS: KwFilters = { intent: "", volMin: "", volMax: "", comp: "", difMin: "", difMax: "", cpcMin: "", pos: "", sort: "" };
+const toNum = (v: string): number | null => {
+  const t = v.trim().replace(",", ".");
+  if (t === "") return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+};
+
 const COMPETITION_STYLES: Record<string, string> = {
   HIGH: "text-alert-ink",
   MEDIUM: "text-accent-ink",
@@ -260,6 +271,11 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
   const [current, setCurrent] = useState<Study | null>(null);
   // Tabla del estudio: búsqueda y paginación (los estudios importados tienen cientos de filas).
   const [kwSearch, setKwSearch] = useState("");
+  const [kwF, setKwF] = useState<KwFilters>(EMPTY_KW_FILTERS);
+  const setF = (patch: Partial<KwFilters>) => {
+    setKwF((prev) => ({ ...prev, ...patch }));
+    setKwShown(50);
+  };
   const [selectedKw, setSelectedKw] = useState<Set<string>>(new Set());
   const [trackNotice, setTrackNotice] = useState("");
   const [tracking, setTracking] = useState(false);
@@ -943,12 +959,44 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
               tfidf: kws.some((k) => k.tfidfAvailable),
             };
             const q = kwSearch.trim().toLowerCase();
-            const filtered = q ? kws.filter((k) => k.keyword.toLowerCase().includes(q)) : kws;
+            const intentCounts = ["transaccional", "mixta", "informacional", "navegacional"].map((i) => ({ i, n: kws.filter((k) => k.intent === i).length })).filter((x) => x.n > 0);
+            const noIntent = kws.filter((k) => !k.intent).length;
+            const vMin = toNum(kwF.volMin), vMax = toNum(kwF.volMax), dMin = toNum(kwF.difMin), dMax = toNum(kwF.difMax), cMin = toNum(kwF.cpcMin);
+            const cpcOf = (k: Keyword) => (k.cpc === null || k.cpc === "" ? null : Number(k.cpc));
+            // Un valor sin dato (volumen, dificultad, CPC) no pasa un filtro que lo acota: no se supone nada.
+            const byFilters = kws.filter((k) => {
+              if (kwF.intent && (kwF.intent === "none" ? !!k.intent : k.intent !== kwF.intent)) return false;
+              if (vMin !== null && (k.searchVolume === null || k.searchVolume < vMin)) return false;
+              if (vMax !== null && (k.searchVolume === null || k.searchVolume > vMax)) return false;
+              if (kwF.comp && k.competition !== kwF.comp) return false;
+              if (dMin !== null && (k.difficulty == null || k.difficulty < dMin)) return false;
+              if (dMax !== null && (k.difficulty == null || k.difficulty > dMax)) return false;
+              if (cMin !== null) { const c = cpcOf(k); if (c === null || !Number.isFinite(c) || c < cMin) return false; }
+              if (kwF.pos === "ranked" && k.rankPosition == null) return false;
+              if (kwF.pos === "unranked" && k.rankPosition != null) return false;
+              if (kwF.pos === "tracked" && !k.tracked) return false;
+              if (kwF.pos === "untracked" && k.tracked) return false;
+              return true;
+            });
+            const byText = q ? byFilters.filter((k) => k.keyword.toLowerCase().includes(q)) : byFilters;
+            const nullLast = (a: number | null | undefined, b: number | null | undefined, dir: 1 | -1) => (a == null ? 1 : b == null ? -1 : (a - b) * dir);
+            const filtered = kwF.sort
+              ? [...byText].sort((a, b) =>
+                  kwF.sort === "vol-desc" ? nullLast(a.searchVolume, b.searchVolume, -1)
+                  : kwF.sort === "cpc-desc" ? nullLast(cpcOf(a), cpcOf(b), -1)
+                  : kwF.sort === "dif-asc" ? nullLast(a.difficulty, b.difficulty, 1)
+                  : kwF.sort === "dif-desc" ? nullLast(a.difficulty, b.difficulty, -1)
+                  : kwF.sort === "pos-asc" ? nullLast(a.rankPosition, b.rankPosition, 1)
+                  : nullLast(a.priority, b.priority, -1)
+                )
+              : byText;
+            const activeFilters = Object.entries(kwF).some(([k, v]) => k !== "sort" && v !== "");
             const shown = filtered.slice(0, kwShown);
             const maxVol = Math.max(1, ...kws.map((k) => k.searchVolume ?? 0));
             return (
               <div className="space-y-3">
-                <div className="relative max-w-sm">
+                <div className="flex flex-wrap items-center gap-3">
+                <div className="relative w-full max-w-sm">
                   <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
                   <input
                     value={kwSearch}
@@ -959,6 +1007,77 @@ export default function KeywordsView({ projectId }: { projectId: string }) {
                     placeholder="Buscar en el estudio…"
                     className="w-full rounded-full border border-line bg-surface py-2 pl-10 pr-4 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/15"
                   />
+                </div>
+                {has.intent && (
+                  <div className="inline-flex flex-wrap items-center gap-1 rounded-xl bg-black/[0.05] p-1">
+                    {[{ key: "", label: "Todas", n: kws.length }, ...intentCounts.map((x) => ({ key: x.i, label: x.i.charAt(0).toUpperCase() + x.i.slice(1), n: x.n })), ...(noIntent > 0 ? [{ key: "none", label: "Sin intención", n: noIntent }] : [])].map((f) => (
+                      <button
+                        key={f.key || "all"}
+                        type="button"
+                        onClick={() => setF({ intent: f.key })}
+                        className={cn(
+                          "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                          kwF.intent === f.key ? "bg-surface text-ink shadow-[0_1px_3px_rgba(17,20,43,0.12)]" : "text-ink-soft hover:text-ink"
+                        )}
+                      >
+                        {f.label} <span className="tabular-nums text-ink-faint">({f.n.toLocaleString("es-ES")})</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                </div>
+                <div className="flex flex-wrap items-end gap-x-4 gap-y-2 text-xs text-ink-soft">
+                  <label className="flex items-center gap-1.5">Volumen
+                    <input inputMode="numeric" value={kwF.volMin} onChange={(e) => setF({ volMin: e.target.value })} placeholder="mín" className="w-16 rounded-lg border border-line bg-surface px-2 py-1 text-sm outline-none focus:border-brand" />
+                    <input inputMode="numeric" value={kwF.volMax} onChange={(e) => setF({ volMax: e.target.value })} placeholder="máx" className="w-16 rounded-lg border border-line bg-surface px-2 py-1 text-sm outline-none focus:border-brand" />
+                  </label>
+                  {has.comp && (
+                    <label className="flex items-center gap-1.5">Competencia
+                      <select value={kwF.comp} onChange={(e) => setF({ comp: e.target.value })} className="rounded-lg border border-line bg-surface px-2 py-1 text-sm outline-none focus:border-brand">
+                        <option value="">Todas</option>
+                        <option value="LOW">Baja</option>
+                        <option value="MEDIUM">Media</option>
+                        <option value="HIGH">Alta</option>
+                      </select>
+                    </label>
+                  )}
+                  {has.dif && (
+                    <label className="flex items-center gap-1.5">Dificultad
+                      <input inputMode="numeric" value={kwF.difMin} onChange={(e) => setF({ difMin: e.target.value })} placeholder="mín" className="w-14 rounded-lg border border-line bg-surface px-2 py-1 text-sm outline-none focus:border-brand" />
+                      <input inputMode="numeric" value={kwF.difMax} onChange={(e) => setF({ difMax: e.target.value })} placeholder="máx" className="w-14 rounded-lg border border-line bg-surface px-2 py-1 text-sm outline-none focus:border-brand" />
+                    </label>
+                  )}
+                  {has.cpc && (
+                    <label className="flex items-center gap-1.5">CPC mín (€)
+                      <input inputMode="decimal" value={kwF.cpcMin} onChange={(e) => setF({ cpcMin: e.target.value })} placeholder="0,50" className="w-16 rounded-lg border border-line bg-surface px-2 py-1 text-sm outline-none focus:border-brand" />
+                    </label>
+                  )}
+                  <label className="flex items-center gap-1.5">Posición
+                    <select value={kwF.pos} onChange={(e) => setF({ pos: e.target.value })} className="rounded-lg border border-line bg-surface px-2 py-1 text-sm outline-none focus:border-brand">
+                      <option value="">Todas</option>
+                      <option value="ranked">Ya posicionan</option>
+                      <option value="unranked">Sin posición</option>
+                      <option value="tracked">En Rank Tracking</option>
+                      <option value="untracked">Fuera de Rank Tracking</option>
+                    </select>
+                  </label>
+                  <label className="flex items-center gap-1.5">Ordenar
+                    <select value={kwF.sort} onChange={(e) => setF({ sort: e.target.value })} className="rounded-lg border border-line bg-surface px-2 py-1 text-sm outline-none focus:border-brand">
+                      <option value="">Por defecto</option>
+                      <option value="vol-desc">Volumen (mayor primero)</option>
+                      <option value="prio-desc">Prioridad (mayor primero)</option>
+                      <option value="cpc-desc">CPC (mayor primero)</option>
+                      <option value="dif-asc">Dificultad (menor primero)</option>
+                      <option value="dif-desc">Dificultad (mayor primero)</option>
+                      <option value="pos-asc">Posición (mejor primero)</option>
+                    </select>
+                  </label>
+                  {(activeFilters || kwF.sort) && (
+                    <button type="button" onClick={() => setF({ ...EMPTY_KW_FILTERS })} className="rounded-full border border-line px-3 py-1 font-medium text-ink-soft hover:text-ink hover:bg-background">
+                      Limpiar filtros
+                    </button>
+                  )}
+                  {activeFilters && <span className="pb-1 text-ink-faint">{filtered.length.toLocaleString("es-ES")} de {kws.length.toLocaleString("es-ES")} keywords</span>}
                 </div>
                 {(selectedKw.size > 0 || trackNotice) && (
                   <div className="flex flex-wrap items-center gap-3 text-xs">
